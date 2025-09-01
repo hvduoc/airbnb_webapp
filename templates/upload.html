@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+{% block title %}Trang chủ · Upload CSV{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Lưới gọn cho form tải CSV */
+  .dl-grid{
+    display:grid;
+    grid-template-columns:repeat(12, minmax(0,1fr));
+    gap:12px 16px; align-items:end;
+  }
+  .dl-grid > label{
+    display:flex; flex-direction:column; gap:6px; grid-column:span 6;
+  }
+  @media (min-width:768px){ .dl-grid > label{ grid-column:span 3; } }
+  .dl-grid input[type="number"]{ width:100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Cập nhật dữ liệu từ CSV</h1>
+
+{% if ingest_last or ingest_next %}
+<div class="card" style="margin:10px 0 18px; padding:12px; border:1px solid var(--line);">
+  <div style="font-weight:600; margin-bottom:6px">Trạng thái đồng bộ</div>
+  <div>
+    Lần cập nhật gần nhất:
+    <strong>{{ ingest_last.finished_at | vn_dt if ingest_last else '—' }}</strong>
+    {% if ingest_last %}
+      · <span class="muted">+{{ ingest_last.rows_inserted }} mới, {{ ingest_last.rows_updated }} cập nhật</span>
+    {% endif %}
+  </div>
+  <div>
+    Lần chạy tiếp theo (dự kiến):
+    <strong>
+      {% if ingest_next %}{{ ingest_next.astimezone() | vn_dt }}{% else %}—{% endif %}
+    </strong>
+  </div>
+</div>
+{% endif %}
+
+<p class="muted">Tải file <code>reservations.csv</code> xuất từ Airbnb để cập nhật/đồng bộ dữ liệu.</p>
+
+<!-- ===== TẢI CSV AIRBNB THEO SỐ TRANG ===== -->
+<!-- ===== TẢI CSV TỪ AIRBNB ===== -->
+<h2 style="margin:18px 0 8px; font-size:20px">Tải CSV từ Airbnb</h2>
+
+<form action="/airbnb/csv-link" method="get" target="_blank" class="dl-grid" style="margin-bottom:10px">
+  <label>
+    Trang:
+    <input id="page_single" type="number" name="page" min="1" value="1" required>
+  </label>
+  <label>
+    Mỗi trang:
+    <input id="limit" type="number" name="limit" min="1" max="200" value="40">
+  </label>
+
+  <div style="grid-column:1 / -1; display:flex; gap:8px; flex-wrap:wrap; align-items:center">
+    <button class="btn btn-blue" type="submit">⬇️ Tải 1 trang</button>
+    <button class="btn btn-ghost" type="button" id="btnMany">⬇️ Tải nhiều trang</button>
+    <button class="btn" type="button" id="btnManyZip">⬇️ Tải nhiều (ZIP)</button>
+    <script>
+    document.getElementById('btnManyZip').addEventListener('click', ()=>{
+      const from  = parseInt(document.getElementById('page_from').value || '1', 10);
+      const to    = parseInt(document.getElementById('page_to').value   || String(from), 10);
+      const limit = parseInt(document.getElementById('limit').value     || '40', 10);
+      if (isNaN(from) || isNaN(to) || from < 1 || to < from) { alert('Khoảng trang không hợp lệ'); return; }
+      window.location.href = `/airbnb/csv-batch?page_from=${from}&page_to=${to}&limit=${limit}`;
+    });
+    </script>
+
+
+    <!-- Preview URL để bấm mở trực tiếp -->
+    <span class="muted">| </span>
+    <a id="previewLink" class="nav-link" href="#" target="_blank">Xem URL trang hiện tại</a>
+  </div>
+</form>
+
+<div class="dl-grid" style="margin-top:0">
+  <label>
+    Từ trang:
+    <input id="page_from" type="number" min="1" value="1">
+  </label>
+  <label>
+    Đến trang:
+    <input id="page_to" type="number" min="1" value="5">
+  </label>
+</div>
+
+<p class="muted" style="margin:6px 0 18px">
+  “Tải 1 trang” mở tab mới tới Airbnb để tải (cần đang đăng nhập). “Tải nhiều trang” tải tuần tự bằng iframe ẩn (không bị chặn pop-up).
+</p>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  // build URL gốc Airbnb (để preview)
+  function buildAirbnbUrl(page, limit){
+    const offset = (page - 1) * limit;
+    const base = "https://www.airbnb.com.vn/api/v2/download_reservations";
+    const params = new URLSearchParams({
+      _format: "for_remy",
+      _limit: String(limit),
+      _offset: String(offset),
+      collection_strategy: "for_reservations_list",
+      sort_field: "start_date",
+      sort_order: "desc",
+      status: "accepted,request,canceled",
+      page: String(page),
+      key: "d306zoyjsyarp7ifhu67rjxn52tv0t20",
+      currency: "VND",
+      locale: "vi",
+    });
+    // giữ dấu phẩy trong 'status'
+    return `${base}?${params.toString().replaceAll('%2C', ',')}`;
+  }
+
+  function updatePreview(){
+    const page  = parseInt($('page_single').value || '1', 10);
+    const limit = parseInt($('limit').value || '40', 10);
+    $('previewLink').href = buildAirbnbUrl(page, limit);
+  }
+  $('page_single').addEventListener('input', updatePreview);
+  $('limit').addEventListener('input', updatePreview);
+  updatePreview();
+
+  // Tải nhiều trang bằng iframe ẩn (không pop-up)
+  $('btnMany').addEventListener('click', function(){
+    const from  = parseInt($('page_from').value || '1', 10);
+    const to    = parseInt($('page_to').value   || String(from), 10);
+    const limit = parseInt($('limit').value     || '40', 10);
+    if (isNaN(from) || isNaN(to) || from < 1 || to < from) {
+      alert('Khoảng trang không hợp lệ'); return;
+    }
+    let iframe = $('dl_iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'dl_iframe'; iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+    const delayMs = 1200; // giãn cách cho chắc
+    let p = from;
+    (function next(){
+      if (p > to) return;
+      // dùng route server để redirect (giữ cookie đăng nhập ở domain Airbnb)
+      iframe.src = `/airbnb/csv-link?page=${p}&limit=${limit}`;
+      p += 1;
+      setTimeout(next, delayMs);
+    })();
+  });
+})();
+</script>
+<!-- ===== /TẢI CSV TỪ AIRBNB ===== -->
+
+
+<!-- ===== /TẢI CSV AIRBNB ===== -->
+
+<!-- FORM UPLOAD CSV NHƯ CŨ -->
+<form action="/upload" method="post" enctype="multipart/form-data" style="margin:16px 0; display:flex; gap:10px; align-items:center">
+  <input type="file" name="files" multiple accept=".csv,text/csv">
+  <button class="btn" type="submit">Tải lên & Cập nhật</button>
+</form>
+<p class="muted" style="margin:6px 0">Mẹo: có thể chọn nhiều file CSV một lúc (giữ Ctrl/Shift khi chọn).</p>
+
+
+{% if msg %}
+  <p class="{{ 'muted' if success else '' }}">{{ msg }}</p>
+{% endif %}
+
+<p>
+  <a href="/bookings">Xem danh sách đặt phòng</a> ·
+  <a href="/reports/monthly">Báo cáo theo tháng</a>
+</p>
+
+{% endblock %}
