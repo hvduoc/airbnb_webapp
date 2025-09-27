@@ -1,0 +1,357 @@
+/* DangNhap CSS */
+.trang-dang-nhap {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--mau-chinh) 0%, #4f46e5 30%, #7c3aed 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.container-dang-nhap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 1200px;
+  width: 100%;
+  gap: 40px;
+  align-items: center;
+}
+
+/* Form Đăng Nhập */
+.form-dang-nhap {
+  background: var(--nen-the);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--vien);
+}
+
+.header-dang-nhap {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo-dang-nhap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.icon-brain {
+  font-size: 3rem;
+  background: linear-gradient(135deg, var(--mau-chinh), #4f46e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-dang-nhap h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--chu-chinh);
+  margin: 0;
+}
+
+.header-dang-nhap h2 {
+  color: var(--chu-chinh);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.header-dang-nhap p {
+  color: var(--chu-phu);
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Form Input */
+.form-nhap-lieu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nhom-input label {
+  display: block;
+  color: var(--chu-chinh);
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper svg {
+  position: absolute;
+  left: 16px;
+  color: var(--chu-phu);
+  z-index: 1;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border: 2px solid var(--vien);
+  border-radius: 12px;
+  background: var(--nen-input);
+  color: var(--chu-chinh);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--mau-chinh);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-wrapper input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nut-hien-mat-khau {
+  position: absolute;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--chu-phu);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.nut-hien-mat-khau:hover {
+  color: var(--mau-chinh);
+}
+
+.nut-hien-mat-khau:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Thông báo lỗi */
+.thong-bao-loi {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-left: 4px solid #dc2626;
+}
+
+/* Nút đăng nhập */
+.nut-dang-nhap {
+  width: 100%;
+  padding: 16px;
+  background: var(--mau-chinh);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.nut-dang-nhap:hover:not(:disabled) {
+  background: var(--mau-chinh-dam);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.nut-dang-nhap:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Thông tin demo */
+.thong-tin-demo {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--vien-nhe);
+}
+
+.thong-tin-demo h3 {
+  color: var(--chu-chinh);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  text-align: center;
+}
+
+.tai-khoan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tai-khoan-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--nen-phu);
+  border-radius: 8px;
+  border: 1px solid var(--vien-nhe);
+  font-size: 0.9rem;
+}
+
+.tai-khoan-item strong {
+  color: var(--mau-chinh);
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.vai-tro {
+  color: var(--chu-phu);
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: var(--vien-nhe);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Thông tin hệ thống */
+.thong-tin-he-thong {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card-thong-tin,
+.card-bao-mat {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.card-thong-tin h3,
+.card-bao-mat h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.card-thong-tin ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card-thong-tin li {
+  padding: 8px 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.card-bao-mat p {
+  opacity: 0.9;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.tinh-nang-bao-mat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tinh-nang-bao-mat span {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .container-dang-nhap {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    max-width: 600px;
+  }
+  
+  .thong-tin-he-thong {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .trang-dang-nhap {
+    padding: 16px;
+  }
+  
+  .form-dang-nhap {
+    padding: 32px 24px;
+  }
+  
+  .logo-dang-nhap {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .logo-dang-nhap h1 {
+    font-size: 2rem;
+  }
+  
+  .header-dang-nhap h2 {
+    font-size: 1.3rem;
+  }
+  
+  .card-thong-tin,
+  .card-bao-mat {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-dang-nhap {
+    padding: 24px 20px;
+  }
+  
+  .input-wrapper input {
+    padding: 14px 14px 14px 44px;
+  }
+  
+  .nut-dang-nhap {
+    padding: 14px;
+  }
+  
+  .tai-khoan-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

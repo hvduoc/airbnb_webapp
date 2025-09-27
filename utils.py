@@ -1,5 +1,8 @@
 import re
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
+from sqlmodel import Session, select
+from models import Booking, Property
+import requests
 
 # Vietnamese headers usually exported by Airbnb
 VN_HEADERS = {
@@ -51,9 +54,77 @@ def parse_vnd(val):
 # Mapping ngoại lệ (vd: Avalon D.3 -> AVA-403)
 UNIT_MAPPING = {
     "D.3": "403",
-    "E.3": "503",
+    "E.3": "503", 
     "D.1": "401",
 }
+
+# Global room mapping dictionary - can be updated from UI
+ROOM_MAPPING = {}
+
+def update_room_mapping(mapping_dict):
+    """Cập nhật room mapping từ UI"""
+    global ROOM_MAPPING
+    ROOM_MAPPING.clear()
+    ROOM_MAPPING.update(mapping_dict)
+
+def apply_room_mapping(listing_raw, room_mapping_data=None):
+    """Áp dụng room mapping nếu có"""
+    if not listing_raw:
+        return listing_raw
+        
+    # Use provided mapping data or global ROOM_MAPPING
+    mappings = {}
+    if room_mapping_data and 'mappings' in room_mapping_data:
+        mappings = room_mapping_data['mappings']
+    else:
+        mappings = ROOM_MAPPING
+        
+    if not mappings:
+        return listing_raw
+        
+    # Tìm exact match trước
+    if listing_raw in mappings:
+        return mappings[listing_raw]
+    
+    # Tìm partial match (case-insensitive)
+    listing_lower = listing_raw.lower()
+    for airbnb_name, internal_code in mappings.items():
+        if airbnb_name.lower() in listing_lower or listing_lower in airbnb_name.lower():
+            return internal_code
+            
+    return listing_raw
+
+def get_room_mapping_preview(df, room_mapping_data=None):
+    """Preview kết quả room mapping trước khi import CSV DataFrame"""
+    preview = []
+    
+    # Get listing column
+    lst_col = pick(df, "listing")
+    if not lst_col:
+        return preview
+    
+    # Get mappings from room_mapping_data
+    mappings = {}
+    if room_mapping_data and 'mappings' in room_mapping_data:
+        mappings = room_mapping_data['mappings']
+    
+    # Preview up to 10 rows
+    for index, row in df.head(10).iterrows():
+        original = str(row.get(lst_col, "")).strip()
+        if not original:
+            continue
+            
+        # Apply mapping if exists
+        mapped_name = mappings.get(original, original)
+        is_mapped = original != mapped_name
+        
+        preview.append({
+            'original': original,
+            'mapped_name': mapped_name,
+            'mapped': is_mapped
+        })
+    
+    return preview
 
 def parse_building_and_unit(listing: str):
     if not listing:
@@ -112,3 +183,58 @@ def pick(df, logical_key: str):
     n = VN_HEADERS.get(logical_key)
     return n if n in df.columns else None
 
+def get_properties_stats(month: str, building_id: int | None = None):
+    # Parse month to get start and end dates
+    start_date = datetime.strptime(month, "%Y-%m").date()
+    end_date = (start_date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+    with Session() as session:
+        # Query bookings within the month
+        bookings = session.exec(
+            select(Booking).where(
+                Booking.start_date <= end_date,
+                Booking.end_date >= start_date
+            )
+        ).all()
+
+        # Query properties
+        properties = session.exec(
+            select(Property).where(
+                Property.building_id == building_id if building_id else True
+            )
+        ).all()
+
+        # Calculate stats
+        stats = []
+        for prop in properties:
+            prop_bookings = [b for b in bookings if b.property_id == prop.id]
+            sold_nights = sum((min(b.end_date, end_date) - max(b.start_date, start_date)).days for b in prop_bookings)
+            available_nights = (end_date - start_date).days + 1  # Total nights in the month
+
+            stats.append({
+                "property_id": prop.id,
+                "available_nights": available_nights,
+                "sold_nights": sold_nights
+            })
+
+        return stats
+
+def fetch_buildings():
+    """Fetch building data from the API."""
+    try:
+        response = requests.get("http://127.0.0.1:8000/buildings")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching buildings: {e}")
+        return []
+
+def fetch_properties():
+    """Fetch property data from the API."""
+    try:
+        response = requests.get("http://127.0.0.1:8000/properties")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching properties: {e}")
+        return []

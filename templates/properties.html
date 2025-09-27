@@ -63,14 +63,10 @@
   </table>
 </div>
 
-<!-- Tab Phụ phí theo tháng (áp dụng cho từng property detail, ở đây demo block chung) -->
-{% for p in properties %}
+<!-- Tách riêng phần phụ phí ra khỏi properties.html -->
+<!-- Thay thế khối phụ phí bằng liên kết đến trang riêng -->
 <div class="container mt-5">
-  <h3>Phụ phí theo tháng – {{ p.property_name }}</h3>
-  <input type="hidden" id="ec-property-id" value="{{ p.id }}">
-
-  <!-- Include form block -->
-  {% include "extra_charges_form.html" %}
+  <h3>Phụ phí theo tháng</h3>
+  <p>Quản lý phụ phí cho từng căn hộ tại <a href="/property_charges">trang phụ phí</a>.</p>
 </div>
-{% endfor %}
 {% endblock %}

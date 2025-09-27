@@ -15,7 +15,13 @@ def init_db():
     from models import Building, Property, Channel, Booking, ImportLog
     SQLModel.metadata.create_all(engine)
 
-@contextmanager
 def get_session():
+    """FastAPI dependency to get database session"""
+    with Session(engine) as session:
+        yield session
+
+@contextmanager  
+def get_session_context():
+    """Context manager for manual session handling"""
     with Session(engine) as session:
         yield session

@@ -161,17 +161,17 @@
 <div class="page-header">
   <h1>Bảng điều khiển theo tháng</h1>
   <div class="header-actions">
-    <a href="/reports/monthly/export?start={{ start.strftime('%Y-%m-%d') if start else '' }}&end={{ end.strftime('%Y-%m-%d') if end else '' }}&group_by={{ group_by }}&fmt=xlsx" class="btn btn-green">📄 Xuất Excel</a>
+    <a href="/reports/monthly/export?start={{ start if start else '' }}&end={{ end if end else '' }}&group_by={{ group_by }}&fmt=xlsx" class="btn btn-green">📄 Xuất Excel</a>
   </div>
 </div>
 
 <div class="filter-card" style="margin-bottom: 24px;">
   <form method="get" action="/reports/monthly" class="filter-grid">
     <label>Từ:
-      <input type="date" name="start" value="{{ start.strftime('%Y-%m-%d') if start else '' }}">
+      <input type="date" name="start" value="{{ start if start else '' }}">
     </label>
     <label>Đến:
-      <input type="date" name="end" value="{{ end.strftime('%Y-%m-%d') if end else '' }}">
+      <input type="date" name="end" value="{{ end if end else '' }}">
     </label>
     <label>Nhóm theo:      
       <select name="group_by" class="form-select">
@@ -285,8 +285,8 @@
       </table>
 
       {% if pagination %}
-        {% set base = '/reports/monthly?start=' ~ (start.strftime('%Y-%m-%d') if start else '') 
-                      ~ '&end=' ~ (end.strftime('%Y-%m-%d') if end else '') 
+        {% set base = '/reports/monthly?start=' ~ (start if start else '') 
+                      ~ '&end=' ~ (end if end else '') 
                       ~ '&group_by=' ~ group_by 
                       ~ '&page_size=' ~ pagination.page_size %}
         <div class="pager">
@@ -452,20 +452,28 @@ document.querySelectorAll("#chartToggle .btn").forEach(btn => {
 });
 
 
-// --- Channel pie ---
-const ctxPie = document.getElementById('channelPieChart').getContext('2d');
-const pieChart = new Chart(ctxPie, {
-type: 'doughnut',
-data: {
-labels: chartData.channel_labels,
-datasets: [{ data: chartData.channel_revenue }]
-},
-options: {
-responsive: true,
-maintainAspectRatio: false,
-plugins: { legend: { position: 'bottom' } }
+// --- Channel pie chart ---
+const ctxPie = document.getElementById('channelPieChart');
+if (ctxPie) {
+    const pieChart = new Chart(ctxPie.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: chartData.channel_labels,
+            datasets: [{ 
+                data: chartData.channel_revenue,
+                backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { position: 'bottom' }
+            }
+        }
+    });
 }
-});
 
 
 // --- Toggle metric ---

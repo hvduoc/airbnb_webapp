@@ -1,0 +1,38 @@
+{
+  "project": {
+    "name": "Airbnb Revenue WebApp",
+    "version": "1.0.0",
+    "domain": "PMS",
+    "status": "Production Ready",
+    "last_updated": "2025-09-27",
+    "description": "FastAPI-based web application for managing Airbnb bookings and revenue reports"
+  },
+  "active_tasks": [
+    {
+      "id": "MAINT-001",
+      "title": "Database Migration Schema Updates",
+      "description": "Maintain and update database schema cho expense categories và extra charges",
+      "status": "In Progress", 
+      "priority": "Medium",
+      "assigned_to": "Development Team",
+      "due_date": "2025-10-15",
+      "progress": "60%"
+    },
+    {
+      "id": "FEAT-002", 
+      "title": "Enhanced Vietnamese CSV Support",
+      "description": "Cải thiện parsing Vietnamese headers trong CSV files từ Airbnb",
+      "status": "Todo",
+      "priority": "Low", 
+      "assigned_to": "Development Team",
+      "due_date": "2025-11-01",
+      "progress": "0%"
+    }
+  ],
+  "metrics": {
+    "total_tasks": 5,
+    "completed_tasks": 3,
+    "in_progress_tasks": 1,
+    "completion_percentage": 75
+  }
+}

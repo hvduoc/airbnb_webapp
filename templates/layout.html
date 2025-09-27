@@ -159,16 +159,26 @@ table td.nowrap {
         <span class="brand">🏨 OceanSight</span>
 
         <a class="nav-link {{ 'is-active' if path=='/' else '' }}" href="/">🏠 Trang chủ</a>
+        <!-- Brain Dashboard - Developer Only Access (Hidden from client UI) -->
         <a class="nav-link {{ 'is-active' if path.startswith('/bookings') else '' }}" href="/bookings">📑 Đặt phòng</a>
         <a class="nav-link {{ 'is-active' if path.startswith('/reports') else '' }}" href="/reports/monthly">📊 Báo cáo</a>  
         <a class="nav-link {{ 'is-active' if path.startswith('/salespeople') else '' }}" href="/salespeople">👥 Nhân viên Sale</a>
         <a class="nav-link {{ 'is-active' if path.startswith('/calendar') else '' }}" href="/calendar">📅 Lịch Trống</a>
+
 
         <div class="nav-dropdown">
           <a class="nav-link {{ 'is-active' if path.startswith('/buildings') or path.startswith('/properties') else '' }}" href="#">🏢 Tòa nhà & Căn hộ ▾</a>
           <div class="dropdown-menu">
             <a class="dropdown-item" href="/buildings">📦 Tòa nhà</a>
             <a class="dropdown-item" href="/properties">🏠 Căn hộ</a>
+            <a class="dropdown-item" href="/property_charges">💸 Phụ phí căn hộ</a>
+          </div>
+        </div>
+
+        <div class="nav-dropdown">
+          <a class="nav-link {{ 'is-active' if path.startswith('/expenses') else '' }}" href="#">💰 Sổ chi ▾</a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="/expenses/ledger">📒 Sổ chi</a>
           </div>
         </div>
 

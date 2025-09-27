@@ -1,0 +1,97 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--vien);
+  border-radius: 50%;
+  border-top-color: var(--mau-chinh);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  color: var(--chu-phu);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Existing styles... */
+.app {
+  display: flex;
+  min-height: 100vh;
+  background: var(--nen-chinh);
+}
+
+.nut-menu-mobile {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  background: var(--nen-the);
+  border: 1px solid var(--vien);
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--chu-chinh);
+  cursor: pointer;
+  display: none;
+  box-shadow: var(--bong-vua);
+  transition: all 0.2s ease;
+}
+
+.nut-menu-mobile:hover {
+  background: var(--nen-hover);
+  border-color: var(--mau-chinh);
+}
+
+.noi-dung-chinh {
+  flex: 1;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--nen-chinh);
+  padding: 2rem;
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Mobile responsive */
+@media (max-width: 1023px) {
+  .nut-menu-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .noi-dung-chinh {
+    margin-left: 0;
+    padding: 4rem 1rem 1rem 1rem;
+  }
+}
+
+/* Scrollbar styling */
+.noi-dung-chinh::-webkit-scrollbar {
+  width: 8px;
+}
+
+.noi-dung-chinh::-webkit-scrollbar-track {
+  background: var(--nen-phu);
+}
+
+.noi-dung-chinh::-webkit-scrollbar-thumb {
+  background: var(--vien-dam);
+  border-radius: 4px;
+}
+
+.noi-dung-chinh::-webkit-scrollbar-thumb:hover {
+  background: var(--mau-chinh);
+}

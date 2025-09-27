@@ -1,0 +1,22 @@
+{
+  "project": {
+    "name": "Auto Test Project",
+    "version": "1.0.0",
+    "domain": "Testing",
+    "status": "Development",
+    "last_updated": "2025-09-27"
+  },
+  "active_tasks": [
+    {
+      "id": "SETUP-001",
+      "title": "Project Setup Complete",
+      "status": "Done",
+      "priority": "High",
+      "progress": "100%"
+    }
+  ],
+  "metrics": {
+    "total_tasks": 1,
+    "completed_tasks": 1
+  }
+}

@@ -1,0 +1,333 @@
+/* TrinhXemMarkdown CSS */
+.trinh-xem-markdown {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header File */
+.header-markdown {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 24px;
+  background: var(--nen-the);
+  border: 1px solid var(--vien);
+  border-radius: 16px;
+  box-shadow: var(--bong-nhe);
+}
+
+.thong-tin-file {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.thong-tin-file svg {
+  color: var(--mau-chinh);
+  background: var(--nen-phu);
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: var(--bong-nhe);
+}
+
+.thong-tin-file h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--chu-chinh);
+  margin: 0 0 4px 0;
+}
+
+.thong-tin-file p {
+  color: var(--chu-phu);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.link-nguon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mau-chinh);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 16px;
+  border: 1px solid var(--mau-chinh);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.link-nguon:hover {
+  background: var(--mau-chinh);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--bong-vua);
+}
+
+/* Wrapper cho nội dung */
+.noi-dung-wrapper {
+  background: var(--nen-the);
+  border: 1px solid var(--vien);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: var(--bong-nhe);
+}
+
+/* Markdown Content Styling */
+.noi-dung-markdown {
+  line-height: 1.7;
+  color: var(--chu-chinh);
+  max-width: none;
+}
+
+.noi-dung-markdown h1 {
+  color: var(--mau-chinh);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--vien);
+}
+
+.noi-dung-markdown h2 {
+  color: var(--mau-chinh-dam);
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--vien-nhe);
+}
+
+.noi-dung-markdown h3 {
+  color: var(--chu-chinh);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.8rem 0;
+}
+
+.noi-dung-markdown h4 {
+  color: var(--chu-chinh);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.2rem 0 0.6rem 0;
+}
+
+.noi-dung-markdown p {
+  margin: 0 0 1.2rem 0;
+  color: var(--chu-chinh);
+  line-height: 1.7;
+}
+
+.noi-dung-markdown ul,
+.noi-dung-markdown ol {
+  margin: 0 0 1.2rem 0;
+  padding-left: 2rem;
+}
+
+.noi-dung-markdown li {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.noi-dung-markdown code {
+  background: var(--nen-phu);
+  color: var(--mau-chinh-dam);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 0.9em;
+  border: 1px solid var(--vien-nhe);
+}
+
+.noi-dung-markdown pre {
+  background: var(--nen-phu);
+  border: 1px solid var(--vien);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+.noi-dung-markdown pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--chu-chinh);
+  font-size: 0.9rem;
+}
+
+.noi-dung-markdown blockquote {
+  background: linear-gradient(135deg, var(--nen-phu) 0%, var(--vien-nhe) 100%);
+  border-left: 4px solid var(--mau-chinh);
+  margin: 1.5rem 0;
+  padding: 1.5rem 2rem;
+  border-radius: 0 12px 12px 0;
+  position: relative;
+}
+
+.noi-dung-markdown blockquote::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  font-size: 3rem;
+  color: var(--mau-chinh);
+  opacity: 0.3;
+}
+
+.noi-dung-markdown blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.noi-dung-markdown a {
+  color: var(--mau-chinh);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.noi-dung-markdown a:hover {
+  border-bottom-color: var(--mau-chinh);
+}
+
+.noi-dung-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 1px solid var(--vien);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--bong-nhe);
+}
+
+.noi-dung-markdown th {
+  background: var(--nen-phu);
+  color: var(--chu-chinh);
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--vien);
+}
+
+.noi-dung-markdown td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--vien-nhe);
+}
+
+.noi-dung-markdown tr:last-child td {
+  border-bottom: none;
+}
+
+.noi-dung-markdown tr:hover {
+  background: var(--nen-hover);
+}
+
+/* Strong và emphasis */
+.noi-dung-markdown strong {
+  color: var(--chu-chinh);
+  font-weight: 700;
+}
+
+.noi-dung-markdown em {
+  color: var(--chu-phu);
+  font-style: italic;
+}
+
+/* Horizontal rule */
+.noi-dung-markdown hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--vien), transparent);
+  margin: 2rem 0;
+}
+
+/* Loading và Error States */
+.dang-tai {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: var(--chu-phu);
+  font-size: 1.2rem;
+}
+
+.loi-tai-file {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--chu-phu);
+}
+
+.loi-tai-file h2 {
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .trinh-xem-markdown {
+    padding: 16px;
+  }
+  
+  .header-markdown {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+  
+  .thong-tin-file {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .thong-tin-file h1 {
+    font-size: 1.5rem;
+  }
+  
+  .noi-dung-wrapper {
+    padding: 24px;
+  }
+  
+  .noi-dung-markdown h1 {
+    font-size: 2rem;
+  }
+  
+  .noi-dung-markdown h2 {
+    font-size: 1.5rem;
+  }
+  
+  .noi-dung-markdown pre {
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .noi-dung-markdown table {
+    font-size: 0.9rem;
+  }
+  
+  .noi-dung-markdown th,
+  .noi-dung-markdown td {
+    padding: 0.6rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .noi-dung-wrapper {
+    padding: 16px;
+  }
+  
+  .noi-dung-markdown ul,
+  .noi-dung-markdown ol {
+    padding-left: 1.5rem;
+  }
+  
+  .noi-dung-markdown blockquote {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+}
