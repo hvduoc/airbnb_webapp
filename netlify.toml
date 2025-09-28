@@ -1,7 +1,7 @@
 [build]
   base = "brain-ui"
   command = "npm run build"
-  publish = "brain-ui/dist"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
