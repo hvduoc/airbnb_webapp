@@ -4,6 +4,7 @@ import ThanhDieuHuong from './components/ThanhDieuHuong'
 import BangDieuKhien from './components/BangDieuKhien'
 import TrinhXemMarkdown from './components/TrinhXemMarkdown'
 import TrinhXemTasks from './components/TrinhXemTasks'
+import BangPhanTich from './components/BangPhanTich'
 import DangNhap from './components/DangNhap'
 import ThongBaoSync from './components/ThongBaoSync'
 import { Menu, X } from 'lucide-react'
@@ -77,6 +78,7 @@ function App() {
       <main className="noi-dung-chinh">
         <Routes>
           <Route path="/" element={<BangDieuKhien />} />
+          <Route path="/analytics" element={<BangPhanTich />} />
           <Route path="/scope" element={<TrinhXemMarkdown file="SCOPE.md" />} />
           <Route path="/session-context" element={<TrinhXemMarkdown file="SESSION_CONTEXT.md" />} />
           <Route path="/context-index" element={<TrinhXemMarkdown file="context/CONTEXT_INDEX.md" />} />

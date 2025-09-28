@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, FileText, CheckSquare, Map, Book, Settings, ExternalLink, ChevronDown, ChevronRight, LogOut, User } from 'lucide-react'
+import { Home, FileText, CheckSquare, Map, Book, Settings, ExternalLink, ChevronDown, ChevronRight, LogOut, User, BarChart3 } from 'lucide-react'
 import './ThanhDieuHuong.css'
 
 function ThanhDieuHuong({ isOpen, onClose, onDangXuat }) {
@@ -44,6 +44,12 @@ function ThanhDieuHuong({ isOpen, onClose, onDangXuat }) {
           nhan: 'Bảng Điều Khiển',
           icon: <Home size={18} />,
           moTa: 'Trang chủ và tổng quan dự án'
+        },
+        {
+          duongDan: '/analytics',
+          nhan: 'Bảng Phân Tích',
+          icon: <BarChart3 size={18} />,
+          moTa: 'Dashboard analytics và báo cáo'
         }
       ]
     },

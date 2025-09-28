@@ -1,369 +1,242 @@
-"""
-GitHub Webhook Listener for Brain Data Sync
-Tự động đồng bộ file .brain/ từ GitHub repository khi có push events
-"""
+# GitHub Webhook Listener - Home Server
 
-import os
-import json
-import hmac
-import hashlib
-import subprocess
-import shutil
-import logging
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
-
-from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import hashlib
+import hmac
+import json
+import os
+from datetime import datetime
+import subprocess
+import sys
 
-# Cấu hình logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('webhook_sync.log'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+app = FastAPI(title="Airbnb GitHub Webhook Listener")
 
-app = FastAPI(title="Brain Data Webhook Sync", version="1.0.0")
+# Configuration
+WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET', 'your-secret-here')
+BRAIN_DIR = '.brain'
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Trong production nên giới hạn origins cụ thể
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Cấu hình
-WEBHOOK_SECRET = os.getenv('GITHUB_WEBHOOK_SECRET', 'your-secret-key-here')
-REPO_URL = os.getenv('REPO_URL', 'https://github.com/your-org/airbnb-webapp.git')
-TEMP_DIR = Path('./temp_sync')
-BRAIN_SOURCE = Path('./temp_sync/.brain')
-BRAIN_DEST = Path('./brain-ui/public/brain')
-SYNC_LOG_FILE = Path('./sync_history.json')
-
-class SyncLog(BaseModel):
-    timestamp: str
-    commit_sha: str
-    commit_message: str
-    author: str
-    files_changed: list
-    status: str
-    error: Optional[str] = None
-
-def verify_signature(payload_body: bytes, signature: str) -> bool:
-    """Xác thực chữ ký GitHub webhook"""
+def verify_signature(payload: bytes, signature: str) -> bool:
+    """Verify GitHub webhook signature"""
     if not signature:
         return False
     
-    expected_signature = hmac.new(
-        WEBHOOK_SECRET.encode('utf-8'),
-        payload_body,
-        hashlib.sha256
-    ).hexdigest()
-    
-    expected_signature = f"sha256={expected_signature}"
-    
-    return hmac.compare_digest(expected_signature, signature)
-
-def log_sync_event(log_entry: SyncLog):
-    """Ghi log sự kiện đồng bộ"""
-    logs = []
-    if SYNC_LOG_FILE.exists():
-        try:
-            with open(SYNC_LOG_FILE, 'r', encoding='utf-8') as f:
-                logs = json.load(f)
-        except:
-            logs = []
-    
-    logs.append(log_entry.dict())
-    
-    # Chỉ giữ lại 50 log gần nhất
-    if len(logs) > 50:
-        logs = logs[-50:]
-    
-    with open(SYNC_LOG_FILE, 'w', encoding='utf-8') as f:
-        json.dump(logs, f, ensure_ascii=False, indent=2)
-
-def clone_or_pull_repo() -> bool:
-    """Clone hoặc pull repository"""
     try:
-        if TEMP_DIR.exists():
-            # Pull nếu đã tồn tại
-            logger.info("Pulling latest changes...")
-            result = subprocess.run(
-                ['git', 'pull', 'origin', 'main'],
-                cwd=TEMP_DIR,
-                capture_output=True,
-                text=True,
-                timeout=60
-            )
-            if result.returncode != 0:
-                logger.error(f"Git pull failed: {result.stderr}")
-                # Thử xóa và clone lại
-                shutil.rmtree(TEMP_DIR)
-                return clone_repo()
-        else:
-            return clone_repo()
+        sha_name, signature = signature.split('=')
+    except ValueError:
+        return False
+    
+    if sha_name != 'sha256':
+        return False
+    
+    mac = hmac.new(WEBHOOK_SECRET.encode(), payload, hashlib.sha256)
+    expected_signature = mac.hexdigest()
+    
+    return hmac.compare_digest(signature, expected_signature)
+
+def update_brain_context(event_data: dict):
+    """Update brain system with GitHub event data"""
+    try:
+        # Prepare context update
+        update_info = {
+            "timestamp": datetime.now().isoformat(),
+            "event": event_data.get("action", "push"),
+            "repository": event_data.get("repository", {}).get("name", "unknown"),
+            "branch": event_data.get("ref", "").replace("refs/heads/", ""),
+            "commits": []
+        }
         
-        return result.returncode == 0
+        # Extract commit information
+        if "commits" in event_data:
+            for commit in event_data["commits"]:
+                update_info["commits"].append({
+                    "id": commit.get("id", "")[:8],
+                    "message": commit.get("message", ""),
+                    "author": commit.get("author", {}).get("name", ""),
+                    "modified": commit.get("modified", []),
+                    "added": commit.get("added", []),
+                    "removed": commit.get("removed", [])
+                })
+        
+        # Save to brain system
+        brain_file = os.path.join(BRAIN_DIR, "GITHUB_EVENTS.json")
+        
+        # Load existing events
+        events = []
+        if os.path.exists(brain_file):
+            try:
+                with open(brain_file, 'r', encoding='utf-8') as f:
+                    events = json.load(f)
+            except:
+                events = []
+        
+        # Add new event
+        events.insert(0, update_info)  # Latest first
+        
+        # Keep only last 50 events
+        events = events[:50]
+        
+        # Save updated events
+        os.makedirs(BRAIN_DIR, exist_ok=True)
+        with open(brain_file, 'w', encoding='utf-8') as f:
+            json.dump(events, f, indent=2, ensure_ascii=False)
+        
+        # Update session context
+        update_session_context(update_info)
+        
+        return True
         
     except Exception as e:
-        logger.error(f"Error in clone_or_pull_repo: {e}")
+        print(f"Error updating brain context: {e}")
         return False
 
-def clone_repo() -> bool:
-    """Clone repository từ đầu"""
+def update_session_context(update_info: dict):
+    """Update SESSION_CONTEXT.md with latest changes"""
     try:
-        logger.info(f"Cloning repository {REPO_URL}...")
-        result = subprocess.run(
-            ['git', 'clone', REPO_URL, str(TEMP_DIR)],
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
+        session_file = os.path.join(BRAIN_DIR, "SESSION_CONTEXT.md")
         
-        if result.returncode == 0:
-            logger.info("Repository cloned successfully")
-            return True
+        # Create session update entry
+        session_update = f"""
+## 🔄 GitHub Update - {update_info['timestamp'][:19]}
+- **Repository**: {update_info['repository']}
+- **Branch**: {update_info['branch']}
+- **Event**: {update_info['event']}
+
+### 📝 Changes:
+"""
+        
+        for commit in update_info.get('commits', []):
+            session_update += f"""
+**Commit {commit['id']}**: {commit['message']}
+- Author: {commit['author']}
+- Modified: {len(commit['modified'])} files
+- Added: {len(commit['added'])} files  
+- Removed: {len(commit['removed'])} files
+"""
+        
+        # Append to session context
+        if os.path.exists(session_file):
+            with open(session_file, 'a', encoding='utf-8') as f:
+                f.write(session_update)
         else:
-            logger.error(f"Git clone failed: {result.stderr}")
-            return False
-            
-    except Exception as e:
-        logger.error(f"Error cloning repository: {e}")
-        return False
-
-def sync_brain_files() -> tuple[bool, str]:
-    """Đồng bộ file .brain/ từ temp sang public/brain/"""
-    try:
-        if not BRAIN_SOURCE.exists():
-            return False, f"Source .brain directory not found: {BRAIN_SOURCE}"
-        
-        # Tạo thư mục đích nếu chưa có
-        BRAIN_DEST.mkdir(parents=True, exist_ok=True)
-        
-        # Copy toàn bộ nội dung .brain/
-        files_synced = []
-        for item in BRAIN_SOURCE.rglob('*'):
-            if item.is_file():
-                # Tính relative path
-                relative_path = item.relative_to(BRAIN_SOURCE)
-                dest_file = BRAIN_DEST / relative_path
+            with open(session_file, 'w', encoding='utf-8') as f:
+                f.write(f"# Session Context - Auto Updated\n{session_update}")
                 
-                # Tạo thư mục cha nếu cần
-                dest_file.parent.mkdir(parents=True, exist_ok=True)
-                
-                # Copy file
-                shutil.copy2(item, dest_file)
-                files_synced.append(str(relative_path))
-                
-        logger.info(f"Synced {len(files_synced)} files to {BRAIN_DEST}")
-        return True, f"Synced {len(files_synced)} files: {', '.join(files_synced[:5])}"
-        
     except Exception as e:
-        error_msg = f"Error syncing brain files: {e}"
-        logger.error(error_msg)
-        return False, error_msg
-
-async def process_webhook_sync(payload: dict) -> dict:
-    """Xử lý đồng bộ trong background"""
-    try:
-        # Lấy thông tin commit
-        commits = payload.get('commits', [])
-        if not commits:
-            return {"status": "skipped", "reason": "No commits found"}
-        
-        latest_commit = commits[-1]
-        commit_sha = latest_commit.get('id', 'unknown')
-        commit_message = latest_commit.get('message', 'No message')
-        author = latest_commit.get('author', {}).get('name', 'Unknown')
-        
-        # Kiểm tra xem có thay đổi file .brain/ không
-        brain_files_changed = []
-        for commit in commits:
-            for file_list in ['added', 'modified', 'removed']:
-                files = commit.get(file_list, [])
-                brain_files = [f for f in files if f.startswith('.brain/')]
-                brain_files_changed.extend(brain_files)
-        
-        if not brain_files_changed:
-            logger.info("No .brain/ files changed, skipping sync")
-            return {
-                "status": "skipped",
-                "reason": "No .brain/ files changed",
-                "commit": commit_sha[:8]
-            }
-        
-        logger.info(f"Brain files changed: {brain_files_changed}")
-        
-        # Bước 1: Clone/Pull repository
-        if not clone_or_pull_repo():
-            raise Exception("Failed to clone/pull repository")
-        
-        # Bước 2: Sync brain files
-        success, message = sync_brain_files()
-        if not success:
-            raise Exception(message)
-        
-        # Ghi log thành công
-        log_entry = SyncLog(
-            timestamp=datetime.now().isoformat(),
-            commit_sha=commit_sha,
-            commit_message=commit_message,
-            author=author,
-            files_changed=brain_files_changed,
-            status="success"
-        )
-        log_sync_event(log_entry)
-        
-        logger.info(f"Sync completed successfully for commit {commit_sha[:8]}")
-        
-        return {
-            "status": "success",
-            "commit": commit_sha[:8],
-            "message": message,
-            "files_changed": brain_files_changed
-        }
-        
-    except Exception as e:
-        error_msg = str(e)
-        logger.error(f"Sync failed: {error_msg}")
-        
-        # Ghi log lỗi
-        if 'latest_commit' in locals():
-            log_entry = SyncLog(
-                timestamp=datetime.now().isoformat(),
-                commit_sha=commit_sha,
-                commit_message=commit_message,
-                author=author,
-                files_changed=brain_files_changed if 'brain_files_changed' in locals() else [],
-                status="error",
-                error=error_msg
-            )
-            log_sync_event(log_entry)
-        
-        return {
-            "status": "error",
-            "error": error_msg
-        }
-
-@app.post("/api/webhook")
-async def github_webhook(request: Request, background_tasks: BackgroundTasks):
-    """GitHub webhook endpoint"""
-    
-    # Đọc payload
-    payload_body = await request.body()
-    
-    # Xác thực chữ ký
-    signature = request.headers.get('X-Hub-Signature-256')
-    if not verify_signature(payload_body, signature):
-        logger.warning("Invalid webhook signature")
-        raise HTTPException(status_code=403, detail="Invalid signature")
-    
-    # Parse payload
-    try:
-        payload = json.loads(payload_body)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON payload")
-    
-    # Kiểm tra event type
-    event_type = request.headers.get('X-GitHub-Event')
-    if event_type != 'push':
-        return {"message": f"Ignored event: {event_type}"}
-    
-    # Kiểm tra branch (chỉ xử lý main/master)
-    ref = payload.get('ref', '')
-    if not (ref.endswith('/main') or ref.endswith('/master')):
-        return {"message": f"Ignored branch: {ref}"}
-    
-    logger.info(f"Received push event for {ref}")
-    
-    # Xử lý sync trong background
-    background_tasks.add_task(process_webhook_sync, payload)
-    
-    return {
-        "message": "Webhook received, processing sync in background",
-        "event": event_type,
-        "ref": ref
-    }
-
-@app.get("/api/sync/status")
-async def get_sync_status():
-    """Lấy trạng thái đồng bộ gần nhất"""
-    if not SYNC_LOG_FILE.exists():
-        return {"message": "No sync history found"}
-    
-    try:
-        with open(SYNC_LOG_FILE, 'r', encoding='utf-8') as f:
-            logs = json.load(f)
-        
-        if not logs:
-            return {"message": "No sync history found"}
-        
-        latest_log = logs[-1]
-        return {
-            "latest_sync": latest_log,
-            "brain_dest_exists": BRAIN_DEST.exists(),
-            "total_syncs": len(logs)
-        }
-        
-    except Exception as e:
-        return {"error": str(e)}
-
-@app.get("/api/sync/history")
-async def get_sync_history():
-    """Lấy lịch sử đồng bộ"""
-    if not SYNC_LOG_FILE.exists():
-        return {"history": []}
-    
-    try:
-        with open(SYNC_LOG_FILE, 'r', encoding='utf-8') as f:
-            logs = json.load(f)
-        
-        return {"history": logs[-20:]}  # 20 log gần nhất
-        
-    except Exception as e:
-        return {"error": str(e)}
-
-@app.post("/api/sync/manual")
-async def manual_sync(background_tasks: BackgroundTasks):
-    """Trigger đồng bộ thủ công"""
-    logger.info("Manual sync triggered")
-    
-    # Tạo payload giả lập
-    fake_payload = {
-        "commits": [{
-            "id": "manual-sync-" + datetime.now().strftime("%Y%m%d-%H%M%S"),
-            "message": "Manual sync triggered",
-            "author": {"name": "Manual Trigger"},
-            "added": [".brain/manual_sync"],
-            "modified": [],
-            "removed": []
-        }]
-    }
-    
-    background_tasks.add_task(process_webhook_sync, fake_payload)
-    
-    return {"message": "Manual sync started"}
+        print(f"Error updating session context: {e}")
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
+    return {"message": "Airbnb GitHub Webhook Listener - Home Server", "status": "running"}
+
+@app.get("/health")
+async def health():
     return {
-        "service": "Brain Data Webhook Sync",
-        "status": "running",
-        "brain_dest": str(BRAIN_DEST),
-        "brain_dest_exists": BRAIN_DEST.exists()
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "brain_dir": os.path.exists(BRAIN_DIR),
+        "webhook_secret": "configured" if WEBHOOK_SECRET != 'your-secret-here' else "default"
     }
+
+@app.post("/webhook/github")
+async def github_webhook(request: Request):
+    try:
+        # Get payload and signature
+        payload = await request.body()
+        signature = request.headers.get('X-Hub-Signature-256', '')
+        event_type = request.headers.get('X-GitHub-Event', '')
+        
+        # Verify signature
+        if not verify_signature(payload, signature):
+            raise HTTPException(status_code=403, detail="Invalid signature")
+        
+        # Parse payload
+        try:
+            event_data = json.loads(payload.decode('utf-8'))
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        
+        # Process the webhook
+        print(f"📨 GitHub Event: {event_type}")
+        print(f"📂 Repository: {event_data.get('repository', {}).get('name', 'unknown')}")
+        
+        # Update brain system
+        success = update_brain_context(event_data)
+        
+        response_data = {
+            "status": "success",
+            "event_type": event_type,
+            "repository": event_data.get('repository', {}).get('name'),
+            "processed": datetime.now().isoformat(),
+            "brain_updated": success
+        }
+        
+        # Log for debugging
+        print(f"✅ Webhook processed: {json.dumps(response_data, indent=2)}")
+        
+        return JSONResponse(content=response_data, status_code=200)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Webhook error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@app.get("/brain/status")
+async def brain_status():
+    """Check brain system status"""
+    try:
+        status = {
+            "brain_dir_exists": os.path.exists(BRAIN_DIR),
+            "files": []
+        }
+        
+        if os.path.exists(BRAIN_DIR):
+            for file in os.listdir(BRAIN_DIR):
+                file_path = os.path.join(BRAIN_DIR, file)
+                if os.path.isfile(file_path):
+                    status["files"].append({
+                        "name": file,
+                        "size": os.path.getsize(file_path),
+                        "modified": datetime.fromtimestamp(os.path.getmtime(file_path)).isoformat()
+                    })
+        
+        return status
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/brain/events")
+async def get_brain_events():
+    """Get recent GitHub events from brain system"""
+    try:
+        brain_file = os.path.join(BRAIN_DIR, "GITHUB_EVENTS.json")
+        
+        if not os.path.exists(brain_file):
+            return {"events": [], "count": 0}
+        
+        with open(brain_file, 'r', encoding='utf-8') as f:
+            events = json.load(f)
+        
+        return {
+            "events": events[:10],  # Return last 10 events
+            "count": len(events),
+            "last_updated": events[0]["timestamp"] if events else None
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    
+    # Set webhook secret from environment or prompt
+    if WEBHOOK_SECRET == 'your-secret-here':
+        print("⚠️  WARNING: Using default webhook secret!")
+        print("Set WEBHOOK_SECRET environment variable for security")
+    
+    print(f"🚀 Starting webhook listener on http://0.0.0.0:8080")
+    print(f"📁 Brain directory: {os.path.abspath(BRAIN_DIR)}")
+    print(f"🔗 GitHub webhook URL: http://webhook.xemgiadat.com/webhook/github")
+    
+    uvicorn.run("webhook_listener:app", host="0.0.0.0", port=8080, reload=True)

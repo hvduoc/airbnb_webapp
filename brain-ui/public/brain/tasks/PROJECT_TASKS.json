@@ -1,0 +1,146 @@
+[
+  {
+    "id": "PROJ-001",
+    "title": "Triển khai hệ thống theo dõi phân bổ phòng",
+    "title_en": "Room Assignment Tracking System",
+    "status": "completed",
+    "completed_date": "2025-09-26",
+    "priority": "medium",
+    "category": "feature",
+    "phase": "Phase 0 - Legacy Completions",
+    "completion_summary": "✅ HOÀN THÀNH: Database table, API endpoints, Property dropdowns, Revenue attribution, Production testing",
+    "achievement": "🏠 Room assignment system with full property tracking"
+  },
+  {
+    "id": "PROJ-002", 
+    "title": "Sửa lỗi AsyncIOScheduler startup conflicts",
+    "title_en": "Fix AsyncIOScheduler Startup Issues",
+    "status": "completed",
+    "completed_date": "2025-09-26",
+    "priority": "medium",
+    "category": "bugfix", 
+    "phase": "Phase 0 - Legacy Completions",
+    "completion_summary": "✅ HOÀN THÀNH: Sửa xung đột scheduler với FastAPI lifespan events",
+    "achievement": "⚡ Stable server startup without exit code 1"
+  },
+  {
+    "id": "PROJ-003",
+    "title": "Enhanced Airbnb CSV Import với Room Mapping",
+    "title_en": "Enhanced CSV Import with Room Mapping",
+    "status": "completed", 
+    "completed_date": "2025-09-26",
+    "priority": "high",
+    "category": "feature",
+    "phase": "Phase 0 - Legacy Completions",
+    "completion_summary": "✅ HOÀN THÀNH: Preview function, Upload endpoint, Vietnamese statistics, Authentication fix",
+    "achievement": "📊 Complete CSV import with room mapping and Vietnamese stats (17 new, 23 updated records)",
+    "technical_details": {
+      "files": ["utils.py", "main.py", "templates/upload.html", "services/upload_service.py"],
+      "key_functions": ["get_room_mapping_preview()", "apply_room_mapping()"],
+      "endpoints": ["/api/csv/preview-json", "/upload"],
+      "fixes_applied": [
+        "FastAPI dependency injection for authentication",
+        "CSV parsing with quotes for comma-containing room names", 
+        "Vietnamese statistics display in upload results",
+        "Terminal separation for server vs testing"
+      ]
+    }
+  },
+  {
+    "id": "PROJ-004",
+    "title": "JWT Authentication Foundation System", 
+    "title_en": "Complete Authentication Foundation",
+    "status": "completed",
+    "completed_date": "2025-09-26", 
+    "priority": "critical",
+    "category": "architecture",
+    "phase": "Phase 1 - Foundation",
+    "completion_summary": "✅ HOÀN THÀNH: JWT authentication system với role-based access control",
+    "achievement": "🔐 Complete authentication foundation with user roles and permissions",
+    "estimated_hours": 30,
+    "actual_hours": 4
+  },
+  {
+    "id": "PROJ-005",
+    "title": "AI Context + Documentation System",
+    "title_en": "Complete AI Development Workflow", 
+    "status": "completed",
+    "completed_date": "2025-09-23",
+    "priority": "high",
+    "category": "infrastructure", 
+    "phase": "Phase 0 - Setup",
+    "completion_summary": "✅ HOÀN THÀNH: README.md + AI_ONBOARDING.md + VS Code integration",
+    "achievement": "🏆 Complete AI workflow system established"
+  },
+  {
+    "id": "PROJ-006",
+    "title": "Chart System Integration",
+    "title_en": "Chart.js Integration Working",
+    "status": "completed", 
+    "completed_date": "2025-09-23",
+    "priority": "medium",
+    "category": "feature",
+    "phase": "Phase 0 - Setup", 
+    "completion_summary": "✅ HOÀN THÀNH: Line charts + Pie charts với Chart.js",
+    "achievement": "📈 Fixed pie chart data structure and visualization"
+  },
+  {
+    "id": "PROJ-007",
+    "title": "Project Cleanup and Organization",
+    "title_en": "Clean and Organize Project Structure",
+    "status": "active",
+    "created_date": "2025-09-26",
+    "priority": "high", 
+    "category": "maintenance",
+    "phase": "Phase 1 - Foundation",
+    "description": "Kiểm tra toàn bộ dự án, xóa files dư thừa, sắp xếp lại cấu trúc cho gọn gàng",
+    "tasks": [
+      "🔍 Audit tất cả files trong project",
+      "🗑️ Xóa files duplicate và unused", 
+      "📁 Reorganize file structure theo best practices",
+      "🧹 Clean up imports và dependencies",
+      "📋 Update documentation và README"
+    ],
+    "estimated_hours": 6,
+    "next_session_priority": true
+  },
+  {
+    "id": "PROJ-008", 
+    "title": "User-Aware Base Services Architecture",
+    "title_en": "User-Aware Service Layer",
+    "status": "planned",
+    "priority": "high",
+    "category": "architecture",
+    "phase": "Phase 1 - Foundation", 
+    "description": "Build BaseService class với user context, property/booking/financial access filtering",
+    "estimated_hours": 20,
+    "depends_on": ["PROJ-004", "PROJ-007"],
+    "week": "Week 1"
+  },
+  {
+    "id": "PROJ-009",
+    "title": "Revenue Service với Permission System",
+    "title_en": "Revenue Service with Permissions", 
+    "status": "planned",
+    "priority": "high",
+    "category": "feature",
+    "phase": "Phase 1 - Foundation",
+    "description": "Extract revenue logic với user permission filtering built-in",
+    "estimated_hours": 20,
+    "depends_on": ["PROJ-004", "PROJ-008"],
+    "week": "Week 2"
+  },
+  {
+    "id": "PROJ-010",
+    "title": "Database Audit Trail System", 
+    "title_en": "Database with User Tracking",
+    "status": "planned",
+    "priority": "high", 
+    "category": "architecture",
+    "phase": "Phase 1 - Foundation",
+    "description": "Add user tracking to all tables, audit logs, migration scripts",
+    "estimated_hours": 25,
+    "depends_on": ["PROJ-004"],
+    "week": "Week 2"
+  }
+]

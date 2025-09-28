@@ -1,0 +1,71 @@
+{
+  "project": {
+    "name": "Airbnb Revenue WebApp",
+    "version": "1.0.0",
+    "domain": "PMS",
+    "status": "Production Ready",
+    "last_updated": "2025-09-27",
+    "description": "FastAPI-based web application for managing Airbnb bookings and revenue reports"
+  },
+  "active_tasks": [
+    {
+      "id": "MAINT-001",
+      "title": "Database Migration Schema Updates",
+      "description": "Maintain and update database schema cho expense categories và extra charges",
+      "status": "In Progress", 
+      "priority": "Medium",
+      "assigned_to": "Development Team",
+      "due_date": "2025-10-15",
+      "progress": "60%"
+    },
+    {
+      "id": "UI-004",
+      "title": "Brain UI System Hoàn Chỉnh",
+      "description": "Hoàn thiện React UI để hiển thị nội dung .brain/ với interface tiếng Việt và tích hợp authentication", 
+      "status": "In Progress",
+      "priority": "High",
+      "assigned_to": "Frontend Team",
+      "due_date": "2025-09-30",
+      "progress": "90%"
+    },
+    {
+      "id": "FEAT-002", 
+      "title": "Enhanced Vietnamese CSV Support",
+      "description": "Cải thiện parsing Vietnamese headers trong CSV files từ Airbnb",
+      "status": "Todo",
+      "priority": "Low", 
+      "assigned_to": "Development Team",
+      "due_date": "2025-11-01",
+      "progress": "0%"
+    },
+    {
+      "id": "OPT-003",
+      "title": "Performance Optimization Reports",
+      "description": "Tối ưu performance cho monthly revenue reports với large datasets", 
+      "status": "Todo",
+      "priority": "Low",
+      "assigned_to": "Development Team",
+      "due_date": "2025-12-01", 
+      "progress": "0%"
+    }
+  ],
+  "completed_tasks": [
+    {
+      "id": "DOC-005",
+      "title": "Cập Nhật Tài Liệu API",
+      "description": "Hoàn thiện documentation cho FastAPI endpoints với examples", 
+      "status": "Completed",
+      "priority": "Medium",
+      "assigned_to": "Development Team",
+      "completed_date": "2025-09-25",
+      "progress": "100%"
+    }
+  ],
+  "metrics": {
+    "total_tasks": 5,
+    "completed_tasks": 1,
+    "in_progress_tasks": 2,
+    "todo_tasks": 2,
+    "completion_percentage": 80
+  }
+}
