@@ -17,11 +17,8 @@ import uuid
 import shutil
 
 # Import các module tự tạo
-from database import get_db, User, Payment, Handover, create_tables
-from auth_service import (
-    authenticate_user, create_access_token, get_current_user_from_token,
-    get_all_users, get_users_by_role, create_user, update_user, get_role_display_name
-)
+from db import get_session
+from models import User, Payment, Handover
 
 # Thiết lập
 UPLOAD_DIR = "uploads"

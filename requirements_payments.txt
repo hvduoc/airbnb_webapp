@@ -1,0 +1,15 @@
+# Additional dependencies for Payment Ledger Module
+
+# Google Sheets API
+gspread==5.12.0
+google-auth==2.24.0  
+google-auth-oauthlib==1.1.0
+google-auth-httplib2==0.1.1
+
+# JWT Authentication
+PyJWT==2.8.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Async utilities
+asyncio-mqtt==0.16.1

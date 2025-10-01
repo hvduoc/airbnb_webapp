@@ -1,0 +1,182 @@
+{
+  "project": {
+    "name": "{{PROJECT_NAME}}",
+    "version": "{{VERSION}}",
+    "domain": "{{DOMAIN}}",
+    "status": "{{STATUS}}",
+    "last_updated": "{{LAST_UPDATED}}"
+  },
+  "active_tasks": [
+    {
+      "id": "{{TASK_ID_1}}",
+      "title": "{{TASK_TITLE_1}}",
+      "description": "{{TASK_DESCRIPTION_1}}",
+      "status": "{{TASK_STATUS_1}}",
+      "priority": "{{TASK_PRIORITY_1}}",
+      "assigned_to": "{{ASSIGNEE_1}}",
+      "due_date": "{{DUE_DATE_1}}",
+      "progress": "{{PROGRESS_1}}",
+      "definition_of_done": [
+        "{{DOD_ITEM_1_1}}",
+        "{{DOD_ITEM_1_2}}",
+        "{{DOD_ITEM_1_3}}"
+      ],
+      "dependencies": [
+        "{{DEPENDENCY_1_1}}",
+        "{{DEPENDENCY_1_2}}"
+      ],
+      "tags": ["{{TAG_1_1}}", "{{TAG_1_2}}"],
+      "complexity": "{{COMPLEXITY_1}}",
+      "estimated_hours": "{{ESTIMATED_HOURS_1}}"
+    },
+    {
+      "id": "{{TASK_ID_2}}",
+      "title": "{{TASK_TITLE_2}}",
+      "description": "{{TASK_DESCRIPTION_2}}",
+      "status": "{{TASK_STATUS_2}}",
+      "priority": "{{TASK_PRIORITY_2}}",
+      "assigned_to": "{{ASSIGNEE_2}}",
+      "due_date": "{{DUE_DATE_2}}",
+      "progress": {{PROGRESS_2}},
+      "definition_of_done": [
+        "{{DOD_ITEM_2_1}}",
+        "{{DOD_ITEM_2_2}}",
+        "{{DOD_ITEM_2_3}}"
+      ],
+      "dependencies": [
+        "{{DEPENDENCY_2_1}}"
+      ],
+      "tags": ["{{TAG_2_1}}", "{{TAG_2_2}}"],
+      "complexity": "{{COMPLEXITY_2}}",
+      "estimated_hours": {{ESTIMATED_HOURS_2}}
+    },
+    {
+      "id": "{{TASK_ID_3}}",
+      "title": "{{TASK_TITLE_3}}",
+      "description": "{{TASK_DESCRIPTION_3}}",
+      "status": "{{TASK_STATUS_3}}",
+      "priority": "{{TASK_PRIORITY_3}}",
+      "assigned_to": "{{ASSIGNEE_3}}",
+      "due_date": "{{DUE_DATE_3}}",
+      "progress": {{PROGRESS_3}},
+      "definition_of_done": [
+        "{{DOD_ITEM_3_1}}",
+        "{{DOD_ITEM_3_2}}"
+      ],
+      "dependencies": [],
+      "tags": ["{{TAG_3_1}}"],
+      "complexity": "{{COMPLEXITY_3}}",
+      "estimated_hours": {{ESTIMATED_HOURS_3}}
+    }
+  ],
+  "metrics": {
+    "current_sprint": {
+      "sprint_number": {{SPRINT_NUMBER}},
+      "start_date": "{{SPRINT_START_DATE}}",
+      "end_date": "{{SPRINT_END_DATE}}",
+      "capacity": {{SPRINT_CAPACITY}},
+      "committed_points": {{COMMITTED_POINTS}},
+      "completed_points": {{COMPLETED_POINTS}},
+      "burndown": [
+        {"date": "{{BURNDOWN_DATE_1}}", "remaining": {{REMAINING_1}}},
+        {"date": "{{BURNDOWN_DATE_2}}", "remaining": {{REMAINING_2}}},
+        {"date": "{{BURNDOWN_DATE_3}}", "remaining": {{REMAINING_3}}}
+      ]
+    },
+    "overall_progress": {
+      "total_tasks": {{TOTAL_TASKS}},
+      "completed_tasks": {{COMPLETED_TASKS}},
+      "in_progress_tasks": {{IN_PROGRESS_TASKS}},
+      "blocked_tasks": {{BLOCKED_TASKS}},
+      "completion_percentage": {{COMPLETION_PERCENTAGE}}
+    },
+    "quality_metrics": {
+      "bugs_found": {{BUGS_FOUND}},
+      "bugs_fixed": {{BUGS_FIXED}},
+      "test_coverage": {{TEST_COVERAGE}},
+      "code_review_pass_rate": {{CODE_REVIEW_PASS_RATE}}
+    },
+    "velocity": {
+      "last_sprint": {{LAST_SPRINT_VELOCITY}},
+      "average_velocity": {{AVERAGE_VELOCITY}},
+      "trend": "{{VELOCITY_TREND}}"
+    }
+  },
+  "team": {
+    "members": [
+      {
+        "name": "{{MEMBER_NAME_1}}",
+        "role": "{{MEMBER_ROLE_1}}",
+        "current_capacity": {{MEMBER_CAPACITY_1}},
+        "active_tasks": ["{{ACTIVE_TASK_1}}", "{{ACTIVE_TASK_2}}"]
+      },
+      {
+        "name": "{{MEMBER_NAME_2}}",
+        "role": "{{MEMBER_ROLE_2}}",
+        "current_capacity": {{MEMBER_CAPACITY_2}},
+        "active_tasks": ["{{ACTIVE_TASK_3}}"]
+      }
+    ],
+    "total_capacity": {{TOTAL_TEAM_CAPACITY}},
+    "utilization": {{TEAM_UTILIZATION}}
+  },
+  "blockers": [
+    {
+      "id": "{{BLOCKER_ID_1}}",
+      "description": "{{BLOCKER_DESCRIPTION_1}}",
+      "impact": "{{BLOCKER_IMPACT_1}}",
+      "owner": "{{BLOCKER_OWNER_1}}",
+      "due_date": "{{BLOCKER_DUE_DATE_1}}",
+      "status": "{{BLOCKER_STATUS_1}}"
+    }
+  ],
+  "risks": [
+    {
+      "id": "{{RISK_ID_1}}",
+      "description": "{{RISK_DESCRIPTION_1}}",
+      "probability": "{{RISK_PROBABILITY_1}}",
+      "impact": "{{RISK_IMPACT_1}}",
+      "mitigation": "{{RISK_MITIGATION_1}}",
+      "owner": "{{RISK_OWNER_1}}"
+    }
+  ],
+  "next_actions": [
+    {
+      "action": "{{NEXT_ACTION_1}}",
+      "owner": "{{ACTION_OWNER_1}}",
+      "due_date": "{{ACTION_DUE_DATE_1}}",
+      "priority": "{{ACTION_PRIORITY_1}}"
+    },
+    {
+      "action": "{{NEXT_ACTION_2}}",
+      "owner": "{{ACTION_OWNER_2}}",
+      "due_date": "{{ACTION_DUE_DATE_2}}",
+      "priority": "{{ACTION_PRIORITY_2}}"
+    }
+  ],
+  "configuration": {
+    "task_statuses": ["Todo", "In Progress", "Code Review", "Testing", "Done", "Blocked"],
+    "priorities": ["Critical", "High", "Medium", "Low"],
+    "complexities": ["XS", "S", "M", "L", "XL"],
+    "default_sprint_length": {{DEFAULT_SPRINT_LENGTH}},
+    "working_hours_per_day": {{WORKING_HOURS_PER_DAY}},
+    "team_velocity_target": {{TEAM_VELOCITY_TARGET}}
+  },
+  "integrations": {
+    "version_control": {
+      "type": "{{VCS_TYPE}}",
+      "repository": "{{REPOSITORY_URL}}",
+      "main_branch": "{{MAIN_BRANCH}}"
+    },
+    "ci_cd": {
+      "platform": "{{CI_CD_PLATFORM}}",
+      "build_status": "{{BUILD_STATUS}}",
+      "last_deployment": "{{LAST_DEPLOYMENT_DATE}}"
+    },
+    "monitoring": {
+      "platform": "{{MONITORING_PLATFORM}}",
+      "alerts_enabled": {{ALERTS_ENABLED}},
+      "health_check_url": "{{HEALTH_CHECK_URL}}"
+    }
+  }
+}

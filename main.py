@@ -56,6 +56,11 @@ from auth.dependencies import get_optional_current_user, get_current_active_user
 from routes_extra_fees import extra_fees_router
 from routes_brain import router as brain_router
 
+# Payment Ledger Module - Temporarily disabled for basic demo
+# from routes_payments import router as payments_router
+# from auth.auth_service import auth_router as payment_auth_router
+# from services.google_sheets.service import sheets_service
+
 
 
 # --- Mật khẩu quản trị ---
@@ -102,6 +107,13 @@ async def lifespan(app: FastAPI):
         # Use service to ensure default channels
         init_service = InitializationService(session, None)
         init_service.ensure_default_channels()
+
+    # Initialize Google Sheets service for Payment Ledger
+    # try:
+    #     await sheets_service.initialize()
+    #     print("[Payment Ledger] Google Sheets service initialized")
+    # except Exception as e:
+    #     print(f"[Payment Ledger] Failed to initialize Google Sheets: {e}")
 
     # Initialize scheduler with proper async handling
     if os.getenv("AIRBNB_COOKIE", "").strip():
@@ -151,6 +163,10 @@ app.include_router(extra_charges_router)
 app.include_router(extra_fees_router)
 app.include_router(brain_router)  # Brain management dashboard - Internal developer tool
 
+# Payment Ledger Module routers - Temporarily disabled
+# app.include_router(payment_auth_router)  # Payment auth routes
+# app.include_router(payments_router)      # Payment ledger routes
+
 # Mount .brain folder as static files for brain system access
 app.mount("/.brain", StaticFiles(directory=".brain"), name="brain_files")
 
@@ -162,6 +178,17 @@ def property_charges_page(request: Request):
 @app.get("/expenses/ledger", response_class=HTMLResponse)
 def expenses_ledger(request: Request):
     return templates.TemplateResponse("expenses_ledger.html", {"request": request, "month": ""})
+
+# Payment Ledger Template Routes - Temporarily disabled
+# @app.get("/payments/login", response_class=HTMLResponse)
+# async def payments_login_page(request: Request):
+#     """Payment Ledger login page"""
+#     return templates.TemplateResponse("payments/login.html", {"request": request})
+
+# @app.get("/payments/dashboard", response_class=HTMLResponse)
+# async def payments_dashboard_page(request: Request):
+#     """Payment Ledger dashboard page"""
+#     return templates.TemplateResponse("payments/dashboard.html", {"request": request})
 
 
 # --- Jinja2 Filters ---

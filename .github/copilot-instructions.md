@@ -1,49 +1,62 @@
-# Copilot Instructions for Airbnb Revenue WebApp
 
-## Project Overview
-- This is a FastAPI-based web application for managing Airbnb bookings and revenue reports.
-- Users upload Airbnb `reservations.csv` files, which are normalized and upserted into a SQLite database.
-- The app provides booking views with filters and monthly revenue/ADR reports (prorated by night).
+# Copilot Instructions for Airbnb Payment Ledger & Revenue WebApp
+
+## Big Picture Architecture
+- **FastAPI** backend for all business logic, API, and web server (no frontend JS frameworks except minimal Chart.js for charts)
+- **SQLite** database with SQLModel/SQLAlchemy ORM; supports multi-building, multi-property, and user/role management
+- **Jinja2** templates for all UI rendering; all business logic is Python-side
+- **Authentication**: JWT-based, with session cookies and role-based access (admin, manager, assistant, owner)
+- **Expense & Payment Ledger**: Tracks bookings, payments, handovers, extra charges, and recurring expenses
+- **Vietnamese Localization**: All UI, currency, and header mapping are Vietnam-specific
 
 ## Key Files & Structure
-- `main.py`: FastAPI entrypoint, routes, and app setup.
-- `models.py`: SQLAlchemy models for database tables.
-- `db.py`: Database connection and session management.
-- `routes_expense.py`: Expense-related API routes.
-- `utils.py`: Parsing, normalization, and header mapping utilities for Airbnb CSVs.
-- `templates/`: Jinja2 HTML templates for web UI.
-- `migrations/` and `alembic/`: Database migration scripts and Alembic config.
+- `main.py` / `payment_production.py`: FastAPI entrypoint, routes, and app setup (production logic in `payment_production.py`)
+- `models.py`: SQLModel/SQLAlchemy models for User, Building, Property, Payment, Handover, Expense, etc.
+- `db.py`: Database connection/session helpers; supports both context manager and FastAPI dependency
+- `auth_service.py`: JWT authentication, password hashing, user CRUD, session management
+- `utils.py`: CSV header mapping, normalization, VND formatting, date parsing
+- `templates/`: Jinja2 HTML templates (Vietnamese, role-based UI)
+- `migrations/`, `alembic/`: Alembic migration scripts and config
+- `.prompts/`, `.context/`: AI agent context, session, and workflow files
 
 ## Developer Workflows
-- **Setup**: Use PowerShell commands from README to create a virtual environment and install dependencies.
-- **Run App**: `uvicorn main:app --reload` (default port 8000).
-- **Database**: SQLite by default (`app.db`). Migrations via Alembic (`alembic.ini`, `migrations/`).
-- **Seed Data**: Use `seed_data.py` and `seed_sales.py` for initial data population.
-- **CSV Upload**: Upload via web UI; headers mapped using `utils.py` logic.
+- **Setup**: Use PowerShell commands (see `docs/README.md`) for venv, install, and startup
+	- `python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt`
+- **Run App**: `python payment_production.py` (production) or `uvicorn main:app --reload` (dev)
+- **Database**: SQLite (`app.db`); migrations via Alembic (`alembic.ini`, `migrations/`)
+- **Seed Data**: `init_database.py`, `create_payment_users.py`, etc. for initial users/buildings
+- **CSV Upload**: Upload via web UI; headers mapped using `utils.py:pick()`
+- **Testing**: Use PowerShell, curl, or Postman for API endpoints; no built-in test suite
 
-## Patterns & Conventions
-- Vietnamese and English CSV headers are mapped in `utils.py` (`HEADER_ALIASES`, `VN_HEADERS`).
-- Data normalization/parsing (dates, VND, building/unit codes) is handled in `utils.py`.
-- Expense logic is separated in `routes_expense.py`.
-- HTML templates use Jinja2 and are stored in `templates/`.
-- All business logic is Python; no frontend JS frameworks.
-- Use PowerShell for all setup and run commands on Windows.
+## Project-Specific Patterns & Conventions
+- **Header mapping**: Always use `utils.py:HEADER_ALIASES` and `VN_HEADERS` for CSV import/export
+- **Role-based UI**: Jinja2 templates show/hide features by user role (see `payment_complete.html`)
+- **Multi-building support**: Models and UI support multiple buildings/properties; see `models.py:Building`, `Property`
+- **Expense logic**: All expense/extra charge logic in `routes_expense.py` and related models
+- **No frontend SPA**: All UI is rendered server-side; only minimal JS for charts and AJAX
+- **Vietnamese currency/datetime**: Use VND formatting and `vi-VN` locale everywhere
+- **Session management**: JWT tokens in cookies; session tracked in DB (`UserSession`)
 
 ## Integration Points
-- FastAPI for backend API and web server.
-- SQLAlchemy ORM for DB access.
-- Alembic for migrations.
-- Jinja2 for HTML rendering.
+- **FastAPI**: All API and web routes
+- **SQLAlchemy/SQLModel**: ORM for all DB access
+- **Alembic**: DB migrations
+- **Jinja2**: HTML rendering
+- **Chart.js**: For revenue/ADR charts only
+- **PowerShell**: All setup/run scripts are Windows PowerShell
 
-## Examples
-- To parse a booking CSV, use `utils.py:pick()` to map logical keys to actual column names.
-- To add a new expense route, extend `routes_expense.py` and update templates as needed.
+## Examples & Recipes
+- Parse booking CSV: `utils.py:pick()` for logical-to-actual column mapping
+- Add expense route: Extend `routes_expense.py`, update template, add model if needed
+- Add building/property: Update `models.py`, seed via `init_database.py`, expose via API
+- Role-based UI: See `templates/payment_complete.html` for conditional rendering
 
-## Tips for AI Agents
-- Always use header mapping from `utils.py` when working with CSVs.
-- Keep business logic in Python; avoid adding JS unless required.
-- Reference `README.md` for setup and run instructions.
-- Use Alembic for DB schema changes; update migration scripts in `migrations/`.
+## AI Agent Workflow
+- Always load `.context/PROJECT_STATE.md` and `.prompts/README.md` before starting
+- Use PowerShell for all shell commands
+- Keep all business logic in Python; avoid JS unless for charts or AJAX
+- For new features, follow patterns in `payment_production.py` and `models.py`
+- For DB changes, update models and create Alembic migration
 
 ---
-If any section is unclear or missing, please provide feedback for further refinement.
+If any section is unclear or missing, please provide feedback for further refinement or request more examples.
