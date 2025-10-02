@@ -27,5 +27,5 @@ EXPOSE 8000
 # Set default PORT environment variable
 ENV PORT=8000
 
-# Command to run the application
-CMD ["sh", "-c", "python -m uvicorn main:app --host 0.0.0.0 --port $PORT"]
+# Command to run the payment application
+CMD ["sh", "-c", "python init_production.py && python -m uvicorn payment_production:app --host 0.0.0.0 --port $PORT"]
