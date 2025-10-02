@@ -1,70 +1,128 @@
-# Phụ phí căn hộ
-from typing import Optional
-from sqlmodel import SQLModel, Field
-from datetime import datetime
+"""
+Models Database cho Airbnb WebApp - Optimized cho Production
+Bao gồm indexing, foreign keys, và performance optimization
+Việt hóa hoàn toàn với cấu hình production-ready
+"""
 
-# ============ AUTHENTICATION MODELS ============
+from typing import Optional, List
+from sqlmodel import SQLModel, Field, Index
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
+from datetime import datetime, date
+
+# ============ AUTHENTICATION MODELS - CÓ INDEX TỐI ƯU ============
+
 class User(SQLModel, table=True):
-    """User model with authentication and role-based access"""
-    id: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(unique=True, index=True)
-    username: str = Field(unique=True, index=True)
-    full_name: str
-    hashed_password: str
+    """Model User với authentication và role-based access - Optimized"""
+    __tablename__ = "user"
     
-    # Role-based access control
-    role: str = Field(default="user")  # user, admin, manager, viewer
-    is_active: bool = Field(default=True)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True, max_length=255)
+    username: str = Field(unique=True, index=True, max_length=100)
+    full_name: str = Field(max_length=255)
+    hashed_password: str = Field(max_length=255)
+    
+    # Role-based access control - với index
+    role: str = Field(default="user", index=True, max_length=50)  # Index cho role queries
+    is_active: bool = Field(default=True, index=True)  # Index cho active user queries
     is_verified: bool = Field(default=False)
     
-    # Audit trail
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    # Audit trail - với index cho reporting
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     updated_at: Optional[datetime] = Field(default=None)
-    last_login: Optional[datetime] = Field(default=None)
+    last_login: Optional[datetime] = Field(default=None, index=True)  # Index cho login analytics
     
-    # Property access control (JSON list of property IDs user can access)
+    # Property access control
     accessible_properties: Optional[str] = Field(default="[]")  # JSON string
     
+    # Phone và email cho contact
+    phone: Optional[str] = Field(default=None, max_length=20)
+    
+    class Config:
+        # Composite indexes cho performance
+        indexes = [
+            Index("idx_user_active_role", "is_active", "role"),  # Cho role-based queries
+            Index("idx_user_login_activity", "last_login", "is_active"),  # Cho analytics
+        ]
+
 class UserSession(SQLModel, table=True):
-    """Track user sessions for security"""
+    """Theo dõi user sessions cho bảo mật - Optimized"""
+    __tablename__ = "usersession"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", index=True)
-    token_jti: str = Field(unique=True)  # JWT ID for token tracking
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    expires_at: datetime
-    is_active: bool = Field(default=True)
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    token_jti: str = Field(unique=True, max_length=255)  # JWT ID tracking
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    expires_at: datetime = Field(index=True)  # Index cho cleanup expired sessions
+    is_active: bool = Field(default=True, index=True)
+    ip_address: Optional[str] = Field(default=None, max_length=45)  # IPv6 compatible
+    user_agent: Optional[str] = Field(default=None, max_length=500)
+    
+    class Config:
+        indexes = [
+            Index("idx_session_cleanup", "expires_at", "is_active"),  # Cho cleanup job
+            Index("idx_session_user_active", "user_id", "is_active"),  # User sessions
+        ]
 
-# ============ EXISTING MODELS ============
+# ============ BUSINESS MODELS - CÓ INDEX TỐI ƯU ============
 
 class ExtraCharge(SQLModel, table=True):
-    __tablename__ = "extra_charges"
+    """Phụ phí căn hộ - Optimized với indexes"""
+    __tablename__ = "extracharge"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    property_id: int = Field(index=True)
-    charge_name: str
+    property_id: int = Field(foreign_key="property.id", index=True)  # Index cho property queries
+    charge_name: str = Field(max_length=255)
     charge_amount: int
-    charge_month: str
-    charge_note: Optional[str] = None
-    created_at: Optional[str] = None
-    category_id: Optional[int] = Field(default=None, index=True)  # Thêm trường category_id
-from typing import Optional
-from sqlmodel import SQLModel, Field
-from datetime import date, datetime
+    charge_month: str = Field(index=True, max_length=7)  # YYYY-MM format, index cho monthly reports
+    charge_note: Optional[str] = Field(default=None, max_length=1000)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, index=True)
+    category_id: Optional[int] = Field(default=None, foreign_key="expensecategory.id", index=True)
+    
+    class Config:
+        indexes = [
+            Index("idx_charge_property_month", "property_id", "charge_month"),  # Reports theo property + tháng
+            Index("idx_charge_category_month", "category_id", "charge_month"),  # Reports theo category + tháng
+        ]
 
 class Building(SQLModel, table=True):
+    """Tòa nhà - Optimized"""
+    __tablename__ = "building"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    building_name: str
-    building_code: Optional[str] = None
-    address: Optional[str] = None
-    # THÊM MỚI: Tọa độ cho tòa nhà
+    building_name: str = Field(max_length=255, index=True)  # Index cho search
+    building_code: Optional[str] = Field(default=None, max_length=50, unique=True)  # Unique code
+    address: Optional[str] = Field(default=None, max_length=500)
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = Field(default=None)
+    
+    # Tọa độ cho tòa nhà
     latitude: Optional[float] = Field(default=None)
     longitude: Optional[float] = Field(default=None)
 
 class Property(SQLModel, table=True):
+    """Căn hộ - Optimized với indexes cho booking performance"""
+    __tablename__ = "property"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    building_id: Optional[int] = Field(default=None, foreign_key="building.id")
-    building_name: Optional[str] = None
+    building_id: Optional[int] = Field(default=None, foreign_key="building.id", index=True)  # Index cho building queries
+    building_name: Optional[str] = Field(default=None, max_length=255)
+    room_number: Optional[str] = Field(default=None, max_length=20, index=True)  # Index cho room search
+    room_type: Optional[str] = Field(default=None, max_length=50, index=True)  # Index cho type filtering
+    area_sqm: Optional[float] = Field(default=None)
+    price_per_night: Optional[int] = Field(default=None, index=True)  # Index cho price queries
+    max_guests: Optional[int] = Field(default=None)
+    
+    # Property status
+    is_active: bool = Field(default=True, index=True)  # Index cho active properties
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = Field(default=None)
+    
+    class Config:
+        indexes = [
+            Index("idx_property_building_active", "building_id", "is_active"),  # Active properties per building
+            Index("idx_property_type_price", "room_type", "price_per_night"),  # Filter by type + price
+            Index("idx_property_search", "building_name", "room_number"),  # Property search
+        ]
     building_code: Optional[str] = None
 
     property_name: str
@@ -81,25 +139,58 @@ class Property(SQLModel, table=True):
     longitude: Optional[float] = Field(default=None)
 
 class Channel(SQLModel, table=True):
+    """Kênh đặt phòng - Optimized"""
+    __tablename__ = "channel"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    channel_name: str
+    channel_name: str = Field(max_length=100, unique=True, index=True)  # Index cho channel lookup
+    is_active: bool = Field(default=True, index=True)
+    commission_rate: Optional[float] = Field(default=None)  # Phần trăm hoa hồng
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
 
 class Booking(SQLModel, table=True):
+    """Booking - Model quan trọng nhất, cần tối ưu cao"""
+    __tablename__ = "booking"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    confirmation_code: Optional[str] = None
-    property_id: Optional[int] = Field(default=None, foreign_key="property.id")
-    channel_id: Optional[int] = Field(default=None, foreign_key="channel.id")
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    num_nights: Optional[int] = None
-    num_adults: Optional[int] = None
-    num_children: Optional[int] = None
-    num_infants: Optional[int] = None
-    booking_date: Optional[date] = None
-    status: Optional[str] = None
-    total_payout_vnd: Optional[int] = None
-    guest_name: Optional[str] = None
-    guest_contact: Optional[str] = None
+    confirmation_code: Optional[str] = Field(default=None, max_length=50, unique=True, index=True)  # Unique + index
+    
+    # Foreign keys với indexes
+    property_id: Optional[int] = Field(default=None, foreign_key="property.id", index=True)
+    channel_id: Optional[int] = Field(default=None, foreign_key="channel.id", index=True)
+    
+    # Ngày tháng - QUAN TRỌNG cho performance
+    start_date: Optional[date] = Field(default=None, index=True)  # Index cho date range queries
+    end_date: Optional[date] = Field(default=None, index=True)    # Index cho date range queries
+    booking_date: Optional[date] = Field(default=None, index=True)  # Index cho booking analytics
+    
+    # Booking details
+    num_nights: Optional[int] = Field(default=None)
+    num_adults: Optional[int] = Field(default=None)
+    num_children: Optional[int] = Field(default=None)
+    num_infants: Optional[int] = Field(default=None)
+    
+    # Status và financials
+    status: Optional[str] = Field(default=None, max_length=50, index=True)  # Index cho status filtering
+    total_payout_vnd: Optional[int] = Field(default=None, index=True)  # Index cho revenue queries
+    
+    # Guest information
+    guest_name: Optional[str] = Field(default=None, max_length=255)
+    guest_contact: Optional[str] = Field(default=None, max_length=255)
+    
+    # Audit trail
+    created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, index=True)
+    updated_at: Optional[datetime] = Field(default=None)
+    
+    class Config:
+        indexes = [
+            # Core performance indexes
+            Index("idx_booking_dates", "start_date", "end_date"),  # Date range queries
+            Index("idx_booking_property_dates", "property_id", "start_date", "end_date"),  # Property availability
+            Index("idx_booking_revenue", "property_id", "booking_date", "total_payout_vnd"),  # Revenue reports
+            Index("idx_booking_channel_status", "channel_id", "status"),  # Channel performance
+            Index("idx_booking_monthly", "property_id", "booking_date"),  # Monthly reports
+        ]
     listing_raw: Optional[str] = None
     salesperson_id: Optional[int] = Field(default=None, foreign_key="salesperson.id")
     notes: Optional[str] = None    
@@ -127,59 +218,113 @@ class Salesperson(SQLModel, table=True):
     email: Optional[str] = Field(default=None, unique=True, index=True)
     phone: Optional[str] = Field(default=None)
 
-# ==== OPEX MODELS (append vào cuối models.py) ====
-from sqlmodel import SQLModel, Field, Column, String
-from typing import Optional
+# ==== ENHANCED OPEX MODELS - Optimized for performance ====
+from sqlmodel import SQLModel, Field, Column, String, Index
+from typing import Optional, List
 from datetime import datetime
 
 class ExpenseCategory(SQLModel, table=True):
+    """Danh mục chi phí - Optimized for frequent lookups"""
     __tablename__ = "expense_categories"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    parent_id: Optional[int] = Field(default=None, foreign_key="expense_categories.id")
-    is_fixed: int = 0
+    name: str = Field(max_length=255, index=True)  # Index cho category lookups
+    parent_id: Optional[int] = Field(default=None, foreign_key="expense_categories.id", index=True)
+    is_fixed: int = Field(default=0, index=True)  # Index cho fixed/variable filtering
+    
+    class Config:
+        indexes = [
+            Index("idx_expense_cat_hierarchy", "parent_id", "name"),  # Category hierarchy
+        ]
 
 class Expense(SQLModel, table=True):
+    """Chi phí - Optimized for financial reporting"""
     __tablename__ = "expenses"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    date: str
-    month: str = Field(sa_column=Column(String, index=True))
-    category_id: int = Field(foreign_key="expense_categories.id")
-    amount: int
-    vendor: Optional[str] = None
-    note: Optional[str] = None
-    building_id: Optional[int] = None
-    property_id: Optional[int] = None
-    allocation_method: str = "direct"  # direct|per_property|per_available_night|per_occupied_night
-    allocation_basis_note: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    date: str = Field(index=True)  # Index cho date queries
+    month: str = Field(sa_column=Column(String, index=True))  # Index cho monthly reports
+    category_id: int = Field(foreign_key="expense_categories.id", index=True)  # Index cho category queries
+    amount: int = Field(index=True)  # Index cho amount-based queries
+    vendor: Optional[str] = Field(default=None, max_length=255, index=True)  # Index cho vendor analysis
+    note: Optional[str] = Field(default=None, max_length=500)
+    building_id: Optional[int] = Field(default=None, index=True)  # Index cho building reports
+    property_id: Optional[int] = Field(default=None, index=True)  # Index cho property reports
+    allocation_method: str = Field(default="direct", max_length=50, index=True)  # Index cho allocation analysis
+    allocation_basis_note: Optional[str] = Field(default=None, max_length=500)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        indexes = [
+            # Core financial reporting indexes
+            Index("idx_expense_property_month", "property_id", "month"),  # Property monthly reports
+            Index("idx_expense_building_month", "building_id", "month"),  # Building monthly reports
+            Index("idx_expense_category_month", "category_id", "month"),  # Category analysis
+            Index("idx_expense_vendor_month", "vendor", "month", "amount"),  # Vendor performance
+            Index("idx_expense_allocation", "allocation_method", "building_id", "property_id"),  # Allocation queries
+        ]
 
 class RecurringExpense(SQLModel, table=True):
+    """Chi phí định kỳ - Optimized for automation"""
     __tablename__ = "recurring_expenses"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    category_id: int = Field(foreign_key="expense_categories.id")
-    amount: int
-    vendor: Optional[str] = None
-    note: Optional[str] = None
-    building_id: Optional[int] = None
-    property_id: Optional[int] = None
-    allocation_method: str = "per_property"
-    start_month: str
-    end_month: Optional[str] = None
-    day_of_month: int = 1
-    is_active: int = 1
+    category_id: int = Field(foreign_key="expense_categories.id", index=True)
+    amount: int = Field(index=True)  # Index cho amount queries
+    vendor: Optional[str] = Field(default=None, max_length=255, index=True)
+    note: Optional[str] = Field(default=None, max_length=500)
+    building_id: Optional[int] = Field(default=None, index=True)
+    property_id: Optional[int] = Field(default=None, index=True)
+    allocation_method: str = Field(default="per_property", max_length=50)
+    start_month: str = Field(index=True)  # Index cho scheduling
+    end_month: Optional[str] = Field(default=None, index=True)  # Index cho active recurring
+    day_of_month: int = Field(default=1, index=True)  # Index cho scheduling
+    is_active: int = Field(default=1, index=True)  # Index cho active filtering
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        indexes = [
+            Index("idx_recurring_active", "is_active", "start_month", "end_month"),  # Active recurring expenses
+            Index("idx_recurring_schedule", "day_of_month", "is_active"),  # Scheduling automation
+        ]
 
 class ExpenseAllocation(SQLModel, table=True):
+    """Phân bổ chi phí - Optimized for allocation calculations"""
     __tablename__ = "expense_allocations"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    expense_id: int = Field(foreign_key="expenses.id")
-    property_id: int
-    month: str
-    allocated_amount: int
+    expense_id: int = Field(foreign_key="expenses.id", index=True)  # Index cho expense lookups
+    property_id: int = Field(index=True)  # Index cho property allocations
+    month: str = Field(index=True)  # Index cho monthly reports
+    allocated_amount: int = Field(index=True)  # Index cho amount analysis
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    class Config:
+        indexes = [
+            Index("idx_allocation_expense_property", "expense_id", "property_id"),  # Allocation calculations
+            Index("idx_allocation_property_month", "property_id", "month"),  # Property monthly allocations
+        ]
+
+# ==== /ENHANCED OPEX MODELS ====
+
+class ImportLog(SQLModel, table=True):
+    """Log import CSV - Optimized for analytics"""
+    __tablename__ = "import_log"
+    
+    id: Optional[int] = Field(default=None, primary_key=True)
+    filename: str = Field(max_length=255, index=True)  # Index cho file tracking
+    imported_at: datetime = Field(default_factory=datetime.utcnow, index=True)  # Index cho time-based queries
+    rows_processed: int = Field(default=0, index=True)  # Index cho analytics
+    rows_successful: int = Field(default=0)
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id", index=True)  # Index cho user tracking
+    
+    class Config:
+        indexes = [
+            Index("idx_import_user_date", "user_id", "imported_at"),  # User import history
+            Index("idx_import_performance", "imported_at", "rows_processed"),  # Performance tracking
+        ]
 # ==== /OPEX MODELS ====
 
 # ============ ROOM ASSIGNMENT MODELS ============

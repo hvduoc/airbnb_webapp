@@ -13,7 +13,8 @@ from models import User, UserSession
 from db import get_session
 from auth.security import (
     authenticate_user, create_access_token, get_password_hash,
-    create_user_session, invalidate_user_session, ACCESS_TOKEN_EXPIRE_MINUTES
+    create_user_session, invalidate_user_session, ACCESS_TOKEN_EXPIRE_MINUTES,
+    create_refresh_token, refresh_access_token, REFRESH_TOKEN_EXPIRE_DAYS
 )
 from auth.dependencies import get_current_active_user, require_admin, get_optional_current_user
 from auth.schemas import UserCreate, UserLogin, Token, UserResponse, UserUpdate
@@ -181,6 +182,27 @@ async def login_for_access_token(
         access_token=access_token,
         token_type="bearer",
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(
+    request: Request,
+    refresh_token: str = Form(...),
+    db: Session = Depends(get_session)
+):
+    """Refresh access token using refresh token"""
+    result = refresh_access_token(refresh_token, db)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    return Token(
+        access_token=result["access_token"],
+        token_type=result["token_type"],
+        expires_in=result["expires_in"]
     )
 
 @router.post("/logout")

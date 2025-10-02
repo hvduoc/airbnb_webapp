@@ -1,0 +1,1 @@
+{"timestamp": "2025-10-02T17:17:45.214827Z", "level": "INFO", "logger": "security", "message": "Security Event: system_test", "module": "production_logging", "function": "log_security_event", "line": 240, "extra": {"component": "logging_system", "status": "operational"}, "event_category": "security", "severity": "INFO", "event_type": "system_test", "threat_level": "LOW"}

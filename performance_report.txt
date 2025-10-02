@@ -1,0 +1,41 @@
+
+============================================================
+📊 DATABASE PERFORMANCE VALIDATION REPORT
+============================================================
+
+🔍 USER_QUERIES:
+----------------------------------------
+✅ user_by_role: 0.0552s
+✅ active_users: 0.0020s
+✅ user_login_analytics: 0.0030s
+
+🔍 PROPERTY_QUERIES:
+----------------------------------------
+✅ property_building_active: 0.0050s
+✅ property_type_price: 0.0040s
+
+🔍 BOOKING_QUERIES:
+----------------------------------------
+✅ booking_date_range: 0.0060s
+✅ property_availability: 0.0030s
+✅ booking_revenue: 0.0030s
+✅ channel_performance: 0.0030s
+
+🔍 EXPENSE_QUERIES:
+----------------------------------------
+✅ expense_property_month: 0.0060s
+✅ expense_category_analysis: 0.0020s
+✅ vendor_performance: 0.0030s
+
+🔍 COMPLEX_QUERIES:
+----------------------------------------
+✅ property_financial_summary: 0.0040s
+✅ monthly_performance: 0.0040s
+
+============================================================
+📈 TỔNG KẾT:
+   • Tổng số queries: 14
+   • Tổng thời gian: 0.1031s
+   • Thời gian trung bình: 0.0074s
+   • Kết quả: 🟢 XUẤT SẮC (< 0.1s)
+============================================================

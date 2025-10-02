@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, UploadFile, File, Query, Form, Depends, Response
+from fastapi import FastAPI, Request, UploadFile, File, Query, Form, Depends, Response, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,6 +37,12 @@ from urllib.parse import urlencode
 
 from dotenv import load_dotenv
 load_dotenv()  # <-- để tự động nạp .env
+
+# Initialize logging early
+from logging_config import app_logger, log_security_event, log_api_access
+from csrf_protection import init_csrf_protection, validate_csrf_token, get_csrf_token, set_csrf_token_cookie
+from rate_limiter import init_rate_limiters, check_rate_limit, get_rate_limit_headers, rate_limit_exceeded_response
+import logging
 
 from db import init_db, get_session, get_session_context
 from models import Booking, Property, Channel, ImportLog, Building, Salesperson, ExtraCharge, ExpenseCategory, User
@@ -103,6 +109,18 @@ async def lifespan(app: FastAPI):
     # Startup
     print("[Startup] Initializing application...")
     init_db()
+    
+    # Initialize CSRF protection
+    from auth.security import SECRET_KEY
+    csrf_protection = init_csrf_protection(SECRET_KEY)
+    print("[Security] CSRF protection initialized")
+    
+    # Initialize rate limiters
+    api_limit = int(os.getenv("RATE_LIMIT_PER_MINUTE", "100"))
+    auth_limit = int(os.getenv("AUTH_RATE_LIMIT_PER_MINUTE", "10"))
+    init_rate_limiters(api_limit, auth_limit)
+    print(f"[Security] Rate limiters initialized (API: {api_limit}/min, Auth: {auth_limit}/min)")
+    
     with get_session_context() as session:
         # Use service to ensure default channels
         init_service = InitializationService(session, None)
@@ -153,6 +171,163 @@ app = FastAPI(
     lifespan=lifespan
 )
 templates = Jinja2Templates(directory="templates")
+
+# Production-grade CORS configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", 
+    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000"
+).split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["*"]
+)
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add security headers to all responses"""
+    response = await call_next(request)
+    
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    
+    # Content Security Policy (basic)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data:; "
+        "connect-src 'self'"
+    )
+    
+    return response
+
+# Rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Rate limiting middleware"""
+    
+    # Determine limiter type based on path
+    limiter_type = "auth" if request.url.path.startswith("/auth/") else "api"
+    
+    # Check rate limit
+    if not check_rate_limit(request, limiter_type):
+        log_security_event(
+            action="rate_limit_exceeded",
+            ip_address=request.client.host if request.client else None,
+            resource=request.url.path,
+            success=False,
+            details={"limiter_type": limiter_type}
+        )
+        raise rate_limit_exceeded_response()
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Add rate limit headers
+    headers = get_rate_limit_headers(request, limiter_type)
+    for key, value in headers.items():
+        response.headers[key] = value
+    
+    return response
+
+# CSRF Protection middleware
+@app.middleware("http")
+async def csrf_protection_middleware(request: Request, call_next):
+    """CSRF protection for state-changing requests"""
+    
+    # Skip CSRF for API endpoints and GET requests
+    if (request.url.path.startswith("/api/") or 
+        request.method in ("GET", "HEAD", "OPTIONS")):
+        response = await call_next(request)
+        
+        # Set CSRF token for GET requests to pages that will need it
+        if (request.method == "GET" and 
+            request.headers.get("accept", "").startswith("text/html")):
+            token = set_csrf_token_cookie(response)
+            if hasattr(response, 'context'):
+                response.context['csrf_token'] = token
+        
+        return response
+    
+    # Validate CSRF for state-changing requests
+    if not validate_csrf_token(request, None):
+        log_security_event(
+            action="csrf_validation_failed",
+            ip_address=request.client.host if request.client else None,
+            resource=request.url.path,
+            success=False
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="CSRF token validation failed"
+        )
+    
+    return await call_next(request)
+
+# API access logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all API requests for monitoring and security"""
+    import time
+    
+    start_time = time.time()
+    
+    # Get user info if available
+    user_id = None
+    try:
+        from auth.dependencies import get_optional_current_user
+        from db import get_session_context
+        with get_session_context() as db:
+            user = await get_optional_current_user(request, db)
+            if user:
+                user_id = user.id
+    except Exception:
+        pass  # Don't fail request if user lookup fails
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Calculate duration
+    duration = (time.time() - start_time) * 1000
+    
+    # Log the request
+    log_api_access(
+        request_path=str(request.url.path),
+        method=request.method,
+        user_id=user_id,
+        ip_address=request.client.host if request.client else None,
+        status_code=response.status_code,
+        duration=duration
+    )
+    
+    return response
+
+# Input validation middleware
+@app.middleware("http")
+async def validate_input_size(request: Request, call_next):
+    """Validate request size and prevent oversized uploads"""
+    MAX_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", "52428800"))  # 50MB default
+    
+    content_length = request.headers.get("content-length")
+    if content_length:
+        content_length = int(content_length)
+        if content_length > MAX_SIZE:
+            return Response(
+                content="Request too large", 
+                status_code=413
+            )
+    
+    return await call_next(request)
 
 # Include routers
 app.include_router(auth_router)  # Authentication routes
@@ -1287,3 +1462,44 @@ async def api_csv_preview_json(data: dict):
 @app.get("/calendar", response_class=HTMLResponse)
 def show_calendar(request: Request):
     return templates.TemplateResponse("calendar.html", {"request": request})
+
+# Health Check Endpoints - Các endpoint kiểm tra sức khỏe hệ thống
+@app.get("/health")
+def health_check():
+    """Kiểm tra sức khỏe tổng thể của hệ thống"""
+    from db import check_database_health, get_database_info
+    
+    # Kiểm tra database
+    db_health = check_database_health()
+    db_info = get_database_info()
+    
+    # Kiểm tra các service quan trọng
+    system_health = {
+        "status": "healthy" if db_health["status"] == "healthy" else "unhealthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "database": {
+            "health": db_health,
+            "info": db_info
+        },
+        "application": {
+            "name": "Airbnb Revenue WebApp",
+            "version": "1.0.0",
+            "environment": "production" if os.getenv("PRODUCTION", "false").lower() == "true" else "development"
+        }
+    }
+    
+    return system_health
+
+@app.get("/health/database")
+def database_health():
+    """Kiểm tra sức khỏe database cụ thể"""
+    from db import check_database_health, get_database_info
+    
+    health = check_database_health()
+    info = get_database_info()
+    
+    return {
+        "database_health": health,
+        "database_info": info,
+        "timestamp": datetime.utcnow().isoformat()
+    }

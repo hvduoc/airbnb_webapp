@@ -1,0 +1,1 @@
+{"timestamp": "2025-10-02T17:17:45.215827Z", "level": "INFO", "logger": "performance", "message": "Performance: config_test (50.5ms)", "module": "production_logging", "function": "log_performance", "line": 259, "extra": {"operation": "config_test"}, "event_category": "performance", "duration_ms": 50.5, "endpoint": null, "memory_mb": null}

@@ -49,7 +49,7 @@ async def get_current_user(
         raise credentials_exception
     
     # Verify token
-    payload = verify_token(token)
+    payload = verify_token(token, "access")
     if payload is None:
         raise credentials_exception
     
@@ -125,7 +125,7 @@ async def get_optional_current_user(
         if not token:
             return None
         
-        payload = verify_token(token)
+        payload = verify_token(token, "access")
         if payload is None:
             return None
         
