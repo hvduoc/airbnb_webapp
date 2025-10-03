@@ -1,0 +1,38 @@
+[
+    {
+        "key": "ctrl+shift+s",
+        "command": "workbench.action.tasks.runTask",
+        "args": "AI: Start Session",
+        "when": "!inDebugMode"
+    },
+    {
+        "key": "ctrl+shift+e",
+        "command": "workbench.action.tasks.runTask", 
+        "args": "AI: End Session",
+        "when": "!inDebugMode"
+    },
+    {
+        "key": "ctrl+shift+t",
+        "command": "workbench.action.tasks.runTask",
+        "args": "AI: List Tasks",
+        "when": "!inDebugMode"
+    },
+    {
+        "key": "ctrl+shift+h",
+        "command": "workbench.action.tasks.runTask",
+        "args": "AI: Health Check", 
+        "when": "!inDebugMode"
+    },
+    {
+        "key": "ctrl+shift+r",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Server: Start Development",
+        "when": "!inDebugMode"
+    },
+    {
+        "key": "f5",
+        "command": "workbench.action.tasks.runTask",
+        "args": "🚀 Full Development Startup",
+        "when": "!inDebugMode"
+    }
+]

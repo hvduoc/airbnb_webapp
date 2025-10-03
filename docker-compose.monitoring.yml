@@ -1,0 +1,275 @@
+# Extend the production Docker Compose with ELK Stack
+services:
+  # Existing services from docker-compose.yml will be inherited
+  
+  # =====================================================
+  # ELK STACK - ELASTICSEARCH, LOGSTASH, KIBANA
+  # =====================================================
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: airbnb_elasticsearch
+    hostname: elasticsearch
+    environment:
+      # Cluster configuration
+      - node.name=elasticsearch-node-1
+      - cluster.name=airbnb-logging-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      
+      # Memory settings
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      
+      # Security settings (development)
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      
+      # Vietnamese locale support
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - action.auto_create_index=true
+      
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+        
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+      
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elk/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      
+    networks:
+      - airbnb_network
+      
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      
+    restart: unless-stopped
+    
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: airbnb_logstash
+    hostname: logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+      - XPACK_MONITORING_ENABLED=false
+      
+    ports:
+      - "5044:5044"   # Beats input
+      - "5000:5000"   # TCP input
+      - "9600:9600"   # API
+      
+    volumes:
+      - ./elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./elk/logstash/pipeline/:/usr/share/logstash/pipeline/:ro
+      - ./logs:/var/log/airbnb:ro
+      
+    networks:
+      - airbnb_network
+      
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+        
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+      
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: airbnb_kibana
+    hostname: kibana
+    environment:
+      # Elasticsearch connection
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=
+      - ELASTICSEARCH_PASSWORD=
+      
+      # Kibana configuration
+      - SERVER_NAME=airbnb-kibana
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+      
+      # Vietnamese localization
+      - I18N_LOCALE=vi
+      - LOGGING_QUIET=true
+      
+      # Security settings (development)
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=airbnb-kibana-encryption-key-32-chars
+      
+    ports:
+      - "5601:5601"
+      
+    volumes:
+      - ./elk/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+      - kibana_data:/usr/share/kibana/data
+      
+    networks:
+      - airbnb_network
+      
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+        
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+      
+    restart: unless-stopped
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    container_name: airbnb_filebeat
+    hostname: filebeat
+    user: root
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - LOGSTASH_HOSTS=logstash:5044
+      
+    volumes:
+      - ./elk/filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/var/log/airbnb:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+      
+    networks:
+      - airbnb_network
+      
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      logstash:
+        condition: service_healthy
+        
+    command: filebeat -e -strict.perms=false
+    
+    restart: unless-stopped
+
+  # =====================================================
+  # ALERT MANAGER - PROMETHEUS ALERTING
+  # =====================================================
+  
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: airbnb_alertmanager
+    hostname: alertmanager
+    
+    ports:
+      - "9093:9093"
+      
+    volumes:
+      - ./monitoring/alertmanager/config/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/alertmanager/templates/:/etc/alertmanager/templates/:ro
+      - alertmanager_data:/alertmanager
+      
+    networks:
+      - airbnb_network
+      
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+      - '--web.route-prefix=/'
+      - '--cluster.listen-address='
+      
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      
+    restart: unless-stopped
+
+  # =====================================================
+  # ENHANCED MONITORING SERVICES
+  # =====================================================
+  
+  # Update existing Prometheus to include AlertManager
+  prometheus:
+    extends:
+      file: docker-compose.yml
+      service: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules/:/etc/prometheus/rules/:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--alertmanager.url=http://alertmanager:9093'
+    depends_on:
+      - alertmanager
+
+# =====================================================
+# VOLUMES FOR DATA PERSISTENCE
+# =====================================================
+
+volumes:
+  elasticsearch_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/elasticsearch
+      
+  kibana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/kibana
+      
+  filebeat_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/filebeat
+      
+  alertmanager_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/alertmanager
+
+# =====================================================
+# NETWORKS (SHARED WITH MAIN COMPOSE)
+# =====================================================
+
+networks:
+  airbnb_network:
+    external: true

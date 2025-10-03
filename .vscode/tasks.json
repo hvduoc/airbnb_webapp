@@ -1,0 +1,338 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "AI: Start Session",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"start"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": [],
+			"detail": "🚀 Start new AI development session"
+		},
+		{
+			"label": "AI: End Session",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"end"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "new"
+			},
+			"problemMatcher": [],
+			"detail": "🏁 End current AI session with documentation"
+		},
+		{
+			"label": "AI: List Tasks",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"list-tasks"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": [],
+			"detail": "📋 Show all active tasks with priorities"
+		},
+		{
+			"label": "AI: Complete Task 1",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"complete-task",
+				"--task-id",
+				"1"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "✅ Mark Task 1 as completed"
+		},
+		{
+			"label": "AI: Complete Task 2",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"complete-task",
+				"--task-id",
+				"2"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "✅ Mark Task 2 as completed"
+		},
+		{
+			"label": "AI: Complete Task 3",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"complete-task",
+				"--task-id",
+				"3"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "✅ Mark Task 3 as completed"
+		},
+		{
+			"label": "AI: Health Check",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/health_check.py"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": [],
+			"detail": "🏥 Run comprehensive system health check"
+		},
+		{
+			"label": "AI: Update Context",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/context_update.py"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "🔄 Update AI context files with current metrics"
+		},
+		{
+			"label": "Server: Start Development",
+			"type": "shell",
+			"command": "uvicorn",
+			"args": [
+				"main:app",
+				"--reload",
+				"--port",
+				"8000"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "dedicated"
+			},
+			"isBackground": true,
+			"problemMatcher": [],
+			"detail": "🌐 Start FastAPI development server on port 8000"
+		},
+		{
+			"label": "Database: Run Migrations",
+			"type": "shell",
+			"command": "alembic",
+			"args": [
+				"upgrade",
+				"head"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "🗄️ Run database migrations to latest version"
+		},
+		{
+			"label": "Database: Create Migration",
+			"type": "shell",
+			"command": "alembic",
+			"args": [
+				"revision",
+				"--autogenerate",
+				"-m",
+				"${input:migrationMessage}"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "📝 Create new database migration"
+		},
+		{
+			"label": "Quick: Import Test",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/quick_import_test.py"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": [],
+			"detail": "⚡ Quick test of main module imports"
+		},
+		{
+			"label": "Quick: Test Reports",
+			"type": "shell",
+			"command": "curl",
+			"args": [
+				"http://localhost:8000/reports/monthly"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": [],
+			"detail": "📊 Test monthly reports endpoint"
+		},
+		{
+			"label": "Test: AI Health Check",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/health_check.py"
+			]
+		},
+		{
+			"label": "Test List Tasks",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/simple_ai.py",
+				"list-tasks"
+			]
+		},
+		{
+			"label": "Test Context Update",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/context_update.py"
+			]
+		},
+		{
+			"label": "Test Quick Import",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from main import app; print('✅ Import successful')"
+			]
+		},
+		{
+			"label": "Test Simple Import",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from main import app; print('Import successful')"
+			]
+		},
+		{
+			"label": "Test Import Fixed",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from main import app; print('Import OK')"
+			]
+		},
+		{
+			"label": "Test Quick Import Script",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/quick_import_test.py"
+			]
+		},
+		{
+			"label": "Test Quick Import Fixed",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"scripts/quick_import_test.py"
+			]
+		}
+	],
+	"inputs": [
+		{
+			"id": "migrationMessage",
+			"description": "Migration description",
+			"default": "database changes",
+			"type": "promptString"
+		}
+	],
+	"compounds": [
+		{
+			"label": "🚀 Full Development Startup",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"AI: Health Check",
+				"AI: Start Session",
+				"Server: Start Development"
+			],
+			"detail": "Complete development environment startup"
+		},
+		{
+			"label": "🏁 End Development Session",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"AI: Update Context",
+				"AI: End Session"
+			],
+			"detail": "Properly end development session with cleanup"
+		}
+	]
+}

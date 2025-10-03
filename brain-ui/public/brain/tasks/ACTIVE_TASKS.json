@@ -1,0 +1,143 @@
+{
+  "project": {
+    "name": "Airbnb Revenue WebApp",
+    "version": "1.0.0",
+    "domain": "PMS",
+    "status": "Production Ready",
+    "last_updated": "2025-09-27",
+    "description": "FastAPI-based web application for managing Airbnb bookings and revenue reports"
+  },
+  "active_tasks": [
+    {
+      "id": "PROD-001",
+      "title": "Production Readiness - Week 1",
+      "description": "Core functionality: CSV upload enhancement, expense management, basic auth, reports & UI polish",
+      "status": "In Progress", 
+      "priority": "Critical",
+      "assigned_to": "Development Team",
+      "due_date": "2025-10-05",
+      "progress": "75%",
+      "subtasks": [
+        "✅ CSV upload error handling - Completed",
+        "✅ Complete expense categories - Completed",
+        "✅ Charts.js analytics dashboard - Completed", 
+        "🔄 Home server deployment setup - In Progress",
+        "📅 Router configuration (tomorrow) - Pending"
+      ],
+      "today_progress": {
+        "date": "2025-09-28",
+        "completed": [
+          "Network environment check (Public IP: 27.69.244.249, Local IP: 192.168.1.122)",
+          "DNS configuration for subdomains (brain.xemgiadat.com, webhook.xemgiadat.com, api.xemgiadat.com)",
+          "DNS propagation test - All working",
+          "Windows setup scripts created (step1-4)",
+          "Home server deployment guide completed"
+        ],
+        "next_session": [
+          "Windows Firewall configuration (step2-firewall.ps1)",
+          "Nginx proxy installation (step3-nginx.ps1)", 
+          "Local services testing",
+          "Router port forwarding setup (tomorrow)",
+          "External access testing from mobile"
+        ]
+      }
+    },
+    {
+      "id": "PROD-002",
+      "title": "Selective Upgrades - Week 2-4",
+      "description": "Targeted improvements: simplified auth, performance optimization, basic testing",
+      "status": "Todo",
+      "priority": "High", 
+      "assigned_to": "Development Team",
+      "due_date": "2025-10-26",
+      "progress": "0%",
+      "subtasks": [
+        "Password hashing với bcrypt",
+        "Charts.js data decimation",
+        "Pagination for bookings list",
+        "Essential pytest tests"
+      ]
+    },
+    {
+      "id": "SCALE-001",
+      "title": "Scale When Needed - Month 2-3",
+      "description": "Scale only when business demands: database upgrade, comprehensive testing, automation",
+      "status": "Backlog",
+      "priority": "Medium", 
+      "assigned_to": "Development Team",
+      "due_date": "2025-12-28",
+      "progress": "0%",
+      "conditions": [
+        "Users > 10 concurrent: Upgrade database",
+        "Data > 100K bookings: Optimize queries",
+        "Errors > 5%: Add comprehensive testing"
+      ]
+    },
+    {
+      "id": "TEMPLATE-001",
+      "title": "Template & Scale - Month 4+",
+      "description": "Template-ize project for future PMS/OTA projects",
+      "status": "Future",
+      "priority": "Low", 
+      "assigned_to": "Development Team",
+      "due_date": "2026-01-31",
+      "progress": "0%",
+      "subtasks": [
+        "Create cookiecutter template",
+        "Setup script automation",
+        "Documentation for customization",
+        "Community feedback integration"
+      ]
+    },
+    {
+      "id": "MAINT-001",
+      "title": "Database Migration Schema Updates",
+      "description": "Maintain and update database schema cho expense categories và extra charges",
+      "status": "Completed", 
+      "priority": "Medium",
+      "assigned_to": "Development Team",
+      "due_date": "2025-10-15",
+      "progress": "100%",
+      "notes": "Merged into PROD-001"
+    },
+    {
+      "id": "FEAT-002", 
+      "title": "Enhanced Vietnamese CSV Support",
+      "description": "Cải thiện parsing Vietnamese headers trong CSV files từ Airbnb",
+      "status": "Merged",
+      "priority": "Low", 
+      "assigned_to": "Development Team",
+      "due_date": "2025-11-01",
+      "progress": "0%",
+      "notes": "Merged into PROD-001 CSV enhancement"
+    }
+  ],
+  "metrics": {
+    "total_tasks": 6,
+    "completed_tasks": 1,
+    "in_progress_tasks": 1,
+    "todo_tasks": 1,
+    "backlog_tasks": 1,
+    "future_tasks": 1,
+    "merged_tasks": 1,
+    "completion_percentage": 75,
+    "current_sprint": "Week 1 - Production Readiness (Home Server Deployment)",
+    "sprint_due": "2025-10-05",
+    "today_achievements": [
+      "✅ Complete network environment assessment",
+      "✅ DNS configuration for production subdomains",
+      "✅ Home server deployment architecture designed",
+      "✅ Windows setup automation scripts created",
+      "📅 Router configuration scheduled for tomorrow"
+    ],
+    "deployment_status": {
+      "strategy": "Home Server (Self-hosted)",
+      "public_ip": "27.69.244.249",
+      "local_ip": "192.168.1.122", 
+      "dns_ready": true,
+      "router_config": "pending_tomorrow",
+      "services_ready": false,
+      "external_access": "pending_router_setup"
+    }
+  }
+}

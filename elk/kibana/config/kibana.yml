@@ -1,0 +1,105 @@
+# =====================================================
+# KIBANA CONFIGURATION
+# Airbnb WebApp - Vietnamese Interface
+# =====================================================
+
+# Server Settings
+server.name: "airbnb-kibana"
+server.host: "0.0.0.0"
+server.port: 5601
+server.basePath: ""
+server.rewriteBasePath: false
+
+# Elasticsearch Settings
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.username: ""
+elasticsearch.password: ""
+elasticsearch.requestTimeout: 30000
+elasticsearch.shardTimeout: 30000
+
+# Kibana Settings
+kibana.index: ".kibana"
+kibana.defaultAppId: "discover"
+
+# Logging Settings
+logging.appenders.file.type: file
+logging.appenders.file.fileName: /usr/share/kibana/logs/kibana.log
+logging.appenders.file.layout.type: json
+
+logging.root.level: info
+logging.root.appenders: [default, file]
+
+# Vietnamese Localization
+i18n.locale: "vi"
+
+# UI Settings với Vietnamese Support
+map.includeElasticMapsService: true
+map.proxyElasticMapsServiceInMaps: false
+
+# Visualization Settings
+vis_type_vega.enableExternalUrls: false
+
+# Advanced Settings cho Vietnamese Content
+advanced_settings.require_confirmation: ["visualization:tileMap:maxPrecision"]
+
+# Security Settings (Development)
+xpack.security.enabled: false
+xpack.encryptedSavedObjects.encryptionKey: "airbnb-kibana-encryption-key-32-chars"
+
+# Monitoring Settings
+xpack.monitoring.enabled: false
+xpack.monitoring.kibana.collection.enabled: false
+
+# Alerting Settings (if needed)
+xpack.alerting.healthCheck.interval: "60s"
+
+# Saved Objects Settings
+savedObjects.maxImportPayloadBytes: 26214400
+
+# Data Views Settings
+data_views.cache.max_age: "10s"
+
+# Search Settings cho Vietnamese
+search.timeout: 30000
+courier.maxConcurrentShardRequests: 5
+
+# Dashboard Settings
+dashboard.defaultDarkMode: false
+
+# Discover Settings
+discover.sampleSize: 500
+discover.maxDocFieldsDisplayed: 50
+
+# Histogram Settings
+histogram.barTarget: 50
+histogram.maxBars: 100
+
+# Format Settings cho Vietnamese
+format:currency:defaultPattern: "₫ 0,0.[00]"
+format:bytes:defaultPattern: "0,0.[0] b"
+format:percent:defaultPattern: "0,0.[000]%"
+format:number:defaultPattern: "0,0.[000]"
+
+# Date Settings cho Vietnamese Format
+dateFormat: "DD/MM/YYYY"
+dateFormat:tz: "Asia/Ho_Chi_Minh"
+dateFormat:dow: "Monday"
+
+# CSV Export Settings với Vietnamese Support
+csv:separator: ","
+csv:quoteValues: true
+
+# Notification Settings
+notifications.lifetime.banner: 3000
+notifications.lifetime.info: 5000
+notifications.lifetime.warning: 10000
+notifications.lifetime.error: 300000
+
+# State Management
+state:storeInSessionStorage: false
+
+# URL Settings
+url:maxLength: 2083
+
+# Theme Settings
+theme:darkMode: false

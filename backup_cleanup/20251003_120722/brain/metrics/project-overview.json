@@ -1,0 +1,95 @@
+{
+  "title": "Thống Kê Dự Án Tổng Quan",
+  "project": {
+    "name": "Airbnb Revenue WebApp",
+    "version": "1.0.0",
+    "domain": "PMS",
+    "status": "Production Ready"
+  },
+  "phases_completed": [
+    {
+      "phase": "Phase 1",
+      "name": "Foundation Setup",
+      "completion": 100,
+      "duration_days": 14
+    },
+    {
+      "phase": "Phase 2", 
+      "name": "Core Backend Development",
+      "completion": 100,
+      "duration_days": 21
+    },
+    {
+      "phase": "Phase 3",
+      "name": "Frontend Templates & UI",
+      "completion": 100,
+      "duration_days": 18
+    },
+    {
+      "phase": "Phase 4",
+      "name": "CSV Processing System",
+      "completion": 100,
+      "duration_days": 12
+    },
+    {
+      "phase": "Phase 5",
+      "name": "Expense Management",
+      "completion": 90,
+      "duration_days": 15
+    },
+    {
+      "phase": "Phase 6",
+      "name": "Reports & Analytics",
+      "completion": 85,
+      "duration_days": 10
+    },
+    {
+      "phase": "Phase 7",
+      "name": "Brain UI Authentication",
+      "completion": 100,
+      "duration_days": 8
+    },
+    {
+      "phase": "Phase 8",
+      "name": "Logging & Task Management",
+      "completion": 100,
+      "duration_days": 6
+    },
+    {
+      "phase": "Phase 9",
+      "name": "Dashboard Analytics",
+      "completion": 25,
+      "duration_days": 5
+    }
+  ],
+  "task_statistics": {
+    "total_tasks": 45,
+    "completed_tasks": 32,
+    "in_progress_tasks": 8,
+    "pending_tasks": 4,
+    "blocked_tasks": 1,
+    "cancelled_tasks": 0
+  },
+  "performance_metrics": {
+    "code_quality": 92,
+    "test_coverage": 78,
+    "documentation": 88,
+    "performance_score": 85
+  },
+  "timeline": {
+    "project_start": "2025-07-01",
+    "current_date": "2025-09-27",
+    "estimated_completion": "2025-10-15",
+    "days_elapsed": 88,
+    "days_remaining": 18,
+    "overall_progress": 78
+  },
+  "team_productivity": {
+    "commits_this_week": 24,
+    "files_changed": 156,
+    "lines_added": 3420,
+    "lines_removed": 890,
+    "active_contributors": 3
+  },
+  "last_updated": "2025-09-27T17:30:00Z"
+}

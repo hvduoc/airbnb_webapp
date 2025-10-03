@@ -1,0 +1,168 @@
+/* Enhanced Task Management Styles */
+
+/* Action Buttons */
+.cot-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.nut-sua,
+.nut-luu,
+.nut-huy {
+  padding: 6px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nut-sua {
+  background: var(--mau-chinh);
+  color: white;
+}
+
+.nut-sua:hover:not(:disabled) {
+  background: var(--mau-chinh-dam);
+}
+
+.nut-luu {
+  background: var(--mau-thanh-cong);
+  color: white;
+}
+
+.nut-luu:hover:not(:disabled) {
+  background: #059669;
+}
+
+.nut-huy {
+  background: var(--mau-loi);
+  color: white;
+}
+
+.nut-huy:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.nhom-nut-sua {
+  display: flex;
+  gap: 4px;
+}
+
+.nut-sua:disabled,
+.nut-luu:disabled,
+.nut-huy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Enhanced Task Columns */
+.cot-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phase-name {
+  font-size: 0.8rem;
+  color: var(--chu-phu);
+  background: var(--vien-nhe);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.latest-comment {
+  background: var(--nen-phu);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--chu-phu);
+  margin-top: 8px;
+  border-left: 3px solid var(--mau-chinh);
+}
+
+.cot-trang-thai select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--vien);
+  border-radius: 6px;
+  background: var(--nen-input);
+  color: var(--chu-chinh);
+  font-size: 0.9rem;
+}
+
+.cot-assignee {
+  font-size: 0.9rem;
+  color: var(--chu-phu);
+}
+
+/* Status colors */
+.text-green { color: var(--mau-thanh-cong); }
+.text-blue { color: var(--mau-chinh); }
+.text-yellow { color: var(--mau-canh-bao); }
+.text-orange { color: #f59e0b; }
+
+.trang-thai-huy {
+  background: #6b7280;
+  color: white;
+}
+
+/* Header enhancements */
+.nhom-nut-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nut-tai-lai {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--mau-chinh);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nut-tai-lai:hover:not(:disabled) {
+  background: var(--mau-chinh-dam);
+  transform: translateY(-1px);
+}
+
+.nut-tai-lai:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nut-tai-lai .spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Grid updates for new columns */
+.header-bang {
+  grid-template-columns: 100px 1fr 130px 120px 100px 120px 100px;
+}
+
+.dong-task {
+  grid-template-columns: 100px 1fr 130px 120px 100px 120px 100px;
+}
+
+/* Responsive updates */
+@media (max-width: 1200px) {
+  .header-bang,
+  .dong-task {
+    grid-template-columns: 80px 1fr 110px 100px 80px 100px 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cot-assignee::before { content: "Người làm: "; font-weight: 600; }
+  .cot-actions::before { content: "Thao tác: "; font-weight: 600; }
+}

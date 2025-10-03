@@ -1,0 +1,333 @@
+/* ThongBaoSync CSS - Notification và Sync Status UI */
+
+.thong-bao-sync-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Notification Toast */
+.notification-toast {
+  background: var(--nen-the);
+  border: 1px solid var(--mau-thanh-cong);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  animation: slideInRight 0.3s ease-out;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.toast-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.toast-content svg {
+  color: var(--mau-thanh-cong);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.toast-title {
+  font-weight: 600;
+  color: var(--chu-chinh);
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.toast-message {
+  color: var(--chu-phu);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--chu-phu);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  background: var(--nen-phu);
+  color: var(--chu-chinh);
+}
+
+/* Sync Status Widget */
+.sync-status-widget {
+  background: var(--nen-the);
+  border: 1px solid var(--vien);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.sync-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sync-header h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--chu-chinh);
+  margin: 0;
+}
+
+.btn-refresh {
+  background: none;
+  border: 1px solid var(--vien);
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--chu-phu);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: var(--mau-chinh);
+  color: white;
+  border-color: var(--mau-chinh);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-refresh.spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+/* Sync Status */
+.sync-status {
+  border-top: 1px solid var(--vien-nhe);
+  padding-top: 12px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.status-text {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.status-text.success {
+  color: var(--mau-thanh-cong);
+}
+
+.status-text.error {
+  color: var(--mau-loi);
+}
+
+.status-text.processing {
+  color: var(--mau-canh-bao);
+}
+
+.sync-time {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--chu-phu);
+}
+
+.sync-details {
+  background: var(--nen-phu);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.sync-details > div {
+  margin-bottom: 4px;
+}
+
+.sync-details > div:last-child {
+  margin-bottom: 0;
+}
+
+.commit-info {
+  color: var(--mau-chinh);
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.commit-message {
+  color: var(--chu-chinh);
+  font-style: italic;
+}
+
+.author {
+  color: var(--chu-phu);
+}
+
+.files-changed {
+  color: var(--chu-phu);
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.error-message {
+  color: var(--mau-loi);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+/* Loading và No Data */
+.no-sync-data,
+.loading-sync {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: var(--chu-phu);
+  font-size: 0.9rem;
+}
+
+.loading-sync svg.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Sync History */
+.sync-history {
+  background: var(--nen-the);
+  border: 1px solid var(--vien);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sync-history h5 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--chu-chinh);
+  margin: 0 0 12px 0;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  background: var(--nen-phu);
+  border-radius: 8px;
+  padding: 10px;
+  border-left: 3px solid var(--vien);
+}
+
+.history-item.success {
+  border-left-color: var(--mau-thanh-cong);
+}
+
+.history-item.error {
+  border-left-color: var(--mau-loi);
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.history-time {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--chu-phu);
+}
+
+.history-details {
+  font-size: 0.8rem;
+}
+
+.commit-short {
+  color: var(--chu-chinh);
+  font-family: 'Monaco', 'Menlo', monospace;
+  margin-bottom: 2px;
+}
+
+.files-count {
+  color: var(--chu-phu);
+  font-style: italic;
+}
+
+/* Animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .thong-bao-sync-container {
+    left: 20px;
+    right: 20px;
+    top: 20px;
+    max-width: none;
+  }
+  
+  .notification-toast,
+  .sync-status-widget,
+  .sync-history {
+    border-radius: 8px;
+    padding: 12px;
+  }
+  
+  .toast-title {
+    font-size: 0.8rem;
+  }
+  
+  .toast-message {
+    font-size: 0.7rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .notification-toast,
+  .sync-status-widget,
+  .sync-history {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+}

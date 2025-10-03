@@ -1,0 +1,331 @@
+# =====================================================
+# ALERTMANAGER CONFIGURATION
+# Airbnb WebApp - Vietnamese Alert Management
+# =====================================================
+
+# Global Configuration
+global:
+  # SMTP settings cho email notifications
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'airbnb-alerts@your-company.com'
+  smtp_auth_username: 'airbnb-alerts@your-company.com'
+  smtp_auth_password: 'your-app-password'
+  smtp_require_tls: true
+  
+  # Slack webhook URL (optional)
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+  
+  # Resolve timeout
+  resolve_timeout: 5m
+
+# Templates cho Vietnamese notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# =====================================================
+# ROUTING RULES - VIETNAMESE ALERT ROUTING
+# =====================================================
+
+route:
+  # Default receiver
+  receiver: 'default-notifications'
+  
+  # Group alerts by severity và category
+  group_by: ['alertname', 'severity', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 24h
+  
+  # Routing rules cho different alert types
+  routes:
+    # Critical Database Issues
+    - match:
+        severity: critical
+        category: database
+      receiver: 'database-critical'
+      group_wait: 10s
+      repeat_interval: 30m
+      
+    # Application Performance Issues  
+    - match:
+        severity: warning
+        category: performance
+      receiver: 'performance-warnings'
+      group_wait: 2m
+      repeat_interval: 2h
+      
+    # Business Metric Alerts
+    - match:
+        category: business
+      receiver: 'business-alerts'
+      group_wait: 1m
+      repeat_interval: 6h
+      
+    # Security Alerts
+    - match:
+        category: security
+      receiver: 'security-alerts'
+      group_wait: 5s
+      repeat_interval: 15m
+      
+    # Booking System Issues
+    - match:
+        service: booking
+      receiver: 'booking-system-alerts'
+      group_wait: 30s
+      repeat_interval: 1h
+      
+    # Payment Processing Issues
+    - match:
+        service: payment
+      receiver: 'payment-system-alerts'
+      group_wait: 15s
+      repeat_interval: 30m
+
+# =====================================================
+# RECEIVERS - NOTIFICATION CHANNELS
+# =====================================================
+
+receivers:
+  # Default notification channel
+  - name: 'default-notifications'
+    email_configs:
+      - to: 'admin@your-company.com'
+        subject: '[Airbnb WebApp] Cảnh báo: {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 **Cảnh báo hệ thống Airbnb WebApp**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Mức độ**: {{ .CommonLabels.severity }}
+          **Dịch vụ**: {{ .CommonLabels.service }}
+          
+          **Chi tiết cảnh báo**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            Thời gian bắt đầu: {{ .StartsAt.Format "02/01/2006 15:04:05" }}
+          {{ end }}
+          
+          **Hành động cần thiết**:
+          - Kiểm tra dashboard: http://localhost:3000
+          - Xem logs: http://localhost:5601
+          - Trạng thái hệ thống: http://localhost:8000/health
+          
+          Trân trọng,
+          Hệ thống giám sát Airbnb WebApp
+        
+        headers:
+          Subject: '[Airbnb WebApp] Cảnh báo hệ thống'
+
+  # Critical Database Alerts
+  - name: 'database-critical'
+    email_configs:
+      - to: 'dba@your-company.com, admin@your-company.com'
+        subject: '[KHẨN CẤP] Sự cố cơ sở dữ liệu Airbnb'
+        body: |
+          🔴 **SỰ CỐ KHẨN CẤP - CƠ SỞ DỮ LIỆU AIRBNB**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Loại sự cố**: Cơ sở dữ liệu không khả dụng
+          
+          **Chi tiết sự cố**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            Database: {{ .Labels.database }}
+            Host: {{ .Labels.instance }}
+          {{ end }}
+          
+          **HÀNH ĐỘNG NGAY LẬP TỨC**:
+          1. Kiểm tra kết nối database
+          2. Xem logs PostgreSQL: docker logs airbnb_postgres
+          3. Kiểm tra disk space và memory
+          4. Liên hệ team DevOps nếu cần thiết
+          
+          **Links hữu ích**:
+          - Database monitoring: http://localhost:3000/d/postgres
+          - System health: http://localhost:8000/health
+          
+          ⚠️ **Lưu ý**: Hệ thống booking có thể bị ảnh hưởng!
+        
+    # Slack notification cho database issues
+    slack_configs:
+      - channel: '#airbnb-alerts'
+        title: '🔴 Sự cố cơ sở dữ liệu Airbnb'
+        text: |
+          **Sự cố KHẨN CẤP**: Cơ sở dữ liệu Airbnb không khả dụng
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          
+          {{ range .Alerts }}
+          • {{ .Annotations.summary }}
+          {{ end }}
+          
+          👥 <@channel> - Cần xử lý ngay lập tức!
+
+  # Performance Warning Alerts
+  - name: 'performance-warnings'
+    email_configs:
+      - to: 'dev-team@your-company.com'
+        subject: '[Cảnh báo] Hiệu suất hệ thống Airbnb'
+        body: |
+          ⚠️ **CẢNH BÁO HIỆU SUẤT - AIRBNB WEBAPP**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Loại cảnh báo**: Hiệu suất hệ thống
+          
+          **Chi tiết**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            Giá trị hiện tại: {{ .Annotations.value }}
+            Ngưỡng cảnh báo: {{ .Annotations.threshold }}
+          {{ end }}
+          
+          **Hành động được đề xuất**:
+          - Kiểm tra CPU và memory usage
+          - Xem slow queries trong database
+          - Theo dõi response time của API
+          - Kiểm tra số lượng concurrent users
+          
+          **Monitoring dashboards**:
+          - Application metrics: http://localhost:3000/d/app-performance
+          - Database performance: http://localhost:3000/d/postgres-performance
+
+  # Business Metric Alerts
+  - name: 'business-alerts'
+    email_configs:
+      - to: 'business-team@your-company.com, admin@your-company.com'
+        subject: '[Kinh doanh] Cảnh báo chỉ số Airbnb'
+        body: |
+          📊 **CẢNH BÁO CHỈ SỐ KINH DOANH - AIRBNB**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Loại cảnh báo**: Chỉ số kinh doanh
+          
+          **Chi tiết**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            Giá trị: {{ .Annotations.value }}
+            Mức bình thường: {{ .Annotations.expected }}
+          {{ end }}
+          
+          **Các chỉ số cần theo dõi**:
+          - Số lượng booking mới
+          - Doanh thu theo ngày/tuần
+          - Tỷ lệ hủy booking
+          - Thời gian phản hồi trung bình
+          
+          **Dashboard kinh doanh**:
+          - Revenue tracking: http://localhost:3000/d/revenue
+          - Booking analytics: http://localhost:3000/d/bookings
+
+  # Security Alerts
+  - name: 'security-alerts'
+    email_configs:
+      - to: 'security@your-company.com, admin@your-company.com'
+        subject: '[BẢO MẬT] Cảnh báo an ninh Airbnb'
+        body: |
+          🛡️ **CẢNH BÁO BẢO MẬT - AIRBNB WEBAPP**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Loại cảnh báo**: An ninh hệ thống
+          **Mức độ ưu tiên**: {{ .CommonLabels.severity }}
+          
+          **Chi tiết sự kiện**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            IP address: {{ .Labels.source_ip }}
+            User agent: {{ .Labels.user_agent }}
+          {{ end }}
+          
+          **Hành động khuyến nghị**:
+          - Kiểm tra access logs
+          - Xem chi tiết trong Kibana
+          - Theo dõi IP addresses đáng ngờ
+          - Kiểm tra authentication logs
+          
+          **Security monitoring**:
+          - Access logs: http://localhost:5601
+          - Security dashboard: http://localhost:3000/d/security
+
+  # Booking System Alerts
+  - name: 'booking-system-alerts'
+    email_configs:
+      - to: 'booking-team@your-company.com'
+        subject: '[Đặt phòng] Cảnh báo hệ thống booking'
+        body: |
+          🏠 **CẢNH BÁO HỆ THỐNG ĐẶT PHÒNG**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Dịch vụ**: Hệ thống đặt phòng
+          
+          **Chi tiết**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            Property ID: {{ .Labels.property_id }}
+            Booking ID: {{ .Labels.booking_id }}
+          {{ end }}
+          
+          **Impact đối với khách hàng**:
+          - Có thể ảnh hưởng đến việc đặt phòng mới
+          - Khách hàng có thể gặp lỗi khi thanh toán
+          - Cần kiểm tra và xử lý nhanh chóng
+          
+          **Monitoring**:
+          - Booking dashboard: http://localhost:3000/d/bookings
+          - API health: http://localhost:8000/health
+
+  # Payment System Alerts  
+  - name: 'payment-system-alerts'
+    email_configs:
+      - to: 'payment-team@your-company.com, finance@your-company.com'
+        subject: '[Thanh toán] Cảnh báo hệ thống thanh toán'
+        body: |
+          💳 **CẢNH BÁO HỆ THỐNG THANH TOÁN**
+          
+          **Thời gian**: {{ .CommonAnnotations.timestamp }}
+          **Dịch vụ**: Xử lý thanh toán
+          **Mức độ**: {{ .CommonLabels.severity }}
+          
+          **Chi tiết**:
+          {{ range .Alerts }}
+          - **{{ .Annotations.summary }}**
+            Mô tả: {{ .Annotations.description }}
+            Payment ID: {{ .Labels.payment_id }}
+            Amount: {{ .Labels.amount }} VND
+          {{ end }}
+          
+          **Impact tài chính**:
+          - Có thể ảnh hưởng đến doanh thu
+          - Cần kiểm tra giao dịch thất bại
+          - Liên hệ ngân hàng nếu cần thiết
+          
+          **Hành động cần thiết**:
+          - Kiểm tra payment gateway status
+          - Xem transaction logs
+          - Verify với banking partner
+          
+          **Financial monitoring**:
+          - Payment dashboard: http://localhost:3000/d/payments
+          - Transaction logs: http://localhost:5601
+
+# =====================================================
+# INHIBIT RULES - PREVENT ALERT SPAM
+# =====================================================
+
+inhibit_rules:
+  # Inhibit warning nếu có critical alert cùng service
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['service', 'instance']
+    
+  # Inhibit lower priority alerts during maintenance
+  - source_match:
+      alertname: 'MaintenanceMode'
+    target_match_re:
+      severity: 'warning|info'

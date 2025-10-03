@@ -1,0 +1,88 @@
+# =====================================================
+# ELASTICSEARCH CONFIGURATION
+# Airbnb WebApp - Vietnamese Localization
+# =====================================================
+
+# Node và Cluster Settings
+cluster.name: "airbnb-logging-cluster"
+node.name: "elasticsearch-node-1"
+node.roles: ["master", "data", "ingest"]
+
+# Network Settings
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+
+# Discovery Settings (Single node for development)
+discovery.type: single-node
+cluster.initial_master_nodes: ["elasticsearch-node-1"]
+
+# Memory Settings
+bootstrap.memory_lock: true
+indices.memory.index_buffer_size: 30%
+
+# Index Settings với Vietnamese Support
+index.codec: best_compression
+index.number_of_shards: 1
+index.number_of_replicas: 0
+index.refresh_interval: 5s
+
+# Vietnamese Text Analysis
+index.analysis.analyzer.vietnamese_analyzer.type: custom
+index.analysis.analyzer.vietnamese_analyzer.tokenizer: standard
+index.analysis.analyzer.vietnamese_analyzer.filter: ["lowercase", "stop"]
+
+# Security Settings (Development)
+xpack.security.enabled: false
+xpack.security.enrollment.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# Monitoring Settings
+xpack.monitoring.collection.enabled: true
+xpack.monitoring.collection.interval: 30s
+
+# Index Lifecycle Management
+xpack.ilm.enabled: true
+
+# Logging Settings
+logger.root: INFO
+logger.org.elasticsearch.index.search.slowlog: DEBUG, index_search_slow_log_file
+logger.org.elasticsearch.index.indexing.slowlog: DEBUG, index_indexing_slow_log_file
+
+# Slow Log Settings
+index.search.slowlog.threshold.query.warn: 10s
+index.search.slowlog.threshold.query.info: 5s
+index.search.slowlog.threshold.query.debug: 2s
+index.search.slowlog.threshold.fetch.warn: 1s
+index.search.slowlog.threshold.fetch.info: 800ms
+index.search.slowlog.threshold.fetch.debug: 500ms
+
+index.indexing.slowlog.threshold.index.warn: 10s
+index.indexing.slowlog.threshold.index.info: 5s
+index.indexing.slowlog.threshold.index.debug: 2s
+
+# Circuit Breaker Settings
+indices.breaker.total.limit: 70%
+indices.breaker.fielddata.limit: 40%
+indices.breaker.request.limit: 30%
+
+# Thread Pool Settings
+thread_pool.write.queue_size: 200
+thread_pool.search.queue_size: 1000
+
+# Action Settings cho Vietnamese Content
+action.auto_create_index: true
+action.destructive_requires_name: true
+
+# Snapshot Settings
+path.repo: ["/usr/share/elasticsearch/backup"]
+
+# Vietnamese Locale Settings
+cluster.routing.allocation.disk.threshold_enabled: false
+cluster.routing.allocation.disk.watermark.low: 85%
+cluster.routing.allocation.disk.watermark.high: 90%
+cluster.routing.allocation.disk.watermark.flood_stage: 95%
+
+# Index Templates cho Airbnb Logs
+index.auto_expand_replicas: "0-1"

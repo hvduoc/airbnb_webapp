@@ -1,0 +1,69 @@
+{
+  "title": "Doanh Thu Booking Theo Tháng",
+  "data": [
+    {
+      "month": "Tháng 1",
+      "revenue": 45000000,
+      "bookings": 28,
+      "adr": 1607143
+    },
+    {
+      "month": "Tháng 2", 
+      "revenue": 52000000,
+      "bookings": 31,
+      "adr": 1677419
+    },
+    {
+      "month": "Tháng 3",
+      "revenue": 48000000,
+      "bookings": 29,
+      "adr": 1655172
+    },
+    {
+      "month": "Tháng 4",
+      "revenue": 56000000,
+      "bookings": 34,
+      "adr": 1647059
+    },
+    {
+      "month": "Tháng 5",
+      "revenue": 61000000,
+      "bookings": 37,
+      "adr": 1648649
+    },
+    {
+      "month": "Tháng 6",
+      "revenue": 58000000,
+      "bookings": 35,
+      "adr": 1657143
+    },
+    {
+      "month": "Tháng 7",
+      "revenue": 67000000,
+      "bookings": 41,
+      "adr": 1634146
+    },
+    {
+      "month": "Tháng 8",
+      "revenue": 72000000,
+      "bookings": 43,
+      "adr": 1674419
+    },
+    {
+      "month": "Tháng 9",
+      "revenue": 54000000,
+      "bookings": 32,
+      "adr": 1687500
+    }
+  ],
+  "summary": {
+    "total_revenue": 533000000,
+    "total_bookings": 310,
+    "average_adr": 1719355,
+    "growth_rate": 23.5,
+    "best_month": "Tháng 8",
+    "peak_season": "Tháng 6 - Tháng 8"
+  },
+  "last_updated": "2025-09-27T17:30:00Z",
+  "currency": "VND"
+}

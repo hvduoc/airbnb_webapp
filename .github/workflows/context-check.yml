@@ -1,0 +1,181 @@
+name: 🧠 Brain Files Context Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  brain-context-check:
+    runs-on: ubuntu-latest
+    name: Validate Brain Context System
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🧠 Check Brain Files Exist
+      run: |
+        echo "🔍 Checking mandatory .brain files..."
+        
+        # Core brain files that MUST exist
+        REQUIRED_FILES=(
+          ".brain/README.md"
+          ".brain/CONTEXT_INDEX.md" 
+          ".brain/SCOPE.md"
+          ".brain/ACTIVE_TASKS.json"
+          ".brain/DOMAIN_MAP.md"
+          ".brain/PLAYBOOKS/COPILOT_GUARDRAILS.md"
+        )
+        
+        MISSING_FILES=()
+        
+        for file in "${REQUIRED_FILES[@]}"; do
+          if [ ! -f "$file" ]; then
+            MISSING_FILES+=("$file")
+          else
+            echo "✅ Found: $file"
+          fi
+        done
+        
+        if [ ${#MISSING_FILES[@]} -ne 0 ]; then
+          echo "❌ MISSING REQUIRED BRAIN FILES:"
+          printf '%s\n' "${MISSING_FILES[@]}"
+          echo ""
+          echo "🚨 AI agents CANNOT work without complete brain context!"
+          echo "📖 See .brain/README.md for setup instructions"
+          exit 1
+        fi
+        
+        echo "🎉 All required brain files present!"
+        
+    - name: 📊 Validate ACTIVE_TASKS.json Structure
+      run: |
+        echo "🔍 Validating ACTIVE_TASKS.json structure..."
+        
+        # Check if ACTIVE_TASKS.json is valid JSON
+        if ! python3 -m json.tool .brain/ACTIVE_TASKS.json > /dev/null; then
+          echo "❌ ACTIVE_TASKS.json is not valid JSON!"
+          exit 1
+        fi
+        
+        # Check required fields exist in tasks
+        python3 << 'EOF'
+        import json
+        import sys
+        
+        with open('.brain/ACTIVE_TASKS.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        if 'tasks' not in data:
+            print("❌ Missing 'tasks' key in ACTIVE_TASKS.json")
+            sys.exit(1)
+        
+        required_fields = ['id', 'name', 'scope', 'non_goals', 'constraints', 'dod']
+        
+        for task in data['tasks']:
+            for field in required_fields:
+                if field not in task:
+                    print(f"❌ Missing '{field}' in task: {task.get('name', 'Unknown')}")
+                    sys.exit(1)
+            
+            # Validate DoD structure
+            if not isinstance(task.get('dod'), list) or len(task['dod']) == 0:
+                print(f"❌ Task '{task['name']}' must have non-empty DoD array")
+                sys.exit(1)
+        
+        print(f"✅ ACTIVE_TASKS.json structure valid with {len(data['tasks'])} tasks")
+        EOF
+        
+    - name: 🎯 Check Scope Alignment
+      run: |
+        echo "🔍 Checking scope alignment between SCOPE.md and ACTIVE_TASKS.json..."
+        
+        # Extract project constraints from SCOPE.md
+        if grep -q "internal operations" .brain/SCOPE.md; then
+          echo "✅ Internal operations focus confirmed in SCOPE.md"
+        else
+          echo "⚠️  WARNING: SCOPE.md missing internal operations focus"
+        fi
+        
+        # Check that tasks don't exceed 6-month timeline
+        python3 << 'EOF'
+        import json
+        import re
+        
+        with open('.brain/ACTIVE_TASKS.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Look for tasks that might be too ambitious
+        ambitious_keywords = ['marketplace', 'external', 'api', 'integration', 'scaling']
+        warnings = []
+        
+        for task in data['tasks']:
+            task_text = (task['name'] + ' ' + task['scope']).lower()
+            
+            for keyword in ambitious_keywords:
+                if keyword in task_text:
+                    warnings.append(f"Task '{task['name']}' contains ambitious keyword: {keyword}")
+        
+        if warnings:
+            print("⚠️  SCOPE WARNINGS:")
+            for warning in warnings:
+                print(f"   {warning}")
+            print("🎯 Remember: Internal operations focus for first 6 months!")
+        else:
+            print("✅ All tasks align with internal operations scope")
+        EOF
+        
+    - name: 📝 Generate Context Health Report  
+      run: |
+        echo "📊 BRAIN CONTEXT HEALTH REPORT" > brain_health.md
+        echo "Generated: $(date)" >> brain_health.md
+        echo "" >> brain_health.md
+        
+        # Count files in each brain directory
+        echo "## 📁 File Counts" >> brain_health.md
+        echo "- Core files: $(ls .brain/*.md .brain/*.json 2>/dev/null | wc -l)" >> brain_health.md
+        echo "- Playbooks: $(find .brain/PLAYBOOKS -name '*.md' 2>/dev/null | wc -l)" >> brain_health.md  
+        echo "- Decision logs: $(find .brain/DECISIONS -name '*.md' 2>/dev/null | wc -l)" >> brain_health.md
+        echo "- Daily logs: $(find .brain/LOG/daily -name '*.md' 2>/dev/null | wc -l)" >> brain_health.md
+        echo "" >> brain_health.md
+        
+        # Active tasks summary
+        echo "## 🎯 Active Tasks Summary" >> brain_health.md
+        python3 << 'EOF' >> brain_health.md
+        import json
+        
+        with open('.brain/ACTIVE_TASKS.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        for task in data['tasks']:
+            print(f"- **{task['id']}**: {task['name']}")
+            print(f"  - DoD Items: {len(task['dod'])}")
+            print(f"  - Constraints: {len(task['constraints'])}")
+        EOF
+        
+        echo "" >> brain_health.md
+        echo "## ✅ Status: HEALTHY" >> brain_health.md
+        echo "All required brain files present and valid." >> brain_health.md
+        
+        cat brain_health.md
+        
+    - name: 🚨 Context Failure Action
+      if: failure()
+      run: |
+        echo ""
+        echo "🚨 BRAIN CONTEXT CHECK FAILED!"
+        echo ""
+        echo "📖 AI agents require complete context to work effectively."
+        echo "🔧 Fix missing/invalid files before merging."
+        echo "📚 Reference: .brain/README.md for complete setup guide"
+        echo ""
+        echo "Common fixes:"
+        echo "  1. Run setup script to generate missing files"
+        echo "  2. Validate JSON syntax in ACTIVE_TASKS.json"  
+        echo "  3. Ensure all tasks have required fields"
+        echo "  4. Check scope alignment between files"
+        
+        exit 1
