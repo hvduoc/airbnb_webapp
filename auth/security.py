@@ -14,15 +14,14 @@ from sqlmodel import Session, select
 from models import User, UserSession
 
 # Security configuration from environment
-SECRET_KEY = os.getenv("SECRET_KEY", "airbnb-webapp-secret-key-change-in-production")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable must be set!")
+
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", "12"))
-
-# Validate critical security settings
-if SECRET_KEY == "airbnb-webapp-secret-key-change-in-production":
-    print("WARNING: Using default SECRET_KEY! Change this in production!")
 
 # Password hashing - Production-grade bcrypt configuration
 pwd_context = CryptContext(

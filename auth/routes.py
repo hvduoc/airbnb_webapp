@@ -91,8 +91,8 @@ async def login_form(
     return response
 
 @router.get("/logout")
-async def logout():
-    """Logout user"""
+async def logout_get():
+    """Logout user (GET)"""
     response = RedirectResponse(url="/auth/login", status_code=status.HTTP_302_FOUND)
     response.delete_cookie(key="access_token")
     return response

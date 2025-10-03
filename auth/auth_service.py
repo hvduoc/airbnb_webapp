@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 import jwt
-from fastapi import Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from sqlmodel import Session, select
@@ -19,7 +19,10 @@ from services.google_sheets.models import (LoginRequest, PaymentUser,
                                            TokenResponse, UserRole)
 
 # Configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY or JWT_SECRET_KEY environment variable must be set!")
+    
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 8 * 60  # 8 hours
 
@@ -98,7 +101,7 @@ class AuthService:
         import json
         try:
             accessible_properties = json.loads(user.accessible_properties or "[]")
-        except:
+        except (json.JSONDecodeError, TypeError):
             accessible_properties = []
         
         # Map role to UserRole enum
@@ -162,8 +165,6 @@ def require_role(allowed_roles: List[UserRole]):
     return decorator
 
 # Authentication routes
-from fastapi import APIRouter
-
 auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 @auth_router.post("/login", response_model=TokenResponse)
@@ -214,6 +215,14 @@ async def logout(
 ):
     """Logout (client should discard token)"""
     return {"message": "Successfully logged out"}
+
+# Additional dependency functions for main app compatibility
+async def get_current_user_or_redirect(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    session: Session = Depends(get_session)
+) -> PaymentUser:
+    """Get current user or raise 401 (compatibility function for main.py)"""
+    return await get_current_user(credentials, session)
 
 # Export auth service instance
 auth_service = AuthService()

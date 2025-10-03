@@ -1,24 +1,44 @@
-# 🧠 HỆ THỐNG BỘ NÃO AI - AIRBNB WEBAPP# 🧠 .brain - BỘ NÃO DỰ ÁN AIRBNB WEBAPP
+# 🧠 Brain System - Airbnb WebApp# 🧠 HỆ THỐNG BỘ NÃO AI - AIRBNB WEBAPP# 🧠 .brain - BỘ NÃO DỰ ÁN AIRBNB WEBAPP
 
 
+
+## Overview
+
+This directory contains context and configuration files for AI agent collaboration.
 
 ## 🎯 **TỔNG QUAN HỆ THỐNG**> **Mục tiêu**: Ngăn chặn AI "quên ngữ cảnh" và "lạc scope" - đảm bảo mọi phiên làm việc đều có context đầy đủ và focus đúng mục tiêu.
 
+## Key Files
+
+- `CONTEXT_INDEX.md` - Project overview and navigation
+
+- `ACTIVE_TASKS.json` - Current task tracking and status
+
+- `SCOPE.md` - Project boundaries and objectives**Bộ não AI** là hệ thống quản lý nội bộ chuyên nghiệp để giám sát, điều khiển và tối ưu hóa quá trình phát triển dự án Airbnb Revenue Management System.---
 
 
-**Bộ não AI** là hệ thống quản lý nội bộ chuyên nghiệp để giám sát, điều khiển và tối ưu hóa quá trình phát triển dự án Airbnb Revenue Management System.---
 
+## Purpose
 
+Provides structured context for AI agents to maintain focus and avoid scope drift during development sessions.
 
 ### **🏗️ Kiến Trúc Dual-Layer**## 📋 **CẤU TRÚC THƯ MỤC**
 
-```
+## Usage
 
-👥 CLIENT LAYER (WebApp):```
+1. Start session by reviewing CONTEXT_INDEX.md```
+
+2. Check ACTIVE_TASKS.json for current priorities
+
+3. Follow established patterns and guardrails👥 CLIENT LAYER (WebApp):```
+
+4. Update progress as work completes
 
 ├── Giao diện sạch sẽ, chuyên nghiệp/.brain/
 
-├── Tính năng nghiệp vụ cốt lõi├── README.md              # File này - hướng dẫn sử dụng
+## Integration
+
+The brain system integrates with CI/CD pipelines to ensure essential context files are present before code changes are merged.├── Tính năng nghiệp vụ cốt lõi├── README.md              # File này - hướng dẫn sử dụng
 
 ├── Hỗ trợ hoàn toàn Tiếng Việt├── CONTEXT_INDEX.md       # Danh mục tất cả context files
 

@@ -9,6 +9,7 @@ from contextlib import contextmanager
 
 from dotenv import load_dotenv
 from sqlalchemy.pool import QueuePool
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine
 
 load_dotenv()
@@ -72,7 +73,7 @@ def init_db():
         # Kiểm tra kết nối database
         with Session(engine) as session:
             # Test query để đảm bảo kết nối hoạt động
-            result = session.execute("SELECT 1").fetchone()
+            result = session.execute(text("SELECT 1")).fetchone()
             if result:
                 print("✅ Kết nối database đã được xác nhận")
             
@@ -109,7 +110,7 @@ def check_database_health():
     """Kiểm tra sức khỏe database connection"""
     try:
         with Session(engine) as session:
-            session.execute("SELECT 1").fetchone()
+            session.execute(text("SELECT 1")).fetchone()
             return {"status": "healthy", "message": "Database kết nối thành công"}
     except Exception as e:
         return {"status": "unhealthy", "message": f"Database lỗi kết nối: {str(e)}"}
