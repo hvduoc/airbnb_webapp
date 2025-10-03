@@ -5,13 +5,32 @@
     "focus": "Production deployment workflow",
     "status": "in_progress"
   },
-  "active_tasks": [
+  "tasks": [
     {
       "id": "PROD-001",
-      "title": "Fix production blockers and deploy",
+      "name": "Fix production blockers and deploy",
+      "scope": "Resolve 3 production blockers: auth import, DB health check, SECRET_KEY enforcement",
+      "non_goals": [
+        "Major architecture changes",
+        "New feature development",
+        "UI redesign"
+      ],
+      "constraints": [
+        "Must maintain backward compatibility",
+        "Zero downtime deployment required",
+        "All tests must pass"
+      ],
+      "dod": [
+        "All production blockers resolved",
+        "Tests passing (37/39 acceptable)",
+        "PR merged to main with CI green",
+        "Staging deployment successful",
+        "Smoke tests pass (health + sample APIs)",
+        "Canary monitoring shows 0 critical 5xx",
+        "Full production deployment complete"
+      ],
       "status": "code_complete",
       "priority": "critical",
-      "description": "Resolve 3 production blockers: auth import, DB health check, SECRET_KEY enforcement",
       "progress": {
         "completed": [
           "Fixed auth/auth_service.py - added get_current_user_or_redirect",
