@@ -22,11 +22,108 @@ from sqlmodel import func, select
 from models import (Booking, Channel, ExpenseCategory, ExtraCharge, Property,
                     Salesperson)
 
-from .base import BaseService
+from .base_service import BaseService
 
 
 class RevenueService(BaseService):
     """Revenue reporting and analytics with user context support"""
+    
+    def revenue_by_property(
+        self, 
+        start_date: date = None, 
+        end_date: date = None,
+        include_cancelled: bool = False
+    ) -> Dict:
+        """
+        Calculate revenue aggregated by property với user filtering.
+        
+        Args:
+            start_date: Start date for revenue calculation
+            end_date: End date for revenue calculation  
+            include_cancelled: Include cancelled bookings in calculation
+            
+        Returns:
+            Property revenue data with summary
+            
+        Raises:
+            HTTPException: 403 if insufficient permissions
+        """
+        # Check permission
+        self.require_permission("revenue", "read")
+        
+        # Build base query
+        query = select(
+            Booking.property_id,
+            Property.property_name,
+            func.count(Booking.id).label("total_bookings"),
+            func.sum(Booking.total_payout_vnd).label("total_revenue"),
+            func.avg(Booking.total_payout_vnd).label("avg_booking_value"),
+            func.min(Booking.start_date).label("first_booking"),
+            func.max(Booking.end_date).label("last_booking")
+        ).join(
+            Property, Booking.property_id == Property.id
+        ).group_by(
+            Booking.property_id, Property.property_name
+        )
+        
+        # Apply date filters
+        if start_date:
+            query = query.where(Booking.start_date >= start_date)
+        if end_date:
+            query = query.where(Booking.end_date <= end_date)
+            
+        # Filter booking status
+        if not include_cancelled:
+            query = query.where(Booking.status.in_(["confirmed", "completed", "checked_in"]))
+        
+        # Apply property-level filtering based on user permissions
+        filtered_query = self.apply_property_filter(query, "property_id")
+        
+        # Execute query
+        results = self.db.exec(filtered_query).all()
+        
+        # Format results
+        revenue_data = []
+        total_revenue = 0
+        total_bookings = 0
+        
+        for row in results:
+            revenue_amount = float(row.total_revenue or 0)
+            booking_count = int(row.total_bookings or 0)
+            avg_value = float(row.avg_booking_value or 0)
+            
+            revenue_data.append({
+                "property_id": row.property_id,
+                "property_name": row.property_name,
+                "total_bookings": booking_count,
+                "total_revenue": revenue_amount,
+                "avg_booking_value": avg_value,
+                "first_booking": row.first_booking.isoformat() if row.first_booking else None,
+                "last_booking": row.last_booking.isoformat() if row.last_booking else None,
+                "revenue_formatted": f"{revenue_amount:,.0f} VNĐ"
+            })
+            
+            total_revenue += revenue_amount
+            total_bookings += booking_count
+        
+        # Sort by revenue descending
+        revenue_data.sort(key=lambda x: x["total_revenue"], reverse=True)
+        
+        return {
+            "properties": revenue_data,
+            "summary": {
+                "total_properties": len(revenue_data),
+                "total_bookings": total_bookings,
+                "total_revenue": total_revenue,
+                "avg_revenue_per_property": total_revenue / len(revenue_data) if revenue_data else 0,
+                "period": {
+                    "start_date": start_date.isoformat() if start_date else None,
+                    "end_date": end_date.isoformat() if end_date else None,
+                    "include_cancelled": include_cancelled
+                },
+                "total_revenue_formatted": f"{total_revenue:,.0f} VNĐ"
+            }
+        }
     
     def compute_monthly_report(self, start_date: date, end_date: date, group_by: str) -> Tuple[List[Dict], Dict, Dict]:
         """
@@ -35,6 +132,9 @@ class RevenueService(BaseService):
         Returns:
             Tuple of (rows_data, totals_kpis, chart_data)
         """
+        # Check permission first
+        self.require_permission("revenue", "read")
+        
         try:
             # Load base data
             bookings = self._load_bookings()

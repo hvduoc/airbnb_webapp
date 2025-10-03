@@ -1442,6 +1442,33 @@ async def api_bookings(
             for b in bookings
         ])
 
+@app.get("/api/revenues")
+async def api_revenues(
+    current_user: User = Depends(get_optional_current_user),
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    include_cancelled: bool = Query(False, description="Include cancelled bookings")
+):
+    """Get revenue analysis by property với user-aware filtering"""
+    from services.revenue_service import RevenueService
+    from utils import parse_date_mixed
+    
+    with get_session_context() as session:
+        service = RevenueService(session, current_user)
+        
+        # Parse dates
+        start_parsed = parse_date_mixed(start_date) if start_date else None
+        end_parsed = parse_date_mixed(end_date) if end_date else None
+        
+        # Get revenue data
+        revenue_data = service.revenue_by_property(
+            start_date=start_parsed,
+            end_date=end_parsed,
+            include_cancelled=include_cancelled
+        )
+        
+        return service.format_response(revenue_data)
+
 @app.post("/api/csv/preview")
 async def api_csv_preview(
     files: List[UploadFile] = File(...),
