@@ -132,27 +132,59 @@
     "id": "PROJ-009",
     "title": "Revenue Service với Permission System",
     "title_en": "Revenue Service with Permissions", 
-    "status": "planned",
+    "status": "completed",
+    "completed_date": "2025-10-03",
     "priority": "high",
     "category": "feature",
     "phase": "Phase 1 - Foundation",
     "description": "Extract revenue logic với user permission filtering built-in",
+    "completion_summary": "✅ HOÀN THÀNH: RevenueService với BaseService integration, API endpoint, comprehensive testing",
+    "achievement": "💰 Complete revenue analytics with user-aware permissions and property filtering",
     "estimated_hours": 20,
+    "actual_hours": 4,
     "depends_on": ["PROJ-004", "PROJ-008"],
-    "week": "Week 2"
+    "technical_details": {
+      "files": ["services/revenue_service.py", "tests/test_revenue_service.py", "docs/PROJ-009-Revenue-Service.md"],
+      "key_features": [
+        "BaseService integration với user permissions",
+        "revenue_by_property() method với aggregations",
+        "API endpoint /api/revenues với date filtering",
+        "Property-level data filtering based on user access",
+        "Vietnamese currency formatting"
+      ],
+      "test_results": "8/8 passing tests covering permissions, filtering, aggregations",
+      "performance": "Database index recommendations for booking queries"
+    }
   },
   {
     "id": "PROJ-010",
-    "title": "Database Audit Trail System", 
-    "title_en": "Database with User Tracking",
-    "status": "planned",
+    "title": "Expense Service Implementation",
+    "title_en": "Expense Service with BaseService Integration", 
+    "status": "in_progress",
+    "started_date": "2025-10-03",
     "priority": "high", 
-    "category": "architecture",
+    "category": "feature",
     "phase": "Phase 1 - Foundation",
-    "description": "Add user tracking to all tables, audit logs, migration scripts",
+    "description": "Implement ExpenseService với user permission filtering, expense tracking, và property-based categorization",
     "estimated_hours": 25,
-    "depends_on": ["PROJ-004"],
-    "week": "Week 2"
+    "depends_on": ["PROJ-004", "PROJ-008", "PROJ-009"],
+    "acceptance_criteria": [
+      "services/expense_service.py extend BaseService",
+      "Methods: create_expense(data), list_expenses(filter), summary_by_property(start,end)",
+      "Endpoints: POST /api/expenses (create), GET /api/expenses (list)",
+      "Permissions: expense.create / expense.read required",
+      "DB migration: expenses table với proper indexes",
+      "5 unit tests covering all scenarios",
+      "Documentation và performance recommendations"
+    ],
+    "tasks": [
+      "🔧 Create branch feature/PROJ-010-expense-service",
+      "🗄️ Create Alembic migration for expenses table",
+      "⚙️ Implement ExpenseService với BaseService integration",
+      "🌐 Add API endpoints với Pydantic validation",
+      "🧪 Write comprehensive unit tests",
+      "📋 Create documentation và PR"
+    ]
   },
   {
     "id": "PROD-002",

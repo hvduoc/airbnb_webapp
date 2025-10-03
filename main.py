@@ -26,11 +26,15 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # Service Layer Imports
 from services.booking_service import BookingService
+from services.expense_service import ExpenseService
 from services.initialization_service import InitializationService
 from services.property_service import PropertyService
 from services.revenue_service import RevenueService
 from services.salesperson_service import SalespersonService
 from services.upload_service import UploadService
+
+# Pydantic schemas
+from schemas.expense_schemas import ExpenseCreateRequest, ExpenseListRequest, ExpenseSummaryRequest
 
 load_dotenv()  # <-- để tự động nạp .env
 
@@ -1468,6 +1472,107 @@ async def api_revenues(
         )
         
         return service.format_response(revenue_data)
+
+
+# ==================== EXPENSE API ENDPOINTS ====================
+
+@app.post("/api/expenses")
+async def create_expense(
+    expense_data: ExpenseCreateRequest,
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    Tạo expense mới với user permission checking
+    
+    Requires: expense.create permission
+    """
+    service = ExpenseService(db, current_user)
+    result = service.create_expense(expense_data.dict())
+    return result
+
+
+@app.get("/api/expenses")
+async def list_expenses(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    category_id: Optional[int] = Query(None, description="Lọc theo category"),
+    property_id: Optional[int] = Query(None, description="Lọc theo property"),
+    vendor: Optional[str] = Query(None, description="Lọc theo vendor"),
+    limit: int = Query(100, ge=1, le=1000, description="Số lượng kết quả"),
+    offset: int = Query(0, ge=0, description="Bỏ qua số kết quả (pagination)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    List expenses với filtering và pagination
+    
+    Requires: expense.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+    
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+    
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+    
+    service = ExpenseService(db, current_user)
+    result = service.list_expenses(
+        start_date=start_parsed,
+        end_date=end_parsed,
+        category_id=category_id,
+        property_id=property_id,
+        vendor=vendor,
+        limit=limit,
+        offset=offset
+    )
+    return result
+
+
+@app.get("/api/expenses/summary")
+async def expense_summary_by_property(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    Expense summary grouped by property
+    
+    Requires: expense.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+    
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+    
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+    
+    service = ExpenseService(db, current_user)
+    result = service.summary_by_property(
+        start_date=start_parsed,
+        end_date=end_parsed
+    )
+    return result
+
 
 @app.post("/api/csv/preview")
 async def api_csv_preview(
