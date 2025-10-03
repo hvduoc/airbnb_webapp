@@ -2,23 +2,23 @@
 Authentication routes for Airbnb webapp
 Handles login, logout, registration, and user management
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Form
+from datetime import datetime, timedelta
+from typing import List
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
-from typing import List
-from datetime import datetime, timedelta
-from models import User, UserSession
+
+from auth.dependencies import (get_current_active_user,
+                               get_optional_current_user, require_admin)
+from auth.schemas import Token, UserCreate, UserResponse, UserUpdate
+from auth.security import (ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user,
+                           create_access_token, create_user_session,
+                           get_password_hash, refresh_access_token)
 from db import get_session
-from auth.security import (
-    authenticate_user, create_access_token, get_password_hash,
-    create_user_session, invalidate_user_session, ACCESS_TOKEN_EXPIRE_MINUTES,
-    create_refresh_token, refresh_access_token, REFRESH_TOKEN_EXPIRE_DAYS
-)
-from auth.dependencies import get_current_active_user, require_admin, get_optional_current_user
-from auth.schemas import UserCreate, UserLogin, Token, UserResponse, UserUpdate
-import json
+from models import User
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 templates = Jinja2Templates(directory="templates")

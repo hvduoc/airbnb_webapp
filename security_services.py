@@ -7,18 +7,16 @@ Author: AI Assistant
 Created: 2024-12-28
 """
 
+import hashlib
+import logging
 import re
 import time
-import hashlib
-import secrets
-from typing import Dict, Optional, List, Any
-from datetime import datetime, timedelta
 from collections import defaultdict, deque
-from fastapi import Request, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from datetime import datetime
+from typing import Any, Dict, List
+
+from fastapi import HTTPException, Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -445,7 +443,7 @@ class SecurityAuditLogger:
     
     def log_event(self, event_type: str, details: Dict[str, Any], severity: str = "INFO"):
         """Log security event"""
-        log_entry = {
+        {
             "event_type": event_type,
             "timestamp": datetime.utcnow().isoformat(),
             "details": details,

@@ -2,13 +2,15 @@
 Booking Service - Business logic for booking management
 Extracted from main.py for better architecture and user-aware operations
 """
-from typing import Optional, List, Dict, Any
-from datetime import date, datetime
-from fastapi import HTTPException, status
-from sqlmodel import select
-from models import Booking, Property, Channel, Salesperson, RoomAssignment
-from services.base import BaseService
 import uuid
+from datetime import date, datetime
+from typing import Dict, Optional
+
+from sqlmodel import select
+
+from models import Booking, Channel, Property, RoomAssignment, Salesperson
+from services.base import BaseService
+
 
 class BookingService(BaseService):
     """
@@ -121,7 +123,7 @@ class BookingService(BaseService):
             with self.get_session() as session:
                 properties = session.exec(select(Property).order_by(Property.property_name)).all()
                 channels = session.exec(select(Channel).order_by(Channel.channel_name)).all()
-                salespeople = session.exec(select(Salesperson).where(Salesperson.is_active == True)).all()
+                salespeople = session.exec(select(Salesperson).where(Salesperson.is_active)).all()
                 
                 # Determine default channel
                 default_channel_id = None
@@ -229,7 +231,7 @@ class BookingService(BaseService):
                 
                 properties = session.exec(select(Property).order_by(Property.property_name)).all()
                 channels = session.exec(select(Channel).order_by(Channel.channel_name)).all()  
-                salespeople = session.exec(select(Salesperson).where(Salesperson.is_active == True)).all()
+                salespeople = session.exec(select(Salesperson).where(Salesperson.is_active)).all()
                 
                 return self.format_success_response({
                     "booking": booking,

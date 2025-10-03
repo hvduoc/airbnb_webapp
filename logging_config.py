@@ -2,13 +2,14 @@
 Logging configuration for Airbnb WebApp
 Production-ready logging with structured output, rotation, and monitoring
 """
+import json
 import logging
 import logging.handlers
 import os
 import sys
 from datetime import datetime
-import json
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 def setup_logging():
     """Setup production-grade logging configuration"""

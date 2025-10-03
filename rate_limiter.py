@@ -2,11 +2,13 @@
 Simple Rate Limiting for Airbnb WebApp
 In-memory rate limiting with sliding window algorithm
 """
-import time
 import threading
+import time
 from collections import defaultdict, deque
 from typing import Dict, Optional
-from fastapi import Request, HTTPException, status
+
+from fastapi import HTTPException, Request, status
+
 
 class RateLimiter:
     """Simple in-memory rate limiter using sliding window"""

@@ -4,10 +4,11 @@ Bao gồm indexing, foreign keys, và performance optimization
 Việt hóa hoàn toàn với cấu hình production-ready
 """
 
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Index
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import Optional
+
+from sqlalchemy import Column, String
+from sqlmodel import Field, Index, SQLModel
 
 # ============ AUTHENTICATION MODELS - CÓ INDEX TỐI ƯU ============
 
@@ -218,10 +219,12 @@ class Salesperson(SQLModel, table=True):
     email: Optional[str] = Field(default=None, unique=True, index=True)
     phone: Optional[str] = Field(default=None)
 
-# ==== ENHANCED OPEX MODELS - Optimized for performance ====
-from sqlmodel import SQLModel, Field, Column, String, Index
-from typing import Optional, List
 from datetime import datetime
+from typing import Optional
+
+# ==== ENHANCED OPEX MODELS - Optimized for performance ====
+from sqlmodel import Column, Field, Index, SQLModel, String
+
 
 class ExpenseCategory(SQLModel, table=True):
     """Danh mục chi phí - Optimized for frequent lookups"""

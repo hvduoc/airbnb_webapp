@@ -3,13 +3,15 @@ JWT Security utilities for Airbnb webapp
 Handles password hashing, token creation, and verification
 """
 import os
+import secrets
 from datetime import datetime, timedelta
 from typing import Optional
+
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlmodel import Session, select
+
 from models import User, UserSession
-import secrets
 
 # Security configuration from environment
 SECRET_KEY = os.getenv("SECRET_KEY", "airbnb-webapp-secret-key-change-in-production")
@@ -97,7 +99,7 @@ def refresh_access_token(refresh_token: str, db: Session) -> Optional[dict]:
     
     # Get user
     email = payload.get("sub")
-    statement = select(User).where(User.email == email, User.is_active == True)
+    statement = select(User).where(User.email == email, User.is_active)
     user = db.exec(statement).first()
     
     if not user:
@@ -161,7 +163,7 @@ def is_session_active(db: Session, token_jti: str) -> bool:
     """Check if session is still active"""
     statement = select(UserSession).where(
         UserSession.token_jti == token_jti,
-        UserSession.is_active == True,
+        UserSession.is_active,
         UserSession.expires_at > datetime.utcnow()
     )
     session = db.exec(statement).first()

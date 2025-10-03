@@ -3,9 +3,10 @@ Script khởi tạo cho Railway Production
 Tạo tables và demo users cho lần đầu deploy
 """
 
-import os
-from database_production import create_tables, SessionLocal, User
+
 from auth_service import get_password_hash
+from database_production import SessionLocal, User, create_tables
+
 
 def init_production_database():
     """Khởi tạo database production lần đầu"""

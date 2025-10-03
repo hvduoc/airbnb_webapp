@@ -1,6 +1,6 @@
 # Google Sheets API Configuration
 import os
-from typing import List
+
 
 class GoogleSheetsConfig:
     """Configuration for Google Sheets API integration"""

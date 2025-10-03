@@ -1,14 +1,16 @@
 """
 FastAPI dependency functions for authentication
 """
-from fastapi import Depends, HTTPException, status, Request, Cookie
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlmodel import Session, select
 from typing import Optional
-from models import User, UserSession
+
+from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlmodel import Session, select
+
 from db import get_session
-from .security import verify_token, is_session_active
-from .schemas import TokenData
+from models import User
+
+from .security import is_session_active, verify_token
 
 # Security scheme
 security = HTTPBearer(auto_error=False)

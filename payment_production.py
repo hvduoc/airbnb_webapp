@@ -4,28 +4,24 @@ Sử dụng SQLite database để lưu trữ bền vững
 Bao gồm quản lý user và deployment ready
 """
 
-from fastapi import FastAPI, Request, HTTPException, Form, File, UploadFile, Depends, Cookie
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
-from typing import List, Dict, Optional
-from datetime import datetime, timedelta
-import json
 import os
-import uuid
 import shutil
+import uuid
+from datetime import datetime, timedelta
+from typing import Optional
 
+from fastapi import (Depends, FastAPI, File, Form, HTTPException, Request,
+                     UploadFile)
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+
+from auth_service import (authenticate_user, create_access_token, create_user,
+                          get_all_users, get_current_user_from_token,
+                          get_role_display_name)
 # Import các module tự tạo
-from database_production import get_db, create_tables, User, Payment, Handover  
-from auth_service import (
-    authenticate_user, 
-    create_access_token, 
-    get_current_user_from_token,
-    create_user,
-    get_all_users,
-    get_role_display_name
-)
+from database_production import Handover, Payment, User, create_tables, get_db
 
 # Thiết lập
 UPLOAD_DIR = "uploads"
@@ -320,7 +316,7 @@ async def create_handover(
     """Tạo bàn giao tiền mặt"""
     
     # Kiểm tra người nhận có tồn tại không
-    recipient = db.query(User).filter(User.id == recipient_user_id, User.is_active == True).first()
+    recipient = db.query(User).filter(User.id == recipient_user_id, User.is_active).first()
     if not recipient:
         raise HTTPException(status_code=400, detail="Không tìm thấy người nhận")
     
@@ -427,7 +423,7 @@ async def get_recipients(
     """Lấy danh sách người có thể nhận bàn giao"""
     
     # Lấy tất cả user trừ chính mình
-    users = db.query(User).filter(User.id != current_user.id, User.is_active == True).all()
+    users = db.query(User).filter(User.id != current_user.id, User.is_active).all()
     recipients_data = []
     
     for user in users:
@@ -491,5 +487,6 @@ async def create_new_user(
 
 if __name__ == "__main__":
     import uvicorn
+
     # Chạy trên port 8004 để tránh conflict
     uvicorn.run(app, host="0.0.0.0", port=8004)

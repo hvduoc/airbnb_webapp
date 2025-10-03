@@ -6,9 +6,10 @@ Bao gồm connection pooling và cấu hình tối ưu hiệu suất
 
 import os
 from contextlib import contextmanager
-from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy.pool import QueuePool
+
 from dotenv import load_dotenv
+from sqlalchemy.pool import QueuePool
+from sqlmodel import Session, SQLModel, create_engine
 
 load_dotenv()
 
@@ -63,10 +64,6 @@ engine = create_database_engine()
 def init_db():
     """Khởi tạo database và tạo tất cả tables"""
     try:
-        from models import (
-            Building, Property, Channel, Booking, ImportLog, 
-            User, UserSession, ExtraCharge, ExpenseCategory
-        )
         
         print("🗄️ Đang khởi tạo database schema...")
         SQLModel.metadata.create_all(engine)

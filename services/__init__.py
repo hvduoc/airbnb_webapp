@@ -22,11 +22,11 @@ Architecture:
 """
 
 from .base import BaseService
-from .booking_service import BookingService  
+from .booking_service import BookingService
 from .property_service import PropertyService
 from .revenue_service import RevenueService
-from .upload_service import UploadService
 from .salesperson_service import SalespersonService
+from .upload_service import UploadService
 
 __all__ = [
     "BaseService",

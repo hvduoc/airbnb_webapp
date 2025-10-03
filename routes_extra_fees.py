@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+
 from db import get_session
 from models import Expense
-from datetime import date
 
 extra_fees_router = APIRouter(prefix="/extra_fees", tags=["extra_fees"])
 

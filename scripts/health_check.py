@@ -7,7 +7,7 @@ Comprehensive system validation for development
 import os
 import subprocess
 import sys
-from pathlib import Path
+
 
 def check_python_imports():
     """Check if critical Python modules import correctly."""

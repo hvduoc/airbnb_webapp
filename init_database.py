@@ -2,9 +2,10 @@
 Script khởi tạo dữ liệu và tạo user admin
 """
 
-from database import create_tables, SessionLocal
-from auth_service import create_user, ROLES
-import sys
+
+from auth_service import ROLES, create_user
+from database import SessionLocal, create_tables
+
 
 def init_database():
     """Khởi tạo database và tạo dữ liệu mẫu"""

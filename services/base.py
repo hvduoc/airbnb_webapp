@@ -10,9 +10,12 @@ Provides:
 - Error handling patterns
 """
 
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
+
 from sqlmodel import Session
+
 from models import User
+
 
 class BaseService:
     """
@@ -73,12 +76,6 @@ class BaseService:
         if details is None:
             details = {}
             
-        log_entry = {
-            "user_id": self.user_id,
-            "action": action,
-            "details": details,
-            "timestamp": "now"  # Can use datetime.utcnow()
-        }
         
         # TODO: Implement actual audit logging (database, file, etc.)
         # For now just pass - will be implemented when audit system is ready

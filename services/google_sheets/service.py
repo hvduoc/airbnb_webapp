@@ -12,12 +12,11 @@ except ImportError:
     gspread = None
     Credentials = None
 
-from typing import List, Dict, Optional, Any
-from datetime import datetime, date
-import json
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import logging
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from .config import GoogleSheetsConfig
 

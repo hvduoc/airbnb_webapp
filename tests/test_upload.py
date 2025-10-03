@@ -1,6 +1,6 @@
-import requests
 import json
-import io
+
+import requests
 
 print('Testing upload endpoint...')
 
@@ -35,7 +35,7 @@ try:
         print('Response preview:')
         print(response.text[:500] + '...' if len(response.text) > 500 else response.text)
     else:
-        print(f'❌ Upload failed!')
+        print('❌ Upload failed!')
         print('Error response:')
         print(response.text[:1000])
         

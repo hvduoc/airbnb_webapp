@@ -3,7 +3,9 @@ Initialization Service - Handles app startup tasks
 """
 
 from sqlmodel import select
+
 from models import Channel
+
 from .base import BaseService
 
 
@@ -37,6 +39,7 @@ class InitializationService(BaseService):
         """Get total property count."""
         try:
             from sqlmodel import func
+
             from models import Property
             
             count = self.session.exec(select(func.count(Property.id))).one()

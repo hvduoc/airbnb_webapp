@@ -3,13 +3,14 @@ AI Context & Memory Management System
 Handles long-term memory, context preservation, and intelligent conversation flow
 """
 
-import json
 import hashlib
+import json
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
-from sqlmodel import Field, SQLModel, create_engine, Session, select
-import numpy as np
+from typing import Any, Dict, List, Optional
+
+from sqlmodel import Field, Session, SQLModel, select
+
 
 @dataclass
 class ConversationContext:
@@ -291,7 +292,7 @@ CURRENT SESSION:
         
         # Simple summarization (can be enhanced with AI)
         user_messages = [m["content"] for m in messages if m["role"] == "user"]
-        assistant_messages = [m["content"] for m in messages if m["role"] == "assistant"]
+        [m["content"] for m in messages if m["role"] == "assistant"]
         
         summary = f"Discussion involved {len(user_messages)} user queries about "
         

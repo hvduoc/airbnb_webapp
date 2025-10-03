@@ -2,12 +2,14 @@
 CSRF Protection for Airbnb WebApp
 Simple but effective CSRF protection using double-submit cookies
 """
-import secrets
-import hmac
 import hashlib
-from typing import Optional
-from fastapi import Request, Response, HTTPException, status
+import hmac
+import secrets
 import time
+from typing import Optional
+
+from fastapi import Request, Response
+
 
 class CSRFProtection:
     """CSRF protection using double-submit cookie pattern"""

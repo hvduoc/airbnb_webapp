@@ -2,8 +2,9 @@
 Tạo demo users cho hệ thống Payment Ledger
 """
 
-from database import create_tables, SessionLocal, User
 from auth_service import get_password_hash
+from database import SessionLocal, User, create_tables
+
 
 def create_demo_users():
     """Tạo các demo users"""

@@ -2,10 +2,11 @@
 Payment Ledger Models for Google Sheets Integration
 """
 
-from typing import Optional, List
-from sqlmodel import SQLModel, Field
-from datetime import datetime
 from enum import Enum
+from typing import List, Optional
+
+from sqlmodel import Field, SQLModel
+
 
 class PaymentMethod(str, Enum):
     """Available payment methods"""

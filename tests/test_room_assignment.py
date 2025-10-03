@@ -6,9 +6,9 @@ Test script để validate kịch bản TASK-001: Room Assignment Tracking
 Kịch bản: Khách đặt phòng 203 nhưng ở phòng 303
 """
 
-import requests
-import json
 from datetime import date
+
+import requests
 
 BASE_URL = "http://127.0.0.1:8000"
 
@@ -40,7 +40,7 @@ def test_room_assignment_workflow():
         return False
     
     # Step 2: Create room assignment
-    print(f"\n🏠 Step 2: Create room assignment...")
+    print("\n🏠 Step 2: Create room assignment...")
     response = requests.post(f"{BASE_URL}/bookings/{booking_id}/room-assignment", data=test_data)
     if response.status_code == 303:  # Redirect after successful POST
         print("✅ Room assignment created/updated")
@@ -49,7 +49,7 @@ def test_room_assignment_workflow():
         return False
     
     # Step 3: Verify room assignment in booking detail
-    print(f"\n🔍 Step 3: Verify assignment in booking detail...")
+    print("\n🔍 Step 3: Verify assignment in booking detail...")
     response = requests.get(f"{BASE_URL}/bookings/{booking_id}")
     if response.status_code == 200:
         content = response.text
@@ -63,7 +63,7 @@ def test_room_assignment_workflow():
         return False
     
     # Step 4: Test revenue attribution scenarios
-    print(f"\n💰 Step 4: Test revenue attribution scenarios...")
+    print("\n💰 Step 4: Test revenue attribution scenarios...")
     
     # Test different attribution methods
     attribution_tests = [
@@ -81,7 +81,7 @@ def test_room_assignment_workflow():
             print(f"❌ {description} attribution test failed")
             return False
     
-    print(f"\n🎉 All tests passed! Room assignment system working correctly.")
+    print("\n🎉 All tests passed! Room assignment system working correctly.")
     print("\n📊 Test Summary:")
     print("  ✅ Room assignment creation")
     print("  ✅ Booking detail integration")
@@ -93,7 +93,7 @@ def test_room_assignment_workflow():
 def test_edge_cases():
     """Test edge cases and error handling"""
     
-    print(f"\n🧪 Testing Edge Cases...")
+    print("\n🧪 Testing Edge Cases...")
     print("-" * 30)
     
     # Test invalid booking ID
@@ -139,4 +139,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Test failed with error: {str(e)}")
     
-    print(f"\n🏁 Testing completed!")
+    print("\n🏁 Testing completed!")

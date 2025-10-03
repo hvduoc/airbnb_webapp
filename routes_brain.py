@@ -22,14 +22,14 @@ USAGE:
 - System health monitoring and diagnostics
 """
 
-from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 import json
 import os
-from datetime import datetime, date
-import glob
+from datetime import datetime
 from pathlib import Path
+
+from fastapi import APIRouter, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")

@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 print("Testing with more data for insert/update stats...")
 

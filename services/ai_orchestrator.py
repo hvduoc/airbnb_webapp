@@ -5,11 +5,12 @@ Intelligently combines multiple AI providers for optimal performance
 
 import asyncio
 import json
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Tuple
+
 import openai
-import anthropic
+
 # import google.generativeai as genai  # For Gemini
 
 class TaskType(Enum):

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Test script để debug báo cáo"""
 
-from datetime import date
 import traceback
+from datetime import date
 
 try:
     from main import compute_monthly_report

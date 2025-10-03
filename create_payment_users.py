@@ -3,15 +3,16 @@ Create Demo Users for Payment Ledger System
 Run this script to create initial users for testing
 """
 
-import sys
 import os
+import sys
 from datetime import datetime
 
 # Add the project root to Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from passlib.context import CryptContext
-from sqlmodel import Session, select
+from sqlmodel import select
+
 from db import get_session_context
 from models import User
 

@@ -1,14 +1,13 @@
 # GitHub Webhook Listener - Home Server
 
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
 import hashlib
 import hmac
 import json
 import os
 from datetime import datetime
-import subprocess
-import sys
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 app = FastAPI(title="Airbnb GitHub Webhook Listener")
 
@@ -229,14 +228,14 @@ async def get_brain_events():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Set webhook secret from environment or prompt
     if WEBHOOK_SECRET == 'your-secret-here':
         print("⚠️  WARNING: Using default webhook secret!")
         print("Set WEBHOOK_SECRET environment variable for security")
     
-    print(f"🚀 Starting webhook listener on http://0.0.0.0:8080")
+    print("🚀 Starting webhook listener on http://0.0.0.0:8080")
     print(f"📁 Brain directory: {os.path.abspath(BRAIN_DIR)}")
-    print(f"🔗 GitHub webhook URL: http://webhook.xemgiadat.com/webhook/github")
+    print("🔗 GitHub webhook URL: http://webhook.xemgiadat.com/webhook/github")
     
     uvicorn.run("webhook_listener:app", host="0.0.0.0", port=8080, reload=True)

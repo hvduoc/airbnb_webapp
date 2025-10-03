@@ -1,0 +1,369 @@
+{{/* =====================================================
+VIETNAMESE EMAIL TEMPLATES FOR ALERTMANAGER
+Airbnb WebApp - Vietnamese Alert Notifications
+===================================================== */}}
+
+{{/* Default Alert Template */}}
+{{ define "airbnb.default" }}
+🚨 **Cảnh báo hệ thống Airbnb WebApp**
+
+**Thông tin chung**:
+• Thời gian: {{ .CommonAnnotations.timestamp | default (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• Số lượng cảnh báo: {{ len .Alerts }}
+• Trạng thái: {{ .Status | upper }}
+• Mức độ: {{ .CommonLabels.severity | default "không xác định" }}
+
+**Chi tiết các cảnh báo**:
+{{ range .Alerts }}
+▫️ **{{ .Annotations.summary | default .Labels.alertname }}**
+   📋 Mô tả: {{ .Annotations.description | default "Không có mô tả" }}
+   🏷️ Dịch vụ: {{ .Labels.service | default "unknown" }}
+   📍 Instance: {{ .Labels.instance | default "N/A" }}
+   ⏰ Bắt đầu: {{ .StartsAt.Format "02/01/2006 15:04:05" }}
+   {{ if .EndsAt }}⏹️ Kết thúc: {{ .EndsAt.Format "02/01/2006 15:04:05" }}{{ end }}
+   
+{{ end }}
+
+**Links hữu ích**:
+• Dashboard tổng quan: http://localhost:3000
+• Logs hệ thống: http://localhost:5601  
+• Health check: http://localhost:8000/health
+• Prometheus: http://localhost:9090
+
+---
+Hệ thống giám sát Airbnb WebApp
+{{ end }}
+
+{{/* Critical Database Alert Template */}}
+{{ define "airbnb.database.critical" }}
+🔴 **SỰ CỐ KHẨN CẤP - CƠ SỞ DỮ LIỆU**
+
+⚠️ **TÌNH TRẠNG**: Cơ sở dữ liệu Airbnb đang gặp sự cố nghiêm trọng!
+
+**Thông tin sự cố**:
+• 🕐 Thời gian phát hiện: {{ (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• 🎯 Database: {{ .CommonLabels.database | default "airbnb_app" }}
+• 🖥️ Server: {{ .CommonLabels.instance }}
+• ⚡ Trạng thái: {{ .Status }}
+
+**Chi tiết các lỗi**:
+{{ range .Alerts }}
+🚨 **{{ .Annotations.summary }}**
+   📝 Mô tả: {{ .Annotations.description }}
+   📊 Giá trị hiện tại: {{ .Annotations.value | default "N/A" }}
+   📈 Ngưỡng cảnh báo: {{ .Annotations.threshold | default "N/A" }}
+   
+{{ end }}
+
+**🚀 HÀNH ĐỘNG NGAY LẬP TỨC**:
+1. ✅ Kiểm tra kết nối database: `docker exec airbnb_postgres pg_isready`
+2. 🔍 Xem logs PostgreSQL: `docker logs airbnb_postgres --tail 50`
+3. 💾 Kiểm tra disk space: `df -h`
+4. 🧠 Kiểm tra memory: `free -h`
+5. 📞 Liên hệ team DevOps nếu vấn đề vẫn tiếp diễn
+
+**📊 MONITORING DASHBOARDS**:
+• Database monitoring: http://localhost:3000/d/postgres
+• System resources: http://localhost:3000/d/system
+• Application logs: http://localhost:5601/app/discover
+
+**⚠️ IMPACT**: 
+- Hệ thống booking có thể bị gián đoạn
+- Khách hàng có thể không thể đặt phòng
+- Dữ liệu thanh toán có thể bị ảnh hưởng
+
+**Độ ưu tiên**: KHẨN CẤP - Cần xử lý trong vòng 5 phút!
+{{ end }}
+
+{{/* Performance Warning Template */}}
+{{ define "airbnb.performance.warning" }}
+⚠️ **CẢNH BÁO HIỆU SUẤT HỆ THỐNG**
+
+**Tình trạng**: Hiệu suất hệ thống Airbnb đang giảm
+
+**Thông tin cảnh báo**:
+• 🕐 Thời gian: {{ (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• 🎯 Dịch vụ: {{ .CommonLabels.service | default "airbnb-webapp" }}
+• 📍 Component: {{ .CommonLabels.component | default "application" }}
+
+**Chi tiết hiệu suất**:
+{{ range .Alerts }}
+📊 **{{ .Annotations.summary }}**
+   📝 Vấn đề: {{ .Annotations.description }}
+   📈 Giá trị hiện tại: {{ .Annotations.value }}
+   🎯 Ngưỡng cảnh báo: {{ .Annotations.threshold }}
+   📏 Đơn vị: {{ .Annotations.unit | default "" }}
+   
+{{ end }}
+
+**🔍 CÁC CHỈ SỐ CẦN KIỂM TRA**:
+• CPU Usage: Kiểm tra tải xử lý
+• Memory Usage: Kiểm tra sử dụng RAM
+• Database Queries: Xem slow queries
+• API Response Time: Thời gian phản hồi
+• Concurrent Users: Số người dùng đồng thời
+
+**📊 PERFORMANCE DASHBOARDS**:
+• Tổng quan hiệu suất: http://localhost:3000/d/app-performance
+• Database performance: http://localhost:3000/d/postgres-performance  
+• API metrics: http://localhost:3000/d/api-metrics
+• System resources: http://localhost:3000/d/system-resources
+
+**💡 HÀNH ĐỘNG ĐƯỢC ĐỀ XUẤT**:
+1. Kiểm tra top processes: `htop` hoặc `docker stats`
+2. Xem slow queries: Check PostgreSQL slow query log
+3. Theo dõi API response times
+4. Kiểm tra số lượng active connections
+5. Restart services nếu cần thiết
+
+**⏰ Mức độ ưu tiên**: Trung bình - Cần xử lý trong 30 phút
+{{ end }}
+
+{{/* Business Metrics Alert Template */}}
+{{ define "airbnb.business.alert" }}
+📊 **CẢNH BÁO CHỈ SỐ KINH DOANH**
+
+**Tình trạng**: Phát hiện bất thường trong chỉ số kinh doanh
+
+**Thông tin cảnh báo**:
+• 🕐 Thời gian: {{ (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• 📈 Loại metric: {{ .CommonLabels.metric_type | default "business_kpi" }}
+• 🏢 Phạm vi: {{ .CommonLabels.scope | default "toàn hệ thống" }}
+
+**Chi tiết các chỉ số**:
+{{ range .Alerts }}
+📊 **{{ .Annotations.summary }}**
+   📝 Mô tả: {{ .Annotations.description }}
+   💰 Giá trị hiện tại: {{ .Annotations.value }}{{ if .Annotations.currency }} {{ .Annotations.currency }}{{ end }}
+   🎯 Giá trị mong đợi: {{ .Annotations.expected }}{{ if .Annotations.currency }} {{ .Annotations.currency }}{{ end }}
+   📉 Độ lệch: {{ .Annotations.deviation | default "N/A" }}
+   
+{{ end }}
+
+**📈 CÁC CHỈ SỐ KINH DOANH QUAN TRỌNG**:
+• 💰 Doanh thu hàng ngày/tuần/tháng
+• 🏠 Số lượng booking mới
+• 📉 Tỷ lệ hủy booking
+• ⭐ Đánh giá trung bình từ khách hàng
+• 🕐 Thời gian phản hồi trung bình
+• 💳 Giá trị giao dịch trung bình
+
+**📊 BUSINESS DASHBOARDS**:
+• Revenue tracking: http://localhost:3000/d/revenue
+• Booking analytics: http://localhost:3000/d/bookings  
+• Customer metrics: http://localhost:3000/d/customers
+• Property performance: http://localhost:3000/d/properties
+
+**🎯 HÀNH ĐỘNG KINH DOANH**:
+1. Kiểm tra trends trong tuần/tháng qua
+2. So sánh với cùng kỳ năm trước
+3. Phân tích nguyên nhân gây ra bất thường
+4. Đánh giá impact lên revenue
+5. Lên kế hoạch hành động khắc phục
+
+**👥 Thông báo đến**: Business Team, Management
+{{ end }}
+
+{{/* Security Alert Template */}}
+{{ define "airbnb.security.alert" }}
+🛡️ **CẢNH BÁO BẢO MẬT HỆ THỐNG**
+
+**⚠️ PHÁT HIỆN HOẠT ĐỘNG ĐÁNG NGỜ**
+
+**Thông tin bảo mật**:
+• 🕐 Thời gian phát hiện: {{ (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• 🎯 Loại threat: {{ .CommonLabels.threat_type | default "unknown" }}
+• 📍 Source IP: {{ .CommonLabels.source_ip | default "N/A" }}
+• 🌐 Location: {{ .CommonLabels.location | default "unknown" }}
+
+**Chi tiết các sự kiện bảo mật**:
+{{ range .Alerts }}
+🚨 **{{ .Annotations.summary }}**
+   📝 Mô tả: {{ .Annotations.description }}
+   🌐 IP Address: {{ .Labels.source_ip }}
+   🖥️ User Agent: {{ .Labels.user_agent | default "N/A" }}
+   📊 Số lần thử: {{ .Annotations.attempt_count | default "1" }}
+   🎯 Target: {{ .Labels.target | default "N/A" }}
+   
+{{ end }}
+
+**🔒 CÁC LOẠI THREAT THƯỜNG GẶP**:
+• 🔑 Brute force login attempts
+• 🕷️ SQL injection attempts  
+• 🌐 Suspicious IP addresses
+• 📊 Unusual API usage patterns
+• 🔐 Failed authentication spikes
+• 📁 Unauthorized file access
+
+**🛡️ SECURITY DASHBOARDS**:
+• Security overview: http://localhost:3000/d/security
+• Access logs: http://localhost:5601/app/discover
+• Failed logins: http://localhost:3000/d/auth-failures
+• IP reputation: http://localhost:3000/d/ip-analysis
+
+**🚨 HÀNH ĐỘNG BẢO MẬT**:
+1. 🔍 Kiểm tra access logs chi tiết
+2. 🚫 Block suspicious IP nếu cần
+3. 📊 Phân tích pattern tấn công
+4. 🔐 Kiểm tra user accounts
+5. 📞 Thông báo Security Team
+6. 📝 Document incident để phân tích
+
+**⚡ Mức độ ưu tiên**: {{ .CommonLabels.severity | upper }}
+**👥 Escalate đến**: Security Team, DevOps Team
+
+{{ if eq .CommonLabels.severity "critical" }}
+🔴 **CRITICAL**: Cần xử lý ngay lập tức!
+{{ else if eq .CommonLabels.severity "warning" }}
+🟡 **WARNING**: Cần theo dõi và xử lý trong 1 giờ
+{{ else }}
+🔵 **INFO**: Ghi nhận để phân tích
+{{ end }}
+{{ end }}
+
+{{/* Booking System Alert Template */}}
+{{ define "airbnb.booking.alert" }}
+🏠 **CẢNH BÁO HỆ THỐNG ĐẶT PHÒNG**
+
+**Tình trạng**: Phát hiện vấn đề trong hệ thống booking
+
+**Thông tin cảnh báo**:
+• 🕐 Thời gian: {{ (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• 🏠 Dịch vụ: Hệ thống đặt phòng
+• 📍 Component: {{ .CommonLabels.component | default "booking-service" }}
+
+**Chi tiết vấn đề**:
+{{ range .Alerts }}
+🏠 **{{ .Annotations.summary }}**
+   📝 Mô tả: {{ .Annotations.description }}
+   🏷️ Property ID: {{ .Labels.property_id | default "N/A" }}
+   📋 Booking ID: {{ .Labels.booking_id | default "N/A" }}
+   👤 User ID: {{ .Labels.user_id | default "N/A" }}
+   💰 Amount: {{ .Labels.amount | default "N/A" }} VND
+   
+{{ end }}
+
+**🏠 IMPACT ĐỐI VỚI KHÁCH HÀNG**:
+• Khách hàng có thể không đặt được phòng
+• Lỗi khi xử lý thanh toán
+• Thông tin booking có thể không cập nhật
+• Email xác nhận có thể bị delay
+• Calendar availability có thể sai
+
+**📊 BOOKING MONITORING**:
+• Booking dashboard: http://localhost:3000/d/bookings
+• Property analytics: http://localhost:3000/d/properties
+• Payment flow: http://localhost:3000/d/payments
+• Customer journey: http://localhost:3000/d/customer-flow
+
+**🔧 TROUBLESHOOTING STEPS**:
+1. 🔍 Kiểm tra booking API endpoints
+2. 📊 Xem booking success rate
+3. 💾 Kiểm tra database connections
+4. 📧 Verify email service status
+5. 🗓️ Check calendar sync status
+6. 💳 Validate payment gateway
+
+**📞 Liên hệ ngay**: Booking Team, Customer Support
+**⏰ SLA**: Xử lý trong 15 phút để tránh mất khách hàng
+{{ end }}
+
+{{/* Payment System Alert Template */}}
+{{ define "airbnb.payment.alert" }}
+💳 **CẢNH BÁO HỆ THỐNG THANH TOÁN**
+
+**🚨 PHÁT HIỆN VẤN ĐỀ THANH TOÁN**
+
+**Thông tin cảnh báo**:
+• 🕐 Thời gian: {{ (index .Alerts 0).StartsAt.Format "02/01/2006 15:04:05" }}
+• 💳 Dịch vụ: Xử lý thanh toán
+• 🏦 Gateway: {{ .CommonLabels.payment_gateway | default "default" }}
+• 📍 Environment: {{ .CommonLabels.environment | default "production" }}
+
+**Chi tiết vấn đề thanh toán**:
+{{ range .Alerts }}
+💳 **{{ .Annotations.summary }}**
+   📝 Mô tả: {{ .Annotations.description }}
+   🆔 Payment ID: {{ .Labels.payment_id | default "N/A" }}
+   💰 Số tiền: {{ .Labels.amount | default "N/A" }} VND
+   👤 Customer ID: {{ .Labels.customer_id | default "N/A" }}
+   🏠 Booking ID: {{ .Labels.booking_id | default "N/A" }}
+   📊 Error code: {{ .Labels.error_code | default "N/A" }}
+   
+{{ end }}
+
+**💰 IMPACT TÀI CHÍNH**:
+• Revenue có thể bị ảnh hưởng
+• Giao dịch có thể bị thất bại
+• Khách hàng có thể không thanh toán được
+• Refund process có thể bị delay
+• Financial reporting có thể sai lệch
+
+**💳 PAYMENT MONITORING**:
+• Payment dashboard: http://localhost:3000/d/payments
+• Transaction logs: http://localhost:5601/app/discover
+• Revenue tracking: http://localhost:3000/d/revenue
+• Gateway status: http://localhost:3000/d/payment-gateway
+
+**🔧 PAYMENT TROUBLESHOOTING**:
+1. 🔍 Kiểm tra payment gateway status
+2. 📊 Xem payment success/failure rate
+3. 🏦 Verify banking API connections
+4. 💾 Check transaction logs
+5. 📧 Review payment notifications
+6. 🔄 Test payment flow manually
+
+**📞 ESCALATION**:
+• Payment Team: Ngay lập tức
+• Finance Team: Trong 30 phút
+• Banking Partner: Nếu cần thiết
+• Customer Support: Để hỗ trợ khách hàng
+
+**⚠️ SLA QUAN TRỌNG**:
+- Phát hiện: < 5 phút
+- Phản hồi: < 15 phút  
+- Khắc phục: < 1 giờ
+- Communication: Ngay khi có update
+
+**🎯 Mức độ ưu tiên**: {{ .CommonLabels.severity | upper }}
+{{ end }}
+
+{{/* Resolved Alert Template */}}
+{{ define "airbnb.resolved" }}
+✅ **ĐÃ KHẮC PHỤC - Cảnh báo hệ thống Airbnb**
+
+**🎉 GOOD NEWS**: Các vấn đề sau đã được khắc phục!
+
+**Thông tin khắc phục**:
+• 🕐 Thời gian khắc phục: {{ (index .Alerts 0).EndsAt.Format "02/01/2006 15:04:05" }}
+• ⏱️ Thời gian downtime: {{ sub (index .Alerts 0).EndsAt (index .Alerts 0).StartsAt }}
+• 🔧 Trạng thái: ĐÃ KHẮC PHỤC
+
+**Các vấn đề đã được giải quyết**:
+{{ range .Alerts }}
+✅ **{{ .Annotations.summary }}**
+   📝 Vấn đề: {{ .Annotations.description }}
+   🕐 Bắt đầu: {{ .StartsAt.Format "02/01/2006 15:04:05" }}
+   ✅ Kết thúc: {{ .EndsAt.Format "02/01/2006 15:04:05" }}
+   
+{{ end }}
+
+**📊 SYSTEM STATUS**:
+• ✅ Tất cả services đã hoạt động bình thường
+• ✅ Database connections stable
+• ✅ API response times normal
+• ✅ Customer experience restored
+
+**📈 NEXT STEPS**:
+1. 📊 Theo dõi metrics trong 24h tới
+2. 📝 Tạo incident report
+3. 🔍 Root cause analysis
+4. 🛠️ Implement preventive measures
+5. 📚 Update runbooks
+
+**📊 Monitoring dashboards**:
+• System health: http://localhost:3000/d/overview
+• All metrics: http://localhost:9090
+
+Cảm ơn team đã xử lý nhanh chóng! 🙏
+{{ end }}

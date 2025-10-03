@@ -6,15 +6,15 @@ Author: AI Assistant
 Created: 2024-12-28
 """
 
-import time
-import asyncio
-from datetime import datetime, date, timedelta
-from sqlmodel import Session, select, text
-from typing import Dict, List, Any
 import logging
+import time
+from datetime import date, timedelta
+from typing import Any, Dict
+
+from sqlmodel import Session, select, text
 
 from db import get_session_context
-from models import User, Property, Booking, Expense, ExpenseCategory
+from models import Booking, Expense, Property, User
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class DatabasePerformanceValidator:
         """Đo thời gian thực thi query"""
         start_time = time.time()
         try:
-            result = query_func()
+            query_func()
             execution_time = time.time() - start_time
             logger.info(f"✅ {query_name}: {execution_time:.4f}s")
             return execution_time
@@ -51,7 +51,7 @@ class DatabasePerformanceValidator:
         # Test 2: Active users lookup
         results['active_users'] = self.measure_query_time(
             "Active Users Query", 
-            lambda: session.exec(select(User).where(User.is_active == True)).all()
+            lambda: session.exec(select(User).where(User.is_active)).all()
         )
         
         # Test 3: User login analytics (composite index)
@@ -59,7 +59,7 @@ class DatabasePerformanceValidator:
             "User Login Analytics",
             lambda: session.exec(select(User).where(
                 User.role == "manager",
-                User.is_active == True,
+                User.is_active,
                 User.last_login.isnot(None)
             )).all()
         )
@@ -75,7 +75,7 @@ class DatabasePerformanceValidator:
             "Active Properties per Building",
             lambda: session.exec(select(Property).where(
                 Property.building_id == 1,
-                Property.is_active == True
+                Property.is_active
             )).all()
         )
         
@@ -248,18 +248,18 @@ class DatabasePerformanceValidator:
         # Summary
         avg_time = total_time / total_queries if total_queries > 0 else 0
         report += "\n" + "="*60 + "\n"
-        report += f"📈 TỔNG KẾT:\n"
+        report += "📈 TỔNG KẾT:\n"
         report += f"   • Tổng số queries: {total_queries}\n"
         report += f"   • Tổng thời gian: {total_time:.4f}s\n"
         report += f"   • Thời gian trung bình: {avg_time:.4f}s\n"
         
         # Performance thresholds
         if avg_time < 0.1:
-            report += f"   • Kết quả: 🟢 XUẤT SẮC (< 0.1s)\n"
+            report += "   • Kết quả: 🟢 XUẤT SẮC (< 0.1s)\n"
         elif avg_time < 0.5:
-            report += f"   • Kết quả: 🟡 TỐT (< 0.5s)\n"
+            report += "   • Kết quả: 🟡 TỐT (< 0.5s)\n"
         else:
-            report += f"   • Kết quả: 🔴 CẦN CẢI THIỆN (> 0.5s)\n"
+            report += "   • Kết quả: 🔴 CẦN CẢI THIỆN (> 0.5s)\n"
             
         report += "="*60 + "\n"
         
@@ -271,7 +271,7 @@ def main():
     
     try:
         # Chạy tất cả tests
-        results = validator.run_all_tests()
+        validator.run_all_tests()
         
         # Tạo và hiển thị report
         report = validator.generate_performance_report()

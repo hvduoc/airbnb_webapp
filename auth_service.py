@@ -5,14 +5,15 @@ Tích hợp hoàn toàn với hệ thống bảo mật chính của ứng dụng
 """
 
 import os
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
-from models import User  # Sử dụng models chính của hệ thống
-from db import get_session  # Sử dụng db connection chính
 import secrets
+from datetime import datetime, timedelta
+
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+
 from logging_config import log_security_event
+from models import User  # Sử dụng models chính của hệ thống
 
 # Cấu hình bảo mật từ environment - Production ready với tăng cường bảo mật
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -110,7 +111,7 @@ def refresh_access_token(refresh_token: str, db: Session):
         return None
         
     # Xác minh người dùng vẫn tồn tại và đang hoạt động
-    user = db.query(User).filter(User.username == username, User.is_active == True).first()
+    user = db.query(User).filter(User.username == username, User.is_active).first()
     if not user:
         return None
         
@@ -137,7 +138,7 @@ def refresh_access_token(refresh_token: str, db: Session):
 
 def authenticate_user(db: Session, username: str, password: str):
     """Xác thực người dùng với username và mật khẩu"""
-    user = db.query(User).filter(User.username == username, User.is_active == True).first()
+    user = db.query(User).filter(User.username == username, User.is_active).first()
     if not user:
         return False
     if not verify_password(password, user.password_hash):
@@ -154,7 +155,7 @@ def get_current_user_from_token(token: str, db: Session):
     if username is None:
         return None
         
-    user = db.query(User).filter(User.username == username, User.is_active == True).first()
+    user = db.query(User).filter(User.username == username, User.is_active).first()
     return user
 
 def login_user(db: Session, username: str, password: str):
@@ -245,11 +246,11 @@ def create_user(db: Session, username: str, password: str, full_name: str, role:
 
 def get_all_users(db: Session):
     """Lấy danh sách tất cả người dùng đang hoạt động"""
-    return db.query(User).filter(User.is_active == True).all()
+    return db.query(User).filter(User.is_active).all()
 
 def get_users_by_role(db: Session, role: str):
     """Lấy danh sách người dùng theo vai trò"""
-    return db.query(User).filter(User.role == role, User.is_active == True).all()
+    return db.query(User).filter(User.role == role, User.is_active).all()
 
 def update_user(db: Session, user_id: int, **kwargs):
     """Cập nhật thông tin người dùng"""

@@ -4,13 +4,12 @@ AI Session Manager - Task-driven Development Workflow
 Automated session start/end với task management
 """
 
-import os
-import sys
+import argparse
 import json
 import subprocess
-from datetime import datetime, timedelta
+import sys
+from datetime import datetime
 from pathlib import Path
-import argparse
 
 # Fix Windows encoding issue
 if sys.platform.startswith('win'):
@@ -100,7 +99,7 @@ class AISessionManager:
         start_time = datetime.fromisoformat(session_data['start_time'])
         duration = datetime.now() - start_time
         
-        print(f"1️⃣ Session summary:")
+        print("1️⃣ Session summary:")
         print(f"   🤖 Agent: {session_data['agent']}")
         print(f"   ⏱️ Duration: {duration}")
         print(f"   🎯 Goals: {len(session_data['goals'])}")

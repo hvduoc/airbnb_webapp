@@ -7,11 +7,11 @@ Created: 2024-12-28
 """
 
 import os
-import sys
 import subprocess
+import sys
 import time
-import json
 from pathlib import Path
+
 
 class DockerManager:
     """Manager class cho Docker operations"""
@@ -143,7 +143,7 @@ class DockerManager:
         compose_file = "docker-compose.dev.yml" if env_type == "dev" else "docker-compose.yml"
         
         # List running containers
-        result = self.run_command(f"docker-compose -f {compose_file} ps", check=False)
+        self.run_command(f"docker-compose -f {compose_file} ps", check=False)
         
         # Check health của webapp
         try:

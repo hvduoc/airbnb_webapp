@@ -1,6 +1,7 @@
-import requests
 import json
 import re
+
+import requests
 
 print("Testing Vietnamese upload message...")
 

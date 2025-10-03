@@ -3,15 +3,16 @@ Hệ thống Sao lưu Tự động - Airbnb WebApp
 Backup PostgreSQL database với retention policy và monitoring
 """
 
+import json
+import logging
 import os
 import subprocess
-import logging
-import json
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-import schedule
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Dict, List, Optional
+
+import schedule
 
 # Cấu hình logging
 logging.basicConfig(
@@ -128,13 +129,13 @@ class DatabaseBackup:
                 with open(backup_path, 'wb') as f:
                     import gzip
                     with gzip.open(backup_path, 'wb') as gz_f:
-                        process = subprocess.run(
+                        subprocess.run(
                             cmd, stdout=gz_f, stderr=subprocess.PIPE,
                             env=env, check=True
                         )
             else:
                 with open(backup_path, 'wb') as f:
-                    process = subprocess.run(
+                    subprocess.run(
                         cmd, stdout=f, stderr=subprocess.PIPE,
                         env=env, check=True
                     )
@@ -142,7 +143,7 @@ class DatabaseBackup:
             # Kiểm tra kết quả
             if backup_path.exists() and backup_path.stat().st_size > 0:
                 file_size = backup_path.stat().st_size / (1024 * 1024)  # MB
-                logger.info(f"✅ Backup thành công!")
+                logger.info("✅ Backup thành công!")
                 logger.info(f"📊 Kích thước: {file_size:.2f} MB")
                 
                 # Ghi metadata

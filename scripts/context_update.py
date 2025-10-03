@@ -6,9 +6,9 @@ Automatically update project context for AI continuity
 
 import os
 import subprocess
-import json
 from datetime import datetime
 from pathlib import Path
+
 
 def count_lines(file_path):
     """Count lines in a file."""

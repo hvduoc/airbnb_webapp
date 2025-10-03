@@ -1,8 +1,9 @@
-from models import ExtraCharge
 # ---- Extra charges endpoints ----
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+
 from db import get_session
+from models import ExtraCharge
 
 extra_charges_router = APIRouter(prefix="/extra_charges", tags=["extra_charges"])
 
@@ -26,14 +27,15 @@ def delete_extra_charge(charge_id: int, session: Session = Depends(get_session))
     session.delete(row)
     session.commit()
     return {"ok": True}
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
 from datetime import datetime
 
-# dự án của anh có models.py ở gốc
-from models import Expense, RecurringExpense, ExpenseAllocation
+from fastapi import APIRouter, Depends
+from sqlmodel import Session
+
 # và db.py ở gốc, có hàm get_session
 from db import get_session
+# dự án của anh có models.py ở gốc
+from models import Expense, ExpenseAllocation, RecurringExpense
 
 # --- 2 router public mà main.py sẽ import ---
 router = APIRouter(prefix="/expenses", tags=["expenses"])
@@ -125,7 +127,8 @@ def allocate(
 ):
     # tránh lỗi nếu anh chưa thêm hàm trong utils.py
     try:
-        from utils import get_properties_stats  # -> list[{"property_id", "available_nights", "sold_nights"}]
+        from utils import \
+            get_properties_stats  # -> list[{"property_id", "available_nights", "sold_nights"}]
     except Exception as e:
         raise HTTPException(500, f"Thiếu utils.get_properties_stats(): {e}")
 
@@ -137,7 +140,7 @@ def allocate(
     total_avail = sum(s.get("available_nights", 0) for s in stats)
     total_sold = sum(s.get("sold_nights", 0) for s in stats)
 
-    q = select(Expense).where(Expense.month == month, Expense.property_id == None)
+    q = select(Expense).where(Expense.month == month, Expense.property_id is None)
     if building_id:
         q = q.where(Expense.building_id == building_id)
     rows = session.exec(q).all()
@@ -170,8 +173,9 @@ def allocate(
     return {"allocated_expenses": len(rows)}
 
 # ---- AUX endpoints: categories / buildings / properties ----
-from models import ExpenseCategory
-from models import Building, Property    # 2 model này đã có trong models.py của anh
+from models import Building  # 2 model này đã có trong models.py của anh
+from models import ExpenseCategory, Property
+
 aux = APIRouter(prefix="/expense-aux", tags=["expense-aux"])
 
 @aux.get("/categories")

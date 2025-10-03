@@ -3,15 +3,15 @@ AI API Key Management System
 Handles dynamic API keys, rotation, fallback, and multi-provider support
 """
 
-import os
 import json
-import asyncio
-import aiohttp
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from enum import Enum
+import os
 from dataclasses import dataclass
-import logging
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Dict, List, Optional
+
+import aiohttp
+
 
 class AIProvider(Enum):
     OPENAI = "openai"
@@ -98,9 +98,9 @@ class AIKeyManager:
         
         # Determine optimal model based on task
         if complexity == "high" or task_type in ["code_generation", "analysis"]:
-            preferred_models = ["gpt-4", "claude-3-opus", "gemini-pro"]
+            pass
         else:
-            preferred_models = ["gpt-3.5-turbo", "claude-3-haiku", "gemini-flash"]
+            pass
         
         # Find best available key
         for provider in self.fallback_chain:

@@ -10,10 +10,10 @@ Kiểm tra toàn bộ dự án để:
 """
 
 import os
-import json
-from pathlib import Path
-from collections import defaultdict, Counter
 import re
+from collections import Counter, defaultdict
+from pathlib import Path
+
 
 def scan_project_structure():
     """Scan toàn bộ project structure"""
@@ -246,7 +246,7 @@ def suggest_reorganization():
         print(f"  ⚠️  {suggestion['issue']}")
         print(f"  💡 {suggestion['suggestion']}")
         if suggestion['files']:
-            print(f"  📄 Examples:")
+            print("  📄 Examples:")
             for f in suggestion['files']:
                 print(f"     • {f}")
         print()
@@ -262,7 +262,7 @@ def main():
     print()
     
     # Run all analyses
-    categories = scan_project_structure()
+    scan_project_structure()
     find_duplicate_files()
     analyze_python_imports()
     suggest_reorganization()

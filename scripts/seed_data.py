@@ -1,6 +1,8 @@
 from sqlmodel import select
+
 from db import get_session
 from models import Channel, Salesperson
+
 
 def seed_channels():
     with get_session() as session:

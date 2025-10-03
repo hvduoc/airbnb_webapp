@@ -3,19 +3,20 @@ Authentication Service for Payment Ledger
 Provides JWT-based authentication with role-based access control
 """
 
+import os
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import List, Optional
+
+import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from sqlmodel import Session, select
-import jwt
-import os
-from functools import wraps
 
 from db import get_session
 from models import User
-from services.google_sheets.models import PaymentUser, UserRole, LoginRequest, TokenResponse
+from services.google_sheets.models import (LoginRequest, PaymentUser,
+                                           TokenResponse, UserRole)
 
 # Configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
@@ -73,7 +74,7 @@ class AuthService:
         # Get user from database
         statement = select(User).where(
             (User.username == username) | (User.email == username)
-        ).where(User.is_active == True)
+        ).where(User.is_active)
         
         user = session.exec(statement).first()
         
@@ -141,7 +142,7 @@ async def get_current_user(
         raise credentials_exception
     
     # Get user from database
-    statement = select(User).where(User.username == username).where(User.is_active == True)
+    statement = select(User).where(User.username == username).where(User.is_active)
     user = session.exec(statement).first()
     
     if user is None:

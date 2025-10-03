@@ -1,6 +1,8 @@
 import sys
+
 sys.path.append('.')
 import pandas as pd
+
 from utils import get_room_mapping_preview
 
 print('Testing preview function...')

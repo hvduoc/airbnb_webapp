@@ -2,8 +2,10 @@
 Production configuration for Railway deployment
 """
 import os
+
 from sqlmodel import create_engine
-from database import create_tables, get_db
+
+from database import create_tables
 
 # Production database URL (PostgreSQL on Railway)
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -25,8 +27,9 @@ def init_production_db():
 
 def create_initial_users():
     """Create initial users for production"""
-    from auth_service import create_user
     from sqlalchemy.orm import Session
+
+    from auth_service import create_user
     
     with Session(engine) as db:
         try:

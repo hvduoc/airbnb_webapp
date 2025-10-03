@@ -1,66 +1,60 @@
-from fastapi import FastAPI, Request, UploadFile, File, Query, Form, Depends, Response, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from starlette.middleware.base import BaseHTTPMiddleware
-from contextlib import asynccontextmanager
-
-from sqlmodel import select, Session, func
-from sqlalchemy import or_, not_, case, func
-
-import pandas as pd
-import uuid
-import os
 import io
-import zipfile
-import asyncio
 import math
-import httpx
+import os
+import uuid
+from calendar import monthrange
+from collections import defaultdict
+from contextlib import asynccontextmanager
+from datetime import date, datetime, timedelta
+from typing import List, Optional
+from urllib.parse import urlencode
 
+import httpx
+import pandas as pd
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from dotenv import load_dotenv
+from fastapi import (Depends, FastAPI, File, Form, HTTPException, Query,
+                     Request, Response, UploadFile, status)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from sqlalchemy import func, not_, or_
+from sqlmodel import func, select
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Service Layer Imports
 from services.booking_service import BookingService
+from services.initialization_service import InitializationService
 from services.property_service import PropertyService
 from services.revenue_service import RevenueService
-from services.upload_service import UploadService
 from services.salesperson_service import SalespersonService
-from services.initialization_service import InitializationService
-from datetime import datetime, date, timedelta
-from calendar import monthrange
-from collections import defaultdict
-from types import SimpleNamespace
-from typing import Optional, List
-from urllib.parse import urlencode
+from services.upload_service import UploadService
 
-from dotenv import load_dotenv
 load_dotenv()  # <-- để tự động nạp .env
 
-# Initialize logging early
-from logging_config import app_logger, log_security_event, log_api_access
-from csrf_protection import init_csrf_protection, validate_csrf_token, get_csrf_token, set_csrf_token_cookie
-from rate_limiter import init_rate_limiters, check_rate_limit, get_rate_limit_headers, rate_limit_exceeded_response
-import logging
 
-from db import init_db, get_session, get_session_context
-from models import Booking, Property, Channel, ImportLog, Building, Salesperson, ExtraCharge, ExpenseCategory, User
-from utils import parse_date_mixed
-
-# routers OPEX
-from routes_expense import (
-    router as expense_router,
-    rec_router as recurring_router,
-    aux as expense_aux_router,
-    extra_charges_router,
-)
-
+from auth.dependencies import get_optional_current_user
 # Authentication
 from auth.routes import router as auth_router
-from auth.dependencies import get_optional_current_user, get_current_active_user
-from routes_extra_fees import extra_fees_router
+from csrf_protection import (init_csrf_protection, set_csrf_token_cookie,
+                             validate_csrf_token)
+from db import get_session_context, init_db
+# Initialize logging early
+from logging_config import log_api_access, log_security_event
+from models import (Booking, Building, Channel, ExpenseCategory, ExtraCharge,
+                    ImportLog, Property, Salesperson, User)
+from rate_limiter import (check_rate_limit, get_rate_limit_headers,
+                          init_rate_limiters, rate_limit_exceeded_response)
 from routes_brain import router as brain_router
+# routers OPEX
+from routes_expense import aux as expense_aux_router
+from routes_expense import extra_charges_router
+from routes_expense import rec_router as recurring_router
+from routes_expense import router as expense_router
+from routes_extra_fees import extra_fees_router
+from utils import parse_date_mixed
 
 # Payment Ledger Module - Temporarily disabled for basic demo
 # from routes_payments import router as payments_router
@@ -112,7 +106,7 @@ async def lifespan(app: FastAPI):
     
     # Initialize CSRF protection
     from auth.security import SECRET_KEY
-    csrf_protection = init_csrf_protection(SECRET_KEY)
+    init_csrf_protection(SECRET_KEY)
     print("[Security] CSRF protection initialized")
     
     # Initialize rate limiters
@@ -515,7 +509,7 @@ async def upload(
             processing_time = totals.get("processing_time", 0)
             
             # Tạo thống kê chi tiết
-            stats_msg = f"✅ Tải lên thành công!"
+            stats_msg = "✅ Tải lên thành công!"
             if inserted > 0 or updated > 0:
                 stats_msg += f"\n📊 Thống kê: {inserted} bản ghi mới, {updated} bản ghi cập nhật"
             if processing_time > 0:
@@ -553,7 +547,7 @@ async def show_add_booking_form(
     with get_session_context() as session:
         properties = session.exec(select(Property).order_by(Property.property_name)).all()
         channels = session.exec(select(Channel).order_by(Channel.channel_name)).all()
-        salespeople = session.exec(select(Salesperson).where(Salesperson.is_active == True)).all()
+        salespeople = session.exec(select(Salesperson).where(Salesperson.is_active)).all()
 
         # Xác định channel mặc định
         default_channel_id = None
@@ -633,7 +627,7 @@ async def edit_booking_form(request: Request, booking_id: int):
 
         properties = session.exec(select(Property).order_by(Property.property_name)).all()
         channels = session.exec(select(Channel).order_by(Channel.channel_name)).all()
-        salespeople = session.exec(select(Salesperson).where(Salesperson.is_active == True)).all()
+        salespeople = session.exec(select(Salesperson).where(Salesperson.is_active)).all()
 
         return templates.TemplateResponse("edit_booking.html", {
             "request": request,
@@ -780,7 +774,7 @@ async def handle_add_salesperson(
     """Xử lý thêm nhân viên sale mới."""
     with get_session_context() as session:
         salesperson_service = SalespersonService(session)
-        result = salesperson_service.create_salesperson(name, commission_rate_pct, email, phone)
+        salesperson_service.create_salesperson(name, commission_rate_pct, email, phone)
         
     return RedirectResponse(url="/salespeople", status_code=303)
 
@@ -1018,7 +1012,7 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
 
         # Fix: Thêm category_map để tránh lỗi
         categories = session.exec(select(ExpenseCategory)).all()
-        category_map = {cat.id: cat.name for cat in categories}
+        {cat.id: cat.name for cat in categories}
 
     results = defaultdict(lambda: {"sold_nights": 0, "revenue": 0.0, "commission": 0.0, "prop_ids": set(), "expenses": defaultdict(float)})
     monthly_sold = defaultdict(int)
@@ -1143,7 +1137,7 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
         })
 
     # --- tổng hợp KPI cho tiêu đề báo cáo ---
-    total_rows = len(rows)
+    len(rows)
     total_revenue = int(round(sum(r["revenue_vnd"] for r in rows)))
     total_commission = int(round(sum(r["commission_vnd"] for r in rows)))
     total_sold_nights = sum(r["sold_nights"] for r in rows)
@@ -1202,7 +1196,7 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     # Calculate monthly metrics for charts
     for mk in [datetime.strptime(m, "%Y-%m").date() for m in month_labels]:
         # For occupancy calculation, we need to aggregate differently
-        month_revenue = monthly_rev.get(mk, 0)
+        monthly_rev.get(mk, 0)
         month_sold = monthly_sold.get(mk, 0)
         month_airbnb = monthly_airbnb_rev.get(mk, 0)
         month_offline = monthly_offline_rev.get(mk, 0)
@@ -1394,10 +1388,59 @@ async def api_buildings():
         return [{"id": b.id, "name": b.building_name} for b in buildings]
 
 @app.get("/api/properties")
-async def api_properties():
+async def api_properties(
+    current_user: User = Depends(get_optional_current_user)
+):
+    """Get properties với user-aware filtering"""
+    from services.base_service import PropertyAwareService
+    
     with get_session_context() as session:
-        properties = session.exec(select(Property)).all()
-        return [{"id": p.id, "name": p.property_name, "building_id": p.building_id} for p in properties]
+        service = PropertyAwareService(session, current_user)
+        
+        # Check permission
+        service.require_permission("property", "read")
+        
+        # Get accessible properties
+        properties = service.get_accessible_properties()
+        
+        return service.format_response([
+            {"id": p.id, "name": p.property_name, "building_id": p.building_id} 
+            for p in properties
+        ])
+
+@app.get("/api/bookings")
+async def api_bookings(
+    current_user: User = Depends(get_optional_current_user),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0)
+):
+    """Get bookings với user-aware property filtering"""
+    from services.base_service import BaseService
+    
+    with get_session_context() as session:
+        service = BaseService(session, current_user)
+        
+        # Check permission
+        service.require_permission("booking", "read")
+        
+        # Query bookings với property filtering
+        query = select(Booking).offset(offset).limit(limit)
+        filtered_query = service.apply_property_filter(query, "property_id")
+        
+        bookings = session.exec(filtered_query).all()
+        
+        return service.format_response([
+            {
+                "id": b.id,
+                "property_id": b.property_id,
+                "guest_name": b.guest_name,
+                "checkin_date": b.checkin_date.isoformat() if b.checkin_date else None,
+                "checkout_date": b.checkout_date.isoformat() if b.checkout_date else None,
+                "status": b.status,
+                "total_amount": float(b.total_amount) if b.total_amount else 0
+            }
+            for b in bookings
+        ])
 
 @app.post("/api/csv/preview")
 async def api_csv_preview(
@@ -1439,8 +1482,9 @@ async def api_csv_preview(
 async def api_csv_preview_json(data: dict):
     """Preview CSV với JSON data để test."""
     try:
-        from utils import get_room_mapping_preview
         import io
+
+        from utils import get_room_mapping_preview
         
         csv_content = data.get('csv_content', '')
         room_mapping_data = data.get('room_mapping')
@@ -1468,7 +1512,7 @@ def show_calendar(request: Request):
 def health_check():
     """Kiểm tra sức khỏe tổng thể của hệ thống"""
     from db import check_database_health, get_database_info
-    
+
     # Kiểm tra database
     db_health = check_database_health()
     db_info = get_database_info()

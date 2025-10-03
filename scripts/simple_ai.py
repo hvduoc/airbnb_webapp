@@ -4,13 +4,12 @@ Simple AI Session Manager - Windows Compatible
 Task-driven development workflow without emojis
 """
 
-import os
-import sys
+import argparse
 import json
 import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-import argparse
+
 
 class SimpleSessionManager:
     def __init__(self):

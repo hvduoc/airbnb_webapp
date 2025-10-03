@@ -6,8 +6,8 @@ Simplified commands for session management
 
 import subprocess
 import sys
-import os
 from pathlib import Path
+
 
 def run_command(cmd, description):
     """Run command with user feedback."""

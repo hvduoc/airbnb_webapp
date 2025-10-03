@@ -1,56 +1,23 @@
 # ================================================================
 # AIRBNB WEBAPP - Prometheus Configuration
-# Monitoring configuration cho application và infrastructure
-# Author: AI Assistant
-# Created: 2024-12-28
+# Enhanced monitoring với Vietnamese Business Metrics và AlertManager
+# Updated: October 3, 2025 - PROD-003 Advanced Monitoring
 # ================================================================
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    monitor: 'airbnb-webapp'
+    environment: 'production'
+    application: 'airbnb-payment-ledger'
+    locale: 'vi_VN'
 
 # ==================== RULE FILES ====================
 rule_files:
-  - "alert_rules.yml"
-
-# ==================== SCRAPE CONFIGURATIONS ====================
-scrape_configs:
-  # Prometheus itself
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
-
-  # FastAPI Application Metrics
-  - job_name: 'airbnb-webapp'
-    static_configs:
-      - targets: ['webapp:8000']
-    metrics_path: '/metrics'
-    scrape_interval: 30s
-    scrape_timeout: 10s
-
-  # PostgreSQL Metrics (nếu có postgres_exporter)
-  - job_name: 'postgres'
-    static_configs:
-      - targets: ['postgres-exporter:9187']
-    scrape_interval: 30s
-
-  # Redis Metrics (nếu có redis_exporter)
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['redis-exporter:9121']
-    scrape_interval: 30s
-
-  # Nginx Metrics (nếu có nginx-prometheus-exporter)
-  - job_name: 'nginx'
-    static_configs:
-      - targets: ['nginx-exporter:9113']
-    scrape_interval: 30s
-
-  # Node Exporter (system metrics)
-  - job_name: 'node'
-    static_configs:
-      - targets: ['node-exporter:9100']
-    scrape_interval: 30s
+  - "/etc/prometheus/rules/airbnb-alerts.yml"
+  - "/etc/prometheus/rules/business-metrics.yml"
+  - "/etc/prometheus/rules/infrastructure-alerts.yml"
 
 # ==================== ALERTING ====================
 alerting:
@@ -58,3 +25,151 @@ alerting:
     - static_configs:
         - targets:
           - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+      path_prefix: '/'
+
+# ==================== SCRAPE CONFIGURATIONS ====================
+scrape_configs:
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    relabel_configs:
+      - target_label: service
+        replacement: 'prometheus'
+
+  # FastAPI Application với Business Metrics
+  - job_name: 'airbnb-webapp'
+    static_configs:
+      - targets: ['webapp:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: service
+        replacement: 'fastapi'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'airbnb_(booking|payment|property)_.*'
+        target_label: category
+        replacement: 'business_metrics'
+    
+  # Health Check Endpoint riêng biệt
+  - job_name: 'airbnb-health'
+    static_configs:
+      - targets: ['webapp:8000']
+    metrics_path: '/health'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'health_check'
+        
+  # PostgreSQL Database Performance
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'database'
+      - target_label: database
+        replacement: 'airbnb_app'
+    
+  # Redis Cache Performance
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'cache'
+
+  # Nginx Reverse Proxy Metrics
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'proxy'
+        
+  # System/Node Metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'system'
+        
+  # Container Metrics (nếu có cAdvisor)
+  - job_name: 'docker-containers'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'container_monitoring'
+        
+  # Elasticsearch Cluster Monitoring
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['elasticsearch:9200']
+    metrics_path: '/_prometheus/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'elasticsearch'
+        
+  # Logstash Monitoring
+  - job_name: 'logstash'
+    static_configs:
+      - targets: ['logstash:9600']
+    metrics_path: '/_node/stats'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'logstash'
+        
+  # AlertManager Self-Monitoring
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    relabel_configs:
+      - target_label: service
+        replacement: 'alertmanager'
+
+# ==================== STORAGE CONFIG ====================
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 30d
+    retention.size: 10GB
+    wal-compression: true
+
+# ==================== WEB CONFIG ====================
+web:
+  console.libraries: /etc/prometheus/console_libraries
+  console.templates: /etc/prometheus/consoles
+  enable-lifecycle: true
+  enable-admin-api: true
+  external-url: 'http://localhost:9090'

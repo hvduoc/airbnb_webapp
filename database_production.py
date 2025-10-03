@@ -2,11 +2,13 @@
 Database configuration hỗ trợ cả SQLite (dev) và PostgreSQL (production)
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, Boolean
+import os
+from datetime import datetime
+
+from sqlalchemy import (Boolean, Column, DateTime, Float, Integer, String,
+                        Text, create_engine)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import os
 
 # Lấy DATABASE_URL từ environment (Railway sẽ cung cấp)
 DATABASE_URL = os.getenv("DATABASE_URL")

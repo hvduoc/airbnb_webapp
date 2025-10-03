@@ -4,8 +4,9 @@ Date: 2025-09-25
 Purpose: Add room_assignments table to track booking room vs actual room cases
 """
 
-import sqlite3
 import os
+import sqlite3
+
 
 def run_migration():
     """

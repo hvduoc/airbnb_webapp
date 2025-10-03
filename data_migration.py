@@ -4,24 +4,22 @@ Công cụ di chuyển dữ liệu an toàn từ SQLite sang PostgreSQL
 Bao gồm backup, validation và rollback procedures
 """
 
-import os
-import sys
 import json
-import sqlite3
-import pandas as pd
-from datetime import datetime
-from typing import Dict, List, Any, Tuple
-from sqlalchemy import create_engine, text
-from sqlmodel import Session, select
 import logging
+import os
+import sqlite3
+import sys
+from datetime import datetime
+from typing import Dict, List
+
+from sqlalchemy import create_engine, text
+from sqlmodel import Session
 
 # Thêm đường dẫn để import models
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from models import (
-    Building, Property, Channel, Booking, ImportLog, 
-    User, UserSession, ExtraCharge, ExpenseCategory
-)
+from models import (Booking, Building, Channel, ExpenseCategory, ExtraCharge,
+                    ImportLog, Property, User, UserSession)
 
 # Cấu hình logging
 logging.basicConfig(
@@ -342,7 +340,7 @@ class DatabaseMigrator:
             logger.info("=" * 50)
             logger.info("🎉 MIGRATION THÀNH CÔNG!")
             logger.info(f"📋 Backup tại: {backup_file}")
-            logger.info(f"📊 Log tại: migration.log")
+            logger.info("📊 Log tại: migration.log")
             
             return True
             

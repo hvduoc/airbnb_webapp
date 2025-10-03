@@ -10,11 +10,12 @@ Handles:
 - Integration with booking assignments
 """
 
-from sqlmodel import select, func
-from typing import List, Dict, Any, Optional
-from decimal import Decimal
+from typing import Any, Dict, List, Optional
 
-from models import Salesperson, Booking
+from sqlmodel import func, select
+
+from models import Booking, Salesperson
+
 from .base import BaseService
 
 
@@ -30,7 +31,7 @@ class SalespersonService(BaseService):
         query = select(Salesperson)
         
         if active_only:
-            query = query.where(Salesperson.is_active == True)
+            query = query.where(Salesperson.is_active)
             
         query = query.order_by(Salesperson.name)
         salespeople = self.session.exec(query).all()
@@ -63,7 +64,7 @@ class SalespersonService(BaseService):
     def get_active_salespeople(self) -> List[Salesperson]:
         """Get only active salespeople for dropdowns/forms"""
         return self.session.exec(
-            select(Salesperson).where(Salesperson.is_active == True)
+            select(Salesperson).where(Salesperson.is_active)
             .order_by(Salesperson.name)
         ).all()
     

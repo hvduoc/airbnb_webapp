@@ -10,15 +10,18 @@ Handles:
 - Extra charges and expense integration
 """
 
-from sqlmodel import select, func
-from sqlalchemy import or_, not_
-from typing import List, Dict, Any, Tuple, Optional
-from datetime import date, timedelta, datetime
-from collections import defaultdict
 import calendar
-import pandas as pd
+from collections import defaultdict
+from datetime import date, timedelta
+from typing import Any, Dict, List, Tuple
 
-from models import Booking, Property, Channel, Salesperson, ExtraCharge, ExpenseCategory
+import pandas as pd
+from sqlalchemy import not_, or_
+from sqlmodel import func, select
+
+from models import (Booking, Channel, ExpenseCategory, ExtraCharge, Property,
+                    Salesperson)
+
 from .base import BaseService
 
 
@@ -44,7 +47,7 @@ class RevenueService(BaseService):
             
             # Load expense categories  
             categories = self.session.exec(select(ExpenseCategory)).all()
-            category_map = {cat.id: cat.name for cat in categories}
+            {cat.id: cat.name for cat in categories}
             
             # Process bookings into aggregated results
             results, monthly_channel_data = self._process_bookings(

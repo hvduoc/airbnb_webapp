@@ -1,10 +1,11 @@
 """
 Create default admin user for authentication system
 """
+
+from sqlmodel import Session, create_engine, select
+
 from auth.security import get_password_hash
-from sqlmodel import Session, select, create_engine
 from models import User
-from datetime import datetime
 
 # Create engine - use SQLite database
 DATABASE_URL = "sqlite:///./app.db"
@@ -46,7 +47,7 @@ def create_admin_user():
             print("✅ Admin user created successfully!")
             print(f"📧 Email: {admin_user.email}")
             print(f"👤 Username: {admin_user.username}")
-            print(f"🔐 Password: admin123")
+            print("🔐 Password: admin123")
             print(f"🎭 Role: {admin_user.role}")
             
             # Create demo user
@@ -71,7 +72,7 @@ def create_admin_user():
             print("✅ Demo user created successfully!")
             print(f"📧 Email: {demo_user.email}")
             print(f"👤 Username: {demo_user.username}")
-            print(f"🔐 Password: user123")
+            print("🔐 Password: user123")
             print(f"🎭 Role: {demo_user.role}")
             
         except Exception as e:

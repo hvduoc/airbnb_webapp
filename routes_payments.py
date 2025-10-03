@@ -2,19 +2,19 @@
 Payment Ledger Routes - Google Sheets Integration
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.responses import JSONResponse
-from typing import List, Dict, Any, Optional
-from datetime import datetime, date, timedelta
 import logging
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
-from services.google_sheets.service import sheets_service
-from services.google_sheets.models import (
-    PaymentRequest, PaymentResponse, CashHandoverRequest, CashHandoverResponse,
-    DashboardData, PaymentListRequest, CashflowListRequest, PaymentValidation,
-    PaymentUser, UserRole
-)
+from fastapi import APIRouter, Depends, HTTPException, status
+
 from auth.auth_service import get_current_user, require_role
+from services.google_sheets.models import (CashHandoverRequest,
+                                           CashHandoverResponse, DashboardData,
+                                           PaymentRequest, PaymentResponse,
+                                           PaymentUser, PaymentValidation,
+                                           UserRole)
+from services.google_sheets.service import sheets_service
 
 logger = logging.getLogger(__name__)
 

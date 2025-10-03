@@ -4,6 +4,7 @@ Apply authentication migration using Python
 import sqlite3
 from pathlib import Path
 
+
 def apply_auth_migration():
     """Apply authentication tables migration"""
     

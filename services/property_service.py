@@ -9,9 +9,12 @@ Handles:
 - API endpoints for AJAX
 """
 
-from sqlmodel import select, func
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
+from sqlmodel import func, select
+
 from models import Building, Property
+
 from .base import BaseService
 
 
