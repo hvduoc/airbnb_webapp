@@ -25,6 +25,7 @@ from sqlmodel import func, select
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # Service Layer Imports
+from services.analytics_service import AnalyticsService
 from services.booking_service import BookingService
 from services.expense_service import ExpenseService
 from services.initialization_service import InitializationService
@@ -351,6 +352,13 @@ def property_charges_page(request: Request):
 @app.get("/expenses/ledger", response_class=HTMLResponse)
 def expenses_ledger(request: Request):
     return templates.TemplateResponse("expenses_ledger.html", {"request": request, "month": ""})
+
+@app.get("/analytics", response_class=HTMLResponse)
+async def show_analytics_dashboard(request: Request):
+    """
+    Analytics Dashboard - Business Intelligence với charts và KPIs
+    """
+    return templates.TemplateResponse("analytics_dashboard.html", {"request": request})
 
 # Payment Ledger Template Routes - Temporarily disabled
 # @app.get("/payments/login", response_class=HTMLResponse)
@@ -1572,6 +1580,181 @@ async def expense_summary_by_property(
         end_date=end_parsed
     )
     return result
+
+
+# ==================== ANALYTICS DASHBOARD API ENDPOINTS ====================
+
+@app.get("/api/analytics/revenue-vs-expense")
+async def analytics_revenue_vs_expense(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    Revenue vs Expense analysis dashboard
+    
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+    
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+    
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+    
+    service = AnalyticsService(db, current_user)
+    result = service.get_revenue_vs_expense_dashboard(
+        start_date=start_parsed,
+        end_date=end_parsed
+    )
+    return result
+
+
+@app.get("/api/analytics/occupancy")
+async def analytics_occupancy_metrics(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    Occupancy rates và utilization metrics
+    
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+    
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+    
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+    
+    service = AnalyticsService(db, current_user)
+    result = service.get_occupancy_metrics(
+        start_date=start_parsed,
+        end_date=end_parsed
+    )
+    return result
+
+
+@app.get("/api/analytics/arpu")
+async def analytics_arpu_metrics(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    ARPU (Average Revenue Per User/Booking) metrics
+    
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+    
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+    
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+    
+    service = AnalyticsService(db, current_user)
+    result = service.get_arpu_metrics(
+        start_date=start_parsed,
+        end_date=end_parsed
+    )
+    return result
+
+
+@app.get("/api/analytics/trends")
+async def analytics_monthly_trends(
+    months_back: int = Query(12, ge=3, le=24, description="Số tháng phân tích (3-24)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    Monthly trends cho revenue, expenses, bookings
+    
+    Requires: analytics.read permission
+    """
+    service = AnalyticsService(db, current_user)
+    result = service.get_monthly_trends(months_back=months_back)
+    return result
+
+
+@app.get("/api/analytics/dashboard")
+async def analytics_full_dashboard(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db)
+):
+    """
+    Complete dashboard data - all analytics in one response
+    
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+    
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD")
+    
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD")
+    
+    service = AnalyticsService(db, current_user)
+    
+    # Get all dashboard data
+    revenue_vs_expense = service.get_revenue_vs_expense_dashboard(start_parsed, end_parsed)
+    occupancy = service.get_occupancy_metrics(start_parsed, end_parsed)
+    arpu = service.get_arpu_metrics(start_parsed, end_parsed)
+    trends = service.get_monthly_trends(months_back=12)
+    
+    return {
+        "revenue_vs_expense": revenue_vs_expense,
+        "occupancy": occupancy,
+        "arpu": arpu,
+        "trends": trends,
+        "generated_at": datetime.utcnow().isoformat(),
+        "period": {
+            "start_date": start_date,
+            "end_date": end_date
+        }
+    }
 
 
 @app.post("/api/csv/preview")
