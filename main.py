@@ -43,9 +43,11 @@ load_dotenv()  # <-- để tự động nạp .env
 from auth.dependencies import get_optional_current_user
 # Authentication
 from auth.routes import router as auth_router
+from auth.auth_service import get_current_user_or_redirect
 from csrf_protection import (init_csrf_protection, set_csrf_token_cookie,
                              validate_csrf_token)
-from db import get_session_context, init_db
+from db import get_session_context, init_db, get_session as get_db
+from sqlmodel import Session
 # Initialize logging early
 from logging_config import log_api_access, log_security_event
 from models import (Booking, Building, Channel, ExpenseCategory, ExtraCharge,
