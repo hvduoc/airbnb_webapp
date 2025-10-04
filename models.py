@@ -68,7 +68,7 @@ class UserSession(SQLModel, table=True):
 
 class ExtraCharge(SQLModel, table=True):
     """Phụ phí căn hộ - Optimized với indexes"""
-    __tablename__ = "extracharge"
+    __tablename__ = "extra_charges"
     
     id: Optional[int] = Field(default=None, primary_key=True)
     property_id: int = Field(foreign_key="property.id", index=True)  # Index cho property queries
@@ -77,7 +77,7 @@ class ExtraCharge(SQLModel, table=True):
     charge_month: str = Field(index=True, max_length=7)  # YYYY-MM format, index cho monthly reports
     charge_note: Optional[str] = Field(default=None, max_length=1000)
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, index=True)
-    category_id: Optional[int] = Field(default=None, foreign_key="expensecategory.id", index=True)
+    category_id: Optional[int] = Field(default=None, foreign_key="expense_categories.id", index=True)
     
     class Config:
         indexes = [

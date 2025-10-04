@@ -464,7 +464,7 @@ async def index(request: Request, msg: Optional[str] = None, success: Optional[b
         last_ingest = session.exec(
             select(ImportLog)
             .where(ImportLog.filename.ilike("airbnb:%"))
-            .order_by(ImportLog.finished_at.desc())
+            .order_by(ImportLog.imported_at.desc())
         ).first()
     next_run = get_next_run_time()
     return templates.TemplateResponse("upload.html", {
