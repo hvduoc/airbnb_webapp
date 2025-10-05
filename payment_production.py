@@ -70,6 +70,11 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Token không hợp lệ")
 
 # Routes
+@app.get("/health")
+async def health():
+    """Health check endpoint for CI/CD"""
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request, db: Session = Depends(get_db)):
     """Trang chủ - redirect đến trang đăng nhập nếu chưa đăng nhập"""
