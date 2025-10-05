@@ -7,7 +7,11 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-import jwt
+try:
+    import jwt
+except ImportError:
+    # Fallback for Railway deployment compatibility
+    import PyJWT as jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
