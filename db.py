@@ -29,7 +29,7 @@ def create_database_engine():
     if DATABASE_URL:
         # Production PostgreSQL với connection pooling
         if DATABASE_URL.startswith("postgresql"):
-            print("🗄️ Kết nối PostgreSQL Production với connection pooling...")
+            print("[DB] Connecting to PostgreSQL Production with connection pooling...")
             engine = create_engine(
                 DATABASE_URL,
                 pool_pre_ping=True,  # Kiểm tra kết nối trước khi sử dụng
@@ -41,21 +41,21 @@ def create_database_engine():
                 echo=not PRODUCTION,  # Log SQL queries trong development
                 future=True
             )
-            print(f"✅ PostgreSQL Engine đã sẵn sàng (Pool: {POOL_SIZE}, Max: {POOL_SIZE + MAX_OVERFLOW})")
+            print(f"[DB] PostgreSQL Engine ready (Pool: {POOL_SIZE}, Max: {POOL_SIZE + MAX_OVERFLOW})")
         else:
             # Các database khác
             engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
-            print(f"✅ Database Engine đã sẵn sàng: {DATABASE_URL.split('://')[0]}")
+            print(f"[DB] Database Engine ready: {DATABASE_URL.split('://')[0]}")
     else:
         # Development SQLite
-        print("🗄️ Sử dụng SQLite cho Development...")
+        print("[DB] Using SQLite for Development...")
         engine = create_engine(
             "sqlite:///app.db", 
             connect_args={"check_same_thread": False},
             echo=not PRODUCTION,
             future=True
         )
-        print("✅ SQLite Development Database đã sẵn sàng")
+        print("[DB] SQLite Development Database ready")
     
     return engine
 
@@ -66,16 +66,16 @@ def init_db():
     """Khởi tạo database và tạo tất cả tables"""
     try:
         
-        print("🗄️ Đang khởi tạo database schema...")
+        print("[DB] Initializing database schema...")
         SQLModel.metadata.create_all(engine)
-        print("✅ Database schema đã được khởi tạo thành công!")
+        print("[DB] Database schema initialized successfully!")
         
         # Kiểm tra kết nối database
         with Session(engine) as session:
             # Test query để đảm bảo kết nối hoạt động
             result = session.execute(text("SELECT 1")).fetchone()
             if result:
-                print("✅ Kết nối database đã được xác nhận")
+                print("[DB] Database connection verified")
             
     except Exception as e:
         print(f"❌ Lỗi khởi tạo database: {e}")
