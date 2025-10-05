@@ -36,8 +36,9 @@ REQUIRE_STRONG_PASSWORD = os.getenv("REQUIRE_STRONG_PASSWORD", "true").lower() =
 
 # Cảnh báo bảo mật trong development
 if os.getenv("ENVIRONMENT", "development") == "development":
-    print("🔧 Chế độ Development - Bảo mật cơ bản được kích hoạt")
+    print("[SETUP] Development mode - Basic security enabled")
 else:
+    print("[SETUP] Production mode - Enhanced security active")
     print("🔒 Chế độ Production - Bảo mật cao cấp được kích hoạt")
 
 # Mã hóa mật khẩu với cấu hình bcrypt production chuẩn

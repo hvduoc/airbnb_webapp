@@ -18,7 +18,7 @@ if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     engine = create_engine(DATABASE_URL)
-    print("🚀 Kết nối PostgreSQL production")
+    print("[DB] Connected to PostgreSQL production")
 else:
     # Development: SQLite local
     DATABASE_URL = "sqlite:///./payment_ledger.db"
