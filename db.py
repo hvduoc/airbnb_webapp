@@ -25,23 +25,40 @@ POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", "30"))
 POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "3600"))  # 1 giờ
 
 def create_database_engine():
-    """Tạo database engine với cấu hình tối ưu"""
+    """Tạo database engine với cấu hình tối ưu và fallback an toàn"""
     if DATABASE_URL:
         # Production PostgreSQL với connection pooling
         if DATABASE_URL.startswith("postgresql"):
-            print("🗄️ Kết nối PostgreSQL Production với connection pooling...")
-            engine = create_engine(
-                DATABASE_URL,
-                pool_pre_ping=True,  # Kiểm tra kết nối trước khi sử dụng
-                poolclass=QueuePool,
-                pool_size=POOL_SIZE,
-                max_overflow=MAX_OVERFLOW,
-                pool_timeout=POOL_TIMEOUT,
-                pool_recycle=POOL_RECYCLE,
-                echo=not PRODUCTION,  # Log SQL queries trong development
-                future=True
-            )
-            print(f"✅ PostgreSQL Engine đã sẵn sàng (Pool: {POOL_SIZE}, Max: {POOL_SIZE + MAX_OVERFLOW})")
+            try:
+                print("🗄️ Đang thử kết nối PostgreSQL Production...")
+                engine = create_engine(
+                    DATABASE_URL,
+                    pool_pre_ping=True,  # Kiểm tra kết nối trước khi sử dụng
+                    poolclass=QueuePool,
+                    pool_size=POOL_SIZE,
+                    max_overflow=MAX_OVERFLOW,
+                    pool_timeout=POOL_TIMEOUT,
+                    pool_recycle=POOL_RECYCLE,
+                    echo=not PRODUCTION,  # Log SQL queries trong development
+                    future=True
+                )
+                # Test connection immediately
+                with engine.connect() as conn:
+                    conn.execute(text("SELECT 1"))
+                print(f"✅ PostgreSQL kết nối thành công (Pool: {POOL_SIZE}, Max: {POOL_SIZE + MAX_OVERFLOW})")
+                return engine
+            except Exception as e:
+                print(f"❌ PostgreSQL thất bại: {e}")
+                print("🔄 Fallback về SQLite để ứng dụng có thể chạy...")
+                # Fallback to SQLite in production if PostgreSQL fails
+                engine = create_engine(
+                    "sqlite:///app_fallback.db", 
+                    connect_args={"check_same_thread": False},
+                    echo=not PRODUCTION,
+                    future=True
+                )
+                print("✅ SQLite Fallback Database đã sẵn sàng")
+                return engine
         else:
             # Các database khác
             engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
