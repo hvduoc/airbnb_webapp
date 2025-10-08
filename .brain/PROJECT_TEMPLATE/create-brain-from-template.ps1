@@ -2,16 +2,16 @@
 # Mục tiêu: Setup brain system từ template trong < 5 phút
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$ProjectName,
     
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$Team = "Development Team",
     
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$Domain = "SaaS",
     
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$TargetPath = ".brain"
 )
 
@@ -53,12 +53,12 @@ foreach ($dir in $subDirs) {
 
 # Copy và rename template files
 $templateFiles = @{
-    "TEMPLATE_SCOPE.md" = "SCOPE.md"
-    "TEMPLATE_DOMAIN_MAP.md" = "DOMAIN_MAP.md" 
+    "TEMPLATE_SCOPE.md"        = "SCOPE.md"
+    "TEMPLATE_DOMAIN_MAP.md"   = "DOMAIN_MAP.md" 
     "SAMPLE_ACTIVE_TASKS.json" = "tasks/ACTIVE_TASKS.json"
-    "QUICK_START.md" = "QUICK_START.md"
-    "SETUP_GUIDE.md" = "SETUP_GUIDE.md"
-    "INDEX.md" = "README.md"
+    "QUICK_START.md"           = "QUICK_START.md"
+    "SETUP_GUIDE.md"           = "SETUP_GUIDE.md"
+    "INDEX.md"                 = "README.md"
 }
 
 Write-Info "📁 Đang copy và rename template files..."
@@ -73,7 +73,8 @@ foreach ($sourceFile in $templateFiles.Keys) {
         Copy-Item $sourcePath $destPath -Force
         $copiedFiles += $destPath
         Write-Success "Copied: $sourceFile → $destFile"
-    } else {
+    }
+    else {
         Write-Warning "Không tìm thấy: $sourceFile"
     }
 }
@@ -83,15 +84,15 @@ $currentDate = Get-Date -Format "yyyy-MM-dd"
 $currentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm"
 
 $placeholders = @{
-    "{{PROJECT_NAME}}" = $ProjectName
-    "{{TEAM_NAME}}" = $Team
-    "{{DOMAIN}}" = $Domain
-    "{{CURRENT_DATE}}" = $currentDate
-    "{{LAST_UPDATED}}" = $currentDate
+    "{{PROJECT_NAME}}"     = $ProjectName
+    "{{TEAM_NAME}}"        = $Team
+    "{{DOMAIN}}"           = $Domain
+    "{{CURRENT_DATE}}"     = $currentDate
+    "{{LAST_UPDATED}}"     = $currentDate
     "{{LAST_UPDATE_DATE}}" = $currentDateTime
-    "{{VERSION}}" = "1.0.0"
-    "{{STATUS}}" = "Development"
-    "{{CREATION_DATE}}" = $currentDate
+    "{{VERSION}}"          = "1.0.0"
+    "{{STATUS}}"           = "Development"
+    "{{CREATION_DATE}}"    = $currentDate
 }
 
 Write-Info "🔄 Đang thay thế placeholders trong các file..."

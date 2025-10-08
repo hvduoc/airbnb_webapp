@@ -33,24 +33,24 @@ function DangNhap({ onDangNhapThanhCong }) {
       // Lưu thông tin session
       localStorage.setItem('brain-ui-session', sessionToken)
       localStorage.setItem('brain-ui-session-expiry', expiryTime.toString())
-      
+
       // Lưu thông tin user
       const userInfo = {
         tenDangNhap: tenDangNhap,
-        tenHienThi: tenDangNhap === 'admin' ? 'Admin System' : 
-                   tenDangNhap === 'manager' ? 'Property Manager' : 'User',
-        vaiTro: tenDangNhap === 'admin' ? 'Quản trị viên' : 
-                tenDangNhap === 'manager' ? 'Quản lý' : 'Người dùng',
+        tenHienThi: tenDangNhap === 'admin' ? 'Admin System' :
+          tenDangNhap === 'manager' ? 'Property Manager' : 'User',
+        vaiTro: tenDangNhap === 'admin' ? 'Quản trị viên' :
+          tenDangNhap === 'manager' ? 'Quản lý' : 'Người dùng',
         thoiGianDangNhap: new Date().toISOString()
       }
       localStorage.setItem('brain-ui-user-info', JSON.stringify(userInfo))
-      
+
       // Callback để cập nhật App state
       onDangNhapThanhCong()
     } else {
       setLoi('Tên đăng nhập hoặc mật khẩu không đúng!')
     }
-    
+
     setDangDangNhap(false)
   }
 
@@ -114,8 +114,8 @@ function DangNhap({ onDangNhapThanhCong }) {
               </div>
             )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="nut-dang-nhap"
               disabled={dangDangNhap || !tenDangNhap || !matKhau}
             >
@@ -141,7 +141,7 @@ function DangNhap({ onDangNhapThanhCong }) {
                 <span className="vai-tro">Quản trị viên</span>
               </div>
               <div className="tai-khoan-item">
-                <strong>manager</strong> / airbnb2025  
+                <strong>manager</strong> / airbnb2025
                 <span className="vai-tro">Quản lý</span>
               </div>
               <div className="tai-khoan-item">

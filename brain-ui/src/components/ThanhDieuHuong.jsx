@@ -113,7 +113,7 @@ function ThanhDieuHuong({ isOpen, onClose, onDangXuat }) {
   return (
     <>
       {isOpen && <div className="overlay" onClick={onClose} />}
-      
+
       <aside className={`thanh-dieu-huong ${isOpen ? 'mo' : ''}`}>
         <div className="header-sidebar">
           <div className="logo">
@@ -129,18 +129,18 @@ function ThanhDieuHuong({ isOpen, onClose, onDangXuat }) {
         <nav className="menu-chinh">
           {mucMenu.map((nhom, index) => (
             <div key={index} className="nhom-menu">
-              <div 
+              <div
                 className="tieu-de-nhom"
                 onClick={() => nhom.key && toggleSection(nhom.key)}
               >
                 <span>{nhom.nhom}</span>
                 {nhom.key && (
-                  expandedSections[nhom.key] ? 
-                    <ChevronDown size={16} /> : 
+                  expandedSections[nhom.key] ?
+                    <ChevronDown size={16} /> :
                     <ChevronRight size={16} />
                 )}
               </div>
-              
+
               {(!nhom.key || expandedSections[nhom.key]) && (
                 <ul className="danh-sach-menu">
                   {nhom.items.map((item, itemIndex) => (
@@ -173,7 +173,7 @@ function ThanhDieuHuong({ isOpen, onClose, onDangXuat }) {
                   <div className="user-name">{thongTinUser.tenHienThi}</div>
                   <div className="user-role">{thongTinUser.vaiTro}</div>
                 </div>
-                <button 
+                <button
                   className="nut-dang-xuat"
                   onClick={xuLyDangXuat}
                   title="Đăng xuất"
@@ -199,7 +199,7 @@ function ThanhDieuHuong({ isOpen, onClose, onDangXuat }) {
               </a>
             ))}
           </div>
-          
+
           <div className="thong-tin-brain">
             <div className="trang-thai">
               <span className="dot active"></span>

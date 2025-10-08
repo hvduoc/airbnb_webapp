@@ -18,7 +18,7 @@ function Write-Log {
     $LogEntry = "[$Timestamp] [$Level] $Message"
     
     Write-Host $LogEntry -ForegroundColor $(
-        switch($Level) {
+        switch ($Level) {
             "ERROR" { "Red" }
             "WARN" { "Yellow" }
             "SUCCESS" { "Green" }
@@ -110,9 +110,9 @@ function Sync-Repository {
     # Remove-Item -Recurse -Force $TempDir
     
     return @{
-        Success = $true
+        Success    = $true
         FilesCount = $FilesCount
-        Timestamp = Get-Date
+        Timestamp  = Get-Date
     }
 }
 

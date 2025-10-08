@@ -14,7 +14,7 @@ function MarkdownViewer({ file }) {
     const loadContent = async () => {
       try {
         setLoading(true)
-        
+
         // Try to fetch from public folder
         const response = await fetch(`/brain/${file}`)
         if (response.ok) {
@@ -183,9 +183,9 @@ CSV Processing: Pandas + Custom header mapping
     <div className="markdown-viewer">
       <div className="viewer-header">
         <h1>{file}</h1>
-        <a 
+        <a
           href={getGitHubLink()}
-          target="_blank" 
+          target="_blank"
           rel="noopener noreferrer"
           className="external-link"
         >
@@ -193,7 +193,7 @@ CSV Processing: Pandas + Custom header mapping
           Xem file gốc
         </a>
       </div>
-      
+
       <div className="markdown-content">
         <ReactMarkdown>{content}</ReactMarkdown>
       </div>

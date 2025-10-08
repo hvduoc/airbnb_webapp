@@ -11,7 +11,8 @@ Start-Sleep -Seconds 2
 $nginxProcess = Get-Process nginx -ErrorAction SilentlyContinue
 if ($nginxProcess) {
     Write-Host "✅ Nginx started (PID: $($nginxProcess.Id))" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Nginx failed to start" -ForegroundColor Red
 }
 

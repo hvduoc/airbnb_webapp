@@ -1,0 +1,377 @@
+# =====================================================
+# BUSINESS METRICS ALERT RULES
+# Vietnamese Business KPIs cho Airbnb WebApp
+# =====================================================
+
+groups:
+  # ===================================================
+  # REVENUE & FINANCIAL METRICS
+  # ===================================================
+  
+  - name: revenue.metrics
+    interval: 300s  # 5 minutes
+    rules:
+      # Daily Revenue Tracking
+      - record: airbnb:revenue_daily_vnd
+        expr: increase(airbnb_revenue_vnd_total[24h])
+        labels:
+          period: "daily"
+          currency: "VND"
+          
+      - record: airbnb:revenue_hourly_vnd
+        expr: increase(airbnb_revenue_vnd_total[1h])
+        labels:
+          period: "hourly" 
+          currency: "VND"
+          
+      # Average Revenue Per Booking
+      - record: airbnb:avg_revenue_per_booking
+        expr: |
+          (
+            increase(airbnb_revenue_vnd_total[24h]) / 
+            increase(airbnb_booking_success_total[24h])
+          )
+        labels:
+          metric_type: "financial_kpi"
+          period: "daily"
+          
+      # Revenue Growth Rate (so với tuần trước)
+      - record: airbnb:revenue_growth_rate
+        expr: |
+          (
+            (increase(airbnb_revenue_vnd_total[7d]) - increase(airbnb_revenue_vnd_total[7d] offset 7d)) /
+            increase(airbnb_revenue_vnd_total[7d] offset 7d)
+          ) * 100
+        labels:
+          metric_type: "growth_rate"
+          period: "weekly"
+
+      # Revenue Alerts
+      - alert: DailyRevenueTarget
+        expr: airbnb:revenue_daily_vnd < 50000000  # < 50M VND
+        for: 4h
+        labels:
+          severity: warning
+          category: business
+          metric_type: "revenue"
+          team: "business"
+        annotations:
+          summary: "📉 Doanh thu hàng ngày dưới mục tiêu"
+          description: "Doanh thu hôm nay: {{ $value | printf \"%.0f\" }} VND (Mục tiêu: 50M VND)"
+          target: "50,000,000 VND"
+          current: "{{ $value | printf \"%.0f\" }} VND"
+          shortfall: "{{ sub 50000000 $value | printf \"%.0f\" }} VND"
+          action: "Review pricing và marketing campaigns"
+          
+      - alert: WeeklyRevenueDecline
+        expr: airbnb:revenue_growth_rate < -10  # Giảm > 10%
+        for: 1h
+        labels:
+          severity: warning
+          category: business
+          metric_type: "revenue"
+          team: "business"
+        annotations:
+          summary: "📉 Doanh thu tuần này giảm {{ $value | printf \"%.1f\" }}%"
+          description: "Doanh thu tuần này giảm hơn 10% so với tuần trước"
+          decline_rate: "{{ $value | printf \"%.1f\" }}%"
+          action: "Phân tích nguyên nhân và điều chỉnh strategy"
+
+  # ===================================================
+  # BOOKING PERFORMANCE METRICS
+  # ===================================================
+  
+  - name: booking.metrics
+    interval: 60s
+    rules:
+      # Booking Success Rate
+      - record: airbnb:booking_success_rate
+        expr: |
+          (
+            rate(airbnb_booking_success_total[1h]) / 
+            rate(airbnb_booking_attempts_total[1h])
+          ) * 100
+        labels:
+          metric_type: "conversion_rate"
+          
+      # Booking Cancellation Rate
+      - record: airbnb:booking_cancellation_rate
+        expr: |
+          (
+            rate(airbnb_booking_cancelled_total[24h]) / 
+            rate(airbnb_booking_success_total[24h])
+          ) * 100
+        labels:
+          metric_type: "cancellation_rate"
+          
+      # Average Booking Value (VND)
+      - record: airbnb:avg_booking_value
+        expr: |
+          (
+            increase(airbnb_revenue_vnd_total[1h]) / 
+            increase(airbnb_booking_success_total[1h])
+          )
+        labels:
+          metric_type: "avg_order_value"
+          currency: "VND"
+          
+      # Bookings per Hour
+      - record: airbnb:bookings_per_hour
+        expr: rate(airbnb_booking_success_total[1h]) * 3600
+        labels:
+          metric_type: "booking_velocity"
+          
+      # Daily New Bookings
+      - record: airbnb:daily_new_bookings
+        expr: increase(airbnb_booking_success_total[24h])
+        labels:
+          metric_type: "daily_bookings"
+
+      # Booking Alerts
+      - alert: LowBookingSuccessRate
+        expr: airbnb:booking_success_rate < 85
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+          service: booking
+          team: "product"
+        annotations:
+          summary: "📉 Tỷ lệ đặt phòng thành công thấp ({{ $value | printf \"%.1f\" }}%)"
+          description: "Chỉ {{ $value | printf \"%.1f\" }}% booking attempts thành công trong 30 phút qua"
+          target: "≥ 85%"
+          current: "{{ $value | printf \"%.1f\" }}%"
+          impact: "Khách hàng gặp khó khăn khi đặt phòng"
+          action: "Kiểm tra booking flow và payment gateway"
+          
+      - alert: HighCancellationRate
+        expr: airbnb:booking_cancellation_rate > 20
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+          service: booking
+          team: "customer_success"
+        annotations:
+          summary: "📉 Tỷ lệ hủy phòng cao ({{ $value | printf \"%.1f\" }}%)"
+          description: "{{ $value | printf \"%.1f\" }}% bookings bị hủy trong 2 giờ qua"
+          threshold: "< 20%"
+          current: "{{ $value | printf \"%.1f\" }}%"
+          action: "Phân tích lý do hủy và cải thiện customer experience"
+          
+      - alert: LowDailyBookings
+        expr: airbnb:daily_new_bookings < 20  # < 20 bookings/day
+        for: 6h
+        labels:
+          severity: warning
+          category: business
+          service: booking
+          team: "marketing"
+        annotations:
+          summary: "📉 Số lượng booking hàng ngày thấp ({{ $value | printf \"%.0f\" }})"
+          description: "Chỉ có {{ $value | printf \"%.0f\" }} bookings trong 24h qua"
+          target: "≥ 20 bookings/day"
+          current: "{{ $value | printf \"%.0f\" }} bookings"
+          action: "Tăng cường marketing và promotion campaigns"
+
+  # ===================================================
+  # PAYMENT PERFORMANCE METRICS
+  # ===================================================
+  
+  - name: payment.metrics
+    interval: 60s
+    rules:
+      # Payment Success Rate
+      - record: airbnb:payment_success_rate
+        expr: |
+          (
+            rate(airbnb_payment_success_total[1h]) / 
+            rate(airbnb_payment_attempts_total[1h])
+          ) * 100
+        labels:
+          metric_type: "payment_conversion"
+          
+      # Payment Failure Rate by Type
+      - record: airbnb:payment_failure_rate
+        expr: |
+          (
+            rate(airbnb_payment_failed_total[1h]) / 
+            rate(airbnb_payment_attempts_total[1h])
+          ) * 100
+        labels:
+          metric_type: "payment_failure"
+          
+      # Average Payment Processing Time
+      - record: airbnb:avg_payment_duration
+        expr: histogram_quantile(0.5, rate(airbnb_payment_duration_seconds_bucket[5m]))
+        labels:
+          metric_type: "payment_performance"
+          quantile: "p50"
+          
+      - record: airbnb:p95_payment_duration
+        expr: histogram_quantile(0.95, rate(airbnb_payment_duration_seconds_bucket[5m]))
+        labels:
+          metric_type: "payment_performance"
+          quantile: "p95"
+
+      # Payment Alerts
+      - alert: PaymentSuccessRateLow
+        expr: airbnb:payment_success_rate < 95
+        for: 10m
+        labels:
+          severity: critical
+          category: business
+          service: payment
+          team: "payment"
+        annotations:
+          summary: "🔴 Tỷ lệ thanh toán thành công thấp ({{ $value | printf \"%.1f\" }}%)"
+          description: "Chỉ {{ $value | printf \"%.1f\" }}% payments thành công trong 10 phút qua"
+          target: "≥ 95%"
+          current: "{{ $value | printf \"%.1f\" }}%"
+          impact: "Mất doanh thu trực tiếp, khách hàng không thể hoàn thành booking"
+          action: "Kiểm tra payment gateway và banking API ngay lập tức"
+          
+      - alert: SlowPaymentProcessing
+        expr: airbnb:p95_payment_duration > 10
+        for: 15m
+        labels:
+          severity: warning
+          category: performance
+          service: payment
+          team: "payment"
+        annotations:
+          summary: "⚠️ Thanh toán xử lý chậm (P95: {{ $value | printf \"%.1f\" }}s)"
+          description: "95% payments mất hơn 10 giây để hoàn thành"
+          threshold: "< 10s"
+          current: "{{ $value | printf \"%.1f\" }}s"
+          impact: "Khách hàng có thể bỏ cuộc trong quá trình thanh toán"
+          action: "Optimize payment flow và check banking API performance"
+
+  # ===================================================
+  # PROPERTY UTILIZATION METRICS
+  # ===================================================
+  
+  - name: property.metrics
+    interval: 300s
+    rules:
+      # Property Occupancy Rate
+      - record: airbnb:property_occupancy_rate
+        expr: |
+          (
+            sum(airbnb_property_booked_nights_total) / 
+            sum(airbnb_property_available_nights_total)
+          ) * 100
+        labels:
+          metric_type: "occupancy_rate"
+          
+      # Average Daily Rate (ADR)
+      - record: airbnb:average_daily_rate
+        expr: |
+          (
+            increase(airbnb_revenue_vnd_total[24h]) / 
+            sum(increase(airbnb_property_booked_nights_total[24h]))
+          )
+        labels:
+          metric_type: "adr"
+          currency: "VND"
+          
+      # Revenue Per Available Room (RevPAR)
+      - record: airbnb:revpar
+        expr: |
+          (
+            increase(airbnb_revenue_vnd_total[24h]) / 
+            sum(airbnb_property_available_nights_total)
+          )
+        labels:
+          metric_type: "revpar"
+          currency: "VND"
+
+      # Property Performance Alerts
+      - alert: LowOccupancyRate
+        expr: airbnb:property_occupancy_rate < 60
+        for: 24h
+        labels:
+          severity: warning
+          category: business
+          service: property
+          team: "revenue_management"
+        annotations:
+          summary: "📉 Tỷ lệ lấp đầy phòng thấp ({{ $value | printf \"%.1f\" }}%)"
+          description: "Occupancy rate chỉ {{ $value | printf \"%.1f\" }}% trong 24h qua"
+          target: "≥ 60%"
+          current: "{{ $value | printf \"%.1f\" }}%"
+          action: "Điều chỉnh pricing strategy và tăng cường marketing"
+          
+      - alert: DecreasingADR
+        expr: |
+          (
+            (airbnb:average_daily_rate - airbnb:average_daily_rate offset 7d) / 
+            airbnb:average_daily_rate offset 7d
+          ) * 100 < -15
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+          service: property
+          team: "revenue_management"
+        annotations:
+          summary: "📉 ADR giảm hơn 15% so với tuần trước"
+          description: "Average Daily Rate đang giảm đáng kể"
+          action: "Review pricing strategy và competitor analysis"
+
+  # ===================================================
+  # CUSTOMER EXPERIENCE METRICS
+  # ===================================================
+  
+  - name: customer.metrics
+    interval: 300s
+    rules:
+      # Response Time SLA
+      - record: airbnb:api_response_time_p95
+        expr: histogram_quantile(0.95, rate(airbnb_request_duration_seconds_bucket[5m]))
+        labels:
+          metric_type: "response_time"
+          sla_level: "p95"
+          
+      # Error Rate
+      - record: airbnb:api_error_rate
+        expr: |
+          (
+            rate(airbnb_http_requests_total{status_code=~"5.*"}[5m]) / 
+            rate(airbnb_http_requests_total[5m])
+          ) * 100
+        labels:
+          metric_type: "error_rate"
+
+      # Customer Experience Alerts
+      - alert: HighAPIResponseTime
+        expr: airbnb:api_response_time_p95 > 3
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+          service: api
+          team: "backend"
+        annotations:
+          summary: "⚠️ API response time cao (P95: {{ $value | printf \"%.2f\" }}s)"
+          description: "95% API requests mất hơn 3 giây để phản hồi"
+          threshold: "< 3s"
+          current: "{{ $value | printf \"%.2f\" }}s"
+          impact: "Trải nghiệm người dùng kém, có thể mất conversion"
+          action: "Optimize API performance và database queries"
+          
+      - alert: HighAPIErrorRate
+        expr: airbnb:api_error_rate > 2
+        for: 5m
+        labels:
+          severity: critical
+          category: reliability
+          service: api
+          team: "backend"
+        annotations:
+          summary: "🔴 Tỷ lệ lỗi API cao ({{ $value | printf \"%.2f\" }}%)"
+          description: "{{ $value | printf \"%.2f\" }}% API requests trả về 5xx errors"
+          threshold: "< 2%"
+          current: "{{ $value | printf \"%.2f\" }}%"
+          impact: "Khách hàng gặp lỗi khi sử dụng hệ thống"
+          action: "Kiểm tra application logs và fix bugs ngay lập tức"

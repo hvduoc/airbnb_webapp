@@ -162,11 +162,11 @@
   line-height: 1.4;
 }
 
-.sync-details > div {
+.sync-details>div {
   margin-bottom: 4px;
 }
 
-.sync-details > div:last-child {
+.sync-details>div:last-child {
   margin-bottom: 0;
 }
 
@@ -286,6 +286,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -306,18 +307,18 @@
     top: 20px;
     max-width: none;
   }
-  
+
   .notification-toast,
   .sync-status-widget,
   .sync-history {
     border-radius: 8px;
     padding: 12px;
   }
-  
+
   .toast-title {
     font-size: 0.8rem;
   }
-  
+
   .toast-message {
     font-size: 0.7rem;
   }
@@ -325,6 +326,7 @@
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
+
   .notification-toast,
   .sync-status-widget,
   .sync-history {

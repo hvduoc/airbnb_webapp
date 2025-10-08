@@ -40,14 +40,14 @@ function BangPhanTich() {
   const [loi, setLoi] = useState(null)
   const [bieuDoHienThi, setBieuDoDangHienThi] = useState('tat-ca')
   const [dangXuatFile, setDangXuatFile] = useState(false)
-  
+
   const dashboardRef = useRef(null)
 
   // Load dữ liệu từ các file JSON
   const taiDuLieu = async () => {
     setDangTai(true)
     setLoi(null)
-    
+
     try {
       // Tải dữ liệu doanh thu
       const responseDoanhThu = await fetch('/brain/metrics/revenue-by-month.json')
@@ -101,7 +101,7 @@ function BangPhanTich() {
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             const value = new Intl.NumberFormat('vi-VN').format(context.parsed.y)
             return `Doanh thu: ${value} VND`
           }
@@ -115,12 +115,12 @@ function BangPhanTich() {
       },
       y: {
         grid: { color: 'var(--vien-nhe)' },
-        ticks: { 
+        ticks: {
           color: 'var(--chu-phu)',
-          callback: function(value) {
-            return new Intl.NumberFormat('vi-VN', { 
-              notation: 'compact', 
-              compactDisplay: 'short' 
+          callback: function (value) {
+            return new Intl.NumberFormat('vi-VN', {
+              notation: 'compact',
+              compactDisplay: 'short'
             }).format(value) + ' VND'
           }
         }
@@ -171,7 +171,7 @@ function BangPhanTich() {
       },
       y: {
         grid: { color: 'var(--vien-nhe)' },
-        ticks: { 
+        ticks: {
           color: 'var(--chu-phu)',
           stepSize: 1
         }
@@ -227,7 +227,7 @@ function BangPhanTich() {
       },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return `${context.label}: ${context.parsed}%`
           }
         }
@@ -241,7 +241,7 @@ function BangPhanTich() {
       {
         data: duLieuTongQuan.phases_completed.map(phase => phase.completion),
         backgroundColor: [
-          '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', 
+          '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b',
           '#ef4444', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
         ],
         borderColor: 'var(--nen-the)',
@@ -253,29 +253,29 @@ function BangPhanTich() {
   // Xuất file PDF
   const xuatPDF = async () => {
     if (!dashboardRef.current) return
-    
+
     setDangXuatFile(true)
-    
+
     try {
       const canvas = await html2canvas(dashboardRef.current, {
         scale: 1.5,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
-      
+
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4'
       })
-      
+
       const imgWidth = 297 // A4 landscape width in mm
       const imgHeight = (canvas.height * imgWidth) / canvas.width
-      
+
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
       pdf.save(`bang-phan-tich-${new Date().toISOString().split('T')[0]}.pdf`)
-      
+
     } catch (error) {
       console.error('Lỗi xuất PDF:', error)
       alert('Không thể xuất PDF. Vui lòng thử lại.')
@@ -287,22 +287,22 @@ function BangPhanTich() {
   // Xuất file PNG
   const xuatPNG = async () => {
     if (!dashboardRef.current) return
-    
+
     setDangXuatFile(true)
-    
+
     try {
       const canvas = await html2canvas(dashboardRef.current, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff'
       })
-      
+
       // Tạo link download
       const link = document.createElement('a')
       link.download = `bang-phan-tich-${new Date().toISOString().split('T')[0]}.png`
       link.href = canvas.toDataURL()
       link.click()
-      
+
     } catch (error) {
       console.error('Lỗi xuất PNG:', error)
       alert('Không thể xuất PNG. Vui lòng thử lại.')
@@ -346,7 +346,7 @@ function BangPhanTich() {
           <p>Dashboard analytics cho Airbnb Revenue WebApp</p>
         </div>
         <div className="nhom-nut-header">
-          <button 
+          <button
             className="nut-tai-lai"
             onClick={taiDuLieu}
             disabled={dangTai}

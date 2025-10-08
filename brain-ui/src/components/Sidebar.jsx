@@ -1,12 +1,12 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { 
-  Home, 
-  Target, 
-  FileText, 
-  CheckSquare, 
-  Map, 
-  Workflow, 
+import {
+  Home,
+  Target,
+  FileText,
+  CheckSquare,
+  Map,
+  Workflow,
   Shield,
   Book,
   Brain
@@ -67,8 +67,8 @@ function Sidebar({ isOpen, onClose }) {
               <ul className="nav-items">
                 {section.items.map((item, itemIdx) => (
                   <li key={itemIdx}>
-                    <Link 
-                      to={item.path} 
+                    <Link
+                      to={item.path}
                       className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
                       onClick={onClose}
                     >

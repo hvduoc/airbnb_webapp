@@ -14,7 +14,8 @@ if (!(Get-Command ngrok -ErrorAction SilentlyContinue)) {
         Write-Host "Extract to a folder và add to PATH"
         exit 1
     }
-} else {
+}
+else {
     Write-Host "✅ ngrok already installed"
 }
 Write-Host ""
@@ -56,7 +57,8 @@ try {
     Write-Host "✅ Ngrok URL: $publicUrl"
     Write-Host "📱 Domain: $domain"
     Write-Host ""
-} catch {
+}
+catch {
     Write-Host "⚠️ Could not get ngrok URL automatically."
     Write-Host "Please check ngrok terminal for the public URL"
     Write-Host ""
@@ -72,7 +74,8 @@ Write-Host "   Type: CNAME"
 Write-Host "   Name: webhook"
 if ($domain) {
     Write-Host "   Target: $domain"
-} else {
+}
+else {
     Write-Host "   Target: [copy từ ngrok terminal]"
 }
 Write-Host "   TTL: Auto"

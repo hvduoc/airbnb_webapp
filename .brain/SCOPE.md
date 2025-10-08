@@ -1,32 +1,60 @@
-# 📋 Airbnb Revenue WebApp - SCOPE DEFINITION
+# Project Scope - Airbnb WebApp# 📋 Airbnb Revenue WebApp - SCOPE DEFINITION
 
-> **Domain**: PMS | **Status**: Development | **Version**: 1.0.0
 
----
 
-## 🎯 **PROJECT GOALS**
+## What We DO (In Scope)> **Domain**: PMS | **Status**: Development | **Version**: 1.0.0
 
-### **Primary Goals**
+- **Internal Operations**: Payment tracking, expense management, booking ledger
+
+- **Vietnamese Localization**: Full UI and business logic in Vietnamese---
+
+- **Multi-property Management**: Support for multiple buildings and properties
+
+- **Role-based Access**: Admin, manager, assistant, owner permissions## 🎯 **PROJECT GOALS**
+
+- **Revenue Analytics**: Financial reporting and insights
+
+- **Data Import/Export**: CSV upload and processing capabilities### **Primary Goals**
+
 - [x] **Revenue Management System**: Quản lý doanh thu từ booking Airbnb với báo cáo theo tháng
-- [x] **CSV Data Processing**: Upload và xử lý file reservations.csv từ Airbnb với normalization tự động  
-- [x] **Property & Booking Tracking**: Theo dõi properties, bookings, và tính toán ADR (Average Daily Rate)
-- [ ] **🚀 PRODUCTION READY**: Core functionality optimization để vận hành thực tế (Week 1)
-- [ ] **⚡ SELECTIVE UPGRADES**: Security & performance improvements (Week 2-4)
-- [ ] **📈 SCALE ON DEMAND**: Scale only when business needs (Month 2-3)
 
-### **Success Criteria**
+## What We DON'T DO (Out of Scope)- [x] **CSV Data Processing**: Upload và xử lý file reservations.csv từ Airbnb với normalization tự động  
+
+- External marketplace integrations- [x] **Property & Booking Tracking**: Theo dõi properties, bookings, và tính toán ADR (Average Daily Rate)
+
+- Guest booking platform (we track existing bookings)- [ ] **🚀 PRODUCTION READY**: Core functionality optimization để vận hành thực tế (Week 1)
+
+- Payment processing (we track payments, not process them)- [ ] **⚡ SELECTIVE UPGRADES**: Security & performance improvements (Week 2-4)
+
+- Marketing automation- [ ] **📈 SCALE ON DEMAND**: Scale only when business needs (Month 2-3)
+
+- Guest communication systems
+
+- External API integrations beyond basic data import### **Success Criteria**
+
 - **Performance**: Upload CSV < 30 giây, reports load < 5 giây
-- **Functionality**: Vietnamese/English CSV headers được parse đúng 100%
-- **Quality**: Zero data loss trong quá trình normalization, ADR calculation chính xác
 
----
+## Technical Boundaries- **Functionality**: Vietnamese/English CSV headers được parse đúng 100%
+
+- **Timeline**: 6-month internal operations focus- **Quality**: Zero data loss trong quá trình normalization, ADR calculation chính xác
+
+- **Scale**: Up to 50 properties per installation
+
+- **Users**: Small to medium property management teams---
+
+- **Deployment**: Self-hosted or simple cloud deployment
 
 ## ❌ **NON-GOALS (Explicitly OUT of scope)**
 
-### **Version 1.0 Exclusions**
-- ❌ **Multi-platform Integration**: Chưa support booking.com, Expedia - chỉ Airbnb
-- ❌ **Advanced Analytics**: Chưa có predictive analytics, ML forecasting
-- ❌ **Multi-currency**: Chỉ support VND, chưa USD/EUR conversion
+## Business Constraints
+
+- Internal operations tools, not guest-facing platform### **Version 1.0 Exclusions**
+
+- Vietnamese property management market focused- ❌ **Multi-platform Integration**: Chưa support booking.com, Expedia - chỉ Airbnb
+
+- Cost-effective solutions for local businesses- ❌ **Advanced Analytics**: Chưa có predictive analytics, ML forecasting
+
+- No external payment processing required- ❌ **Multi-currency**: Chỉ support VND, chưa USD/EUR conversion
 
 ### **Never Goals**
 - 🚫 **{{NEVER_GOAL_1}}**: Against core principles

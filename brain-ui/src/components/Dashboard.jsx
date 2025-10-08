@@ -55,7 +55,7 @@ function Dashboard() {
         description: "Integrated standardized brain system với backup"
       },
       {
-        action: "SESSION_CONTEXT.md Created", 
+        action: "SESSION_CONTEXT.md Created",
         timestamp: "2025-09-27 00:30",
         description: "Quick AI context loading document"
       },
@@ -88,7 +88,7 @@ function Dashboard() {
               <span className="updated">Updated {stats.project.last_updated}</span>
             </div>
           </div>
-          <a 
+          <a
             href="https://github.com/your-org/airbnb-webapp"
             target="_blank"
             rel="noopener noreferrer"
@@ -109,7 +109,7 @@ function Dashboard() {
             <p>Brain Files</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
           <div className="stat-icon">📖</div>
           <div className="stat-content">
@@ -117,7 +117,7 @@ function Dashboard() {
             <p>Documentation</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
           <div className="stat-icon">⚡</div>
           <div className="stat-content">
@@ -125,7 +125,7 @@ function Dashboard() {
             <p>Active Tasks</p>
           </div>
         </div>
-        
+
         <div className="stat-card">
           <div className="stat-icon">✅</div>
           <div className="stat-content">

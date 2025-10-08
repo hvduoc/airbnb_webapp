@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,11 +14,24 @@
             padding: 0.25rem 0.5rem;
             border-radius: 9999px;
         }
-        .role-assistant { background-color: #dbeafe; color: #1e40af; }
-        .role-manager { background-color: #fef3c7; color: #d97706; }
-        .role-owner { background-color: #ecfdf5; color: #059669; }
+
+        .role-assistant {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-manager {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-owner {
+            background-color: #ecfdf5;
+            color: #059669;
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b">
@@ -34,7 +48,8 @@
                         <span id="currentTime"></span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-700" id="currentUser">{{ user.full_name if user else 'Loading...' }}</span>
+                        <span class="text-sm text-gray-700" id="currentUser">{{ user.full_name if user else 'Loading...'
+                            }}</span>
                         <span id="userRole" class="role-badge role-{{ user.role if user else 'unknown' }}">
                             {{ getRoleDisplayName(user.role) if user else 'Unknown' }}
                         </span>
@@ -51,22 +66,34 @@
         <!-- Navigation Tabs -->
         <div class="border-b border-gray-200 mb-8">
             <nav class="-mb-px flex space-x-8">
-                <button onclick="showTab('dashboard')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-green-500 text-green-600" data-tab="dashboard">
+                <button onclick="showTab('dashboard')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-green-500 text-green-600"
+                    data-tab="dashboard">
                     <i class="fas fa-chart-line mr-2"></i>Tổng quan
                 </button>
-                <button onclick="showTab('add-payment')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="add-payment">
+                <button onclick="showTab('add-payment')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="add-payment">
                     <i class="fas fa-plus-circle mr-2"></i>Ghi nhận thu
                 </button>
-                <button onclick="showTab('handover')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="handover">
+                <button onclick="showTab('handover')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="handover">
                     <i class="fas fa-handshake mr-2"></i>Bàn giao
                 </button>
-                <button onclick="showTab('payments-list')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="payments-list">
+                <button onclick="showTab('payments-list')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="payments-list">
                     <i class="fas fa-list mr-2"></i>Lịch sử thu
                 </button>
-                <button onclick="showTab('handover-list')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="handover-list">
+                <button onclick="showTab('handover-list')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="handover-list">
                     <i class="fas fa-history mr-2"></i>Lịch sử bàn giao
                 </button>
-                <button onclick="showTab('team')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="team" id="teamTab">
+                <button onclick="showTab('team')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="team" id="teamTab">
                     <i class="fas fa-users mr-2"></i>Đội ngũ
                 </button>
             </nav>
@@ -87,7 +114,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-2 bg-blue-100 rounded-lg">
@@ -99,7 +126,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-2 bg-yellow-100 rounded-lg">
@@ -111,7 +138,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-2 bg-purple-100 rounded-lg">
@@ -132,7 +159,7 @@
                     <div>
                         <h3 class="text-sm font-medium text-green-800">✅ Authentication Success!</h3>
                         <p class="text-sm text-green-700">
-                            Chào mừng <strong>{{ user.full_name if user else 'User' }}</strong>! 
+                            Chào mừng <strong>{{ user.full_name if user else 'User' }}</strong>!
                             Hệ thống đã hoạt động bình thường với database SQLite bền vững.
                         </p>
                     </div>
@@ -180,7 +207,7 @@
     <script>
         // Set current user from server
         window.currentUser = {{ user | tojson if user else '{}' }};
-        
+
         console.log('Current user from server:', window.currentUser);
 
         // Update clock
@@ -198,17 +225,17 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
-            
+
             document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-            
+
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('border-green-500', 'text-green-600');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
-            
+
             document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-green-500', 'text-green-600');
-            
+
             if (tabName === 'dashboard') {
                 loadDashboard();
             }
@@ -219,12 +246,12 @@
             try {
                 const response = await axios.get('/api/dashboard');
                 const data = response.data;
-                
+
                 document.getElementById('totalCollected').textContent = formatCurrency(data.total_collected);
                 document.getElementById('collectionRate').textContent = `${data.collection_rate}%`;
                 document.getElementById('cashPending').textContent = formatCurrency(data.cash_pending_handover);
                 document.getElementById('totalHandovers').textContent = data.total_handovers;
-                
+
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
                 if (error.response?.status === 401) {
@@ -253,11 +280,12 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             updateClock();
             setInterval(updateClock, 1000);
             loadDashboard();
         });
     </script>
 </body>
+
 </html>

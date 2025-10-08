@@ -1,8 +1,10 @@
-from sqlmodel import SQLModel, Session, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine, select
+
 from models import ExpenseCategory
 
 # Kết nối đến cơ sở dữ liệu
 engine = create_engine("sqlite:///app.db")
+
 
 # Thêm dữ liệu mẫu vào bảng ExpenseCategory
 def seed_expense_categories():
@@ -25,6 +27,7 @@ def seed_expense_categories():
 
         session.commit()
         print("Seeded expense categories successfully.")
+
 
 if __name__ == "__main__":
     SQLModel.metadata.create_all(engine)

@@ -2,10 +2,10 @@
 # log-phase.ps1
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$PhaseNumber,
     
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$PhaseName,
     
     [string]$Description = "",
@@ -33,12 +33,13 @@ function Get-GitChanges {
         if ($changes) {
             return $changes -split "`n" | Where-Object { $_ -ne "" }
         }
-    } catch {}
+    }
+    catch {}
     
     # Fallback: lấy file modified trong 1 giờ gần đây
     $recentFiles = Get-ChildItem -Recurse -File | 
-        Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-1) -and $_.Name -notmatch "\.log$|\.tmp$" } |
-        ForEach-Object { $_.FullName.Substring((Get-Location).Path.Length + 1) }
+    Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-1) -and $_.Name -notmatch "\.log$|\.tmp$" } |
+    ForEach-Object { $_.FullName.Substring((Get-Location).Path.Length + 1) }
     
     return $recentFiles
 }
@@ -47,12 +48,12 @@ function Get-TaskStats {
     """Tính toán thống kê task từ ACTIVE_TASKS.json"""
     if (-not (Test-Path $TasksFile)) {
         return @{
-            total = 0
-            completed = 0
+            total       = 0
+            completed   = 0
             in_progress = 0
-            pending = 0
-            blocked = 0
-            percentage = 0
+            pending     = 0
+            blocked     = 0
+            percentage  = 0
         }
     }
     
@@ -61,21 +62,23 @@ function Get-TaskStats {
         $allTasks = $tasks.phases | ForEach-Object { $_.tasks } | ForEach-Object { $_ }
         
         $stats = @{
-            total = $allTasks.Count
-            completed = ($allTasks | Where-Object { $_.status -eq "completed" }).Count
+            total       = $allTasks.Count
+            completed   = ($allTasks | Where-Object { $_.status -eq "completed" }).Count
             in_progress = ($allTasks | Where-Object { $_.status -eq "in_progress" }).Count
-            pending = ($allTasks | Where-Object { $_.status -eq "pending" }).Count
-            blocked = ($allTasks | Where-Object { $_.status -eq "blocked" }).Count
+            pending     = ($allTasks | Where-Object { $_.status -eq "pending" }).Count
+            blocked     = ($allTasks | Where-Object { $_.status -eq "blocked" }).Count
         }
         
         if ($stats.total -gt 0) {
             $stats.percentage = [math]::Round(($stats.completed / $stats.total) * 100, 1)
-        } else {
+        }
+        else {
             $stats.percentage = 0
         }
         
         return $stats
-    } catch {
+    }
+    catch {
         Write-Warning "Error reading tasks file: $($_.Exception.Message)"
         return @{ total = 0; completed = 0; in_progress = 0; pending = 0; blocked = 0; percentage = 0 }
     }
@@ -179,7 +182,8 @@ $($Description ? $Description : "Phát triển và hoàn thiện tính năng $Ph
         $FilesChanged | ForEach-Object {
             $content += "`n- ``$_``"
         }
-    } else {
+    }
+    else {
         $content += "`n- *(Không có file nào được ghi nhận)*"
     }
 
@@ -193,7 +197,8 @@ $($Description ? $Description : "Phát triển và hoàn thiện tính năng $Ph
         $TasksUpdated | ForEach-Object {
             $content += "`n- $_"
         }
-    } else {
+    }
+    else {
         $content += "`n- *(Sẽ cập nhật thủ công)*"
     }
 
@@ -258,7 +263,8 @@ try {
     # Interactive mode
     if ($Interactive) {
         Get-InteractiveInput
-    } else {
+    }
+    else {
         # Auto-detect file changes if not provided
         if (-not $FilesChanged -or $FilesChanged.Count -eq 0) {
             Write-Host "🔍 Auto-detecting file changes..." -ForegroundColor Yellow
@@ -279,7 +285,8 @@ try {
     
     Write-Host "🎉 Phase logging completed successfully!" -ForegroundColor Green
     
-} catch {
+}
+catch {
     Write-Host "❌ Error: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }

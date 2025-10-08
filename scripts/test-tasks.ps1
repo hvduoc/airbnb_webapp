@@ -27,6 +27,7 @@ try {
         }
     }
     
-} catch {
+}
+catch {
     Write-Host "Error reading tasks: $($_.Exception.Message)" -ForegroundColor Red
 }

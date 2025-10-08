@@ -2,10 +2,10 @@
 # Usage: .\ai.ps1 start | .\ai.ps1 end | .\ai.ps1 status
 
 param(
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string]$Command,
     
-    [Parameter(Position=1, ValueFromRemainingArguments=$true)]
+    [Parameter(Position = 1, ValueFromRemainingArguments = $true)]
     [string[]]$Arguments
 )
 
@@ -23,7 +23,8 @@ $pythonCommand = "python " + ($pythonArgs -join " ")
 try {
     Invoke-Expression $pythonCommand
     $exitCode = $LASTEXITCODE
-} catch {
+}
+catch {
     Write-Host "❌ Error executing command: $_" -ForegroundColor Red
     exit 1
 }

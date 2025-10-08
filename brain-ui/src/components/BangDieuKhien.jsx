@@ -55,7 +55,7 @@ function BangDieuKhien() {
         moTa: "Tích hợp hệ thống brain chuẩn với backup"
       },
       {
-        hanhDong: "Tạo SESSION_CONTEXT.md", 
+        hanhDong: "Tạo SESSION_CONTEXT.md",
         thoiGian: "27/09/2025 00:30",
         moTa: "Tài liệu loading context AI nhanh"
       },
@@ -88,7 +88,7 @@ function BangDieuKhien() {
               <span className="cap-nhat">Cập nhật {thongKe.duAn.capNhatCuoi}</span>
             </div>
           </div>
-          <a 
+          <a
             href="https://github.com/your-org/airbnb-webapp"
             target="_blank"
             rel="noopener noreferrer"
@@ -109,7 +109,7 @@ function BangDieuKhien() {
             <p>File Brain</p>
           </div>
         </div>
-        
+
         <div className="the-thong-ke">
           <div className="icon-thong-ke">📖</div>
           <div className="noi-dung-thong-ke">
@@ -117,7 +117,7 @@ function BangDieuKhien() {
             <p>Tài Liệu</p>
           </div>
         </div>
-        
+
         <div className="the-thong-ke">
           <div className="icon-thong-ke">⚡</div>
           <div className="noi-dung-thong-ke">
@@ -125,7 +125,7 @@ function BangDieuKhien() {
             <p>Tasks Hoạt Động</p>
           </div>
         </div>
-        
+
         <div className="the-thong-ke">
           <div className="icon-thong-ke">✅</div>
           <div className="noi-dung-thong-ke">

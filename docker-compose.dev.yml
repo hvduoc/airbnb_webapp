@@ -1,0 +1,130 @@
+# ================================================================
+# AIRBNB WEBAPP - Docker Compose Development Stack
+# Environment đơn giản cho development với hot reload
+# Author: AI Assistant
+# Created: 2024-12-28
+# ================================================================
+
+services:
+  # ==================== APPLICATION SERVICE (DEVELOPMENT) ====================
+  webapp-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: airbnb-webapp-dev
+    restart: unless-stopped
+    environment:
+      # Development Configuration
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - RELOAD=true
+      - HOST=0.0.0.0
+      - PORT=8000
+
+      # Database Configuration
+      - DATABASE_TYPE=sqlite
+      - SQLITE_DATABASE_URL=sqlite:///./app.db
+
+      # Redis Configuration (Optional trong dev)
+      - REDIS_HOST=redis-dev
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=dev_redis_123
+
+      # Security Configuration (Relaxed cho dev)
+      - SECRET_KEY=dev-secret-key-not-for-production
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - BCRYPT_ROUNDS=4 # Faster trong dev
+      - RATE_LIMIT_ENABLED=false
+      - SSL_ENABLED=false
+
+      # Development Features
+      - ENABLE_DEBUG_TOOLBAR=true
+      - ENABLE_MOCK_DATA=true
+      - ENABLE_API_DOCS=true
+      - LOG_LEVEL=DEBUG
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - .:/app # Live code reload
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+
+    depends_on:
+      - redis-dev
+
+    networks:
+      - airbnb-dev-network
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== REDIS CACHE (DEVELOPMENT) ====================
+  redis-dev:
+    image: redis:7-alpine
+    container_name: airbnb-redis-dev
+    restart: unless-stopped
+    command: >
+      redis-server  --requirepass dev_redis_123 --maxmemory 128mb --maxmemory-policy allkeys-lru
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - airbnb-dev-network
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "dev_redis_123", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== POSTGRESQL (OPTIONAL DEVELOPMENT) ====================
+  postgres-dev:
+    image: postgres:14-alpine
+    container_name: airbnb-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=airbnb_webapp_dev
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_password_123
+
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+    ports:
+      - "5433:5432" # Port khác để không conflict với production
+
+    networks:
+      - airbnb-dev-network
+
+  # ==================== ADMINER (DATABASE MANAGEMENT) ====================
+  adminer:
+    image: adminer:latest
+    container_name: airbnb-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres-dev
+
+    depends_on:
+      - postgres-dev
+
+    networks:
+      - airbnb-dev-network
+
+# ==================== VOLUMES ====================
+volumes:
+  postgres_dev_data:
+
+    # ==================== NETWORKS ====================
+networks:
+  airbnb-dev-network:
+    driver: bridge

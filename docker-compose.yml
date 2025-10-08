@@ -1,0 +1,244 @@
+# ================================================================
+# AIRBNB WEBAPP - Docker Compose Production Stack
+# Complete infrastructure với FastAPI, PostgreSQL, Redis, Nginx
+# Được tối ưu cho production deployment với monitoring
+# Author: AI Assistant
+# Created: 2024-12-28
+# ================================================================
+
+services:
+  # ==================== APPLICATION SERVICE ====================
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: airbnb-webapp
+    restart: unless-stopped
+    environment:
+      # Application Configuration
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - HOST=0.0.0.0
+      - PORT=8000
+
+      # Database Configuration
+      - DATABASE_TYPE=postgresql
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=airbnb_webapp
+      - POSTGRES_USER=airbnb_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secure_password_2024}
+      - POSTGRES_SSL_MODE=prefer
+
+      # Redis Configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-redis_secure_2024}
+
+      # Security Configuration
+      - SECRET_KEY=${SECRET_KEY:-your-super-secret-production-key-change-this}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=15
+      - BCRYPT_ROUNDS=15
+      - RATE_LIMIT_ENABLED=true
+      - SSL_ENABLED=false # Handled by reverse proxy
+
+      # Logging Configuration
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+      - ENABLE_METRICS=true
+
+      # Feature Flags
+      - ENABLE_API_DOCS=false # Tắt trong production
+      - MAINTENANCE_MODE=false
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+    networks:
+      - airbnb-network
+
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==================== DATABASE SERVICE ====================
+  postgres:
+    image: postgres:14-alpine
+    container_name: airbnb-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=airbnb_webapp
+      - POSTGRES_USER=airbnb_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secure_password_2024}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init:/docker-entrypoint-initdb.d/
+      - ./backups:/backups
+
+    ports:
+      - "5432:5432"
+
+    networks:
+      - airbnb-network
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U airbnb_user -d airbnb_webapp" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+    # Production tuning
+    command: >
+      postgres -c max_connections=100 -c shared_buffers=256MB -c effective_cache_size=1GB -c maintenance_work_mem=64MB -c checkpoint_completion_target=0.9 -c wal_buffers=16MB -c default_statistics_target=100
+
+  # ==================== REDIS CACHE SERVICE ====================
+  redis:
+    image: redis:7-alpine
+    container_name: airbnb-redis
+    restart: unless-stopped
+    command: >
+      redis-server  --requirepass ${REDIS_PASSWORD:-redis_secure_2024} --maxmemory 256mb --maxmemory-policy allkeys-lru --save 900 1 --save 300 10 --save 60 10000
+
+    volumes:
+      - redis_data:/data
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - airbnb-network
+
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_secure_2024}", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ==================== REVERSE PROXY SERVICE ====================
+  nginx:
+    image: nginx:alpine
+    container_name: airbnb-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./static:/var/www/static:ro
+
+    depends_on:
+      - webapp
+
+    networks:
+      - airbnb-network
+
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== MONITORING SERVICES ====================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: airbnb-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+    networks:
+      - airbnb-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: airbnb-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-grafana_admin_2024}
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+    depends_on:
+      - prometheus
+
+    networks:
+      - airbnb-network
+
+# ==================== VOLUMES ====================
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres
+
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis
+
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/prometheus
+
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/grafana
+
+# ==================== NETWORKS ====================
+networks:
+  airbnb-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

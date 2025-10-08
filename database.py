@@ -3,11 +3,20 @@ Database Models cho hệ thống Payment Ledger
 Sử dụng SQLite để lưu trữ dữ liệu bền vững
 """
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, Boolean
+from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import os
 
 # Tạo database file
 DATABASE_URL = "sqlite:///./payment_ledger.db"
@@ -16,10 +25,12 @@ engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+
 class User(Base):
     """Bảng người dùng"""
+
     __tablename__ = "users"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(50), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
@@ -31,10 +42,12 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 class Payment(Base):
     """Bảng ghi nhận thu"""
+
     __tablename__ = "payments"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     booking_id = Column(String(50), nullable=False)
     guest_name = Column(String(100), nullable=False)
@@ -49,10 +62,12 @@ class Payment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 class Handover(Base):
     """Bảng bàn giao tiền mặt"""
+
     __tablename__ = "handovers"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     handover_by_user_id = Column(Integer, nullable=False)
     recipient_user_id = Column(Integer, nullable=False)
@@ -64,10 +79,12 @@ class Handover(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+
 # Tạo tất cả các bảng
 def create_tables():
     """Tạo tất cả các bảng trong database"""
     Base.metadata.create_all(bind=engine)
+
 
 # Dependency để lấy database session
 def get_db():
@@ -77,6 +94,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 if __name__ == "__main__":
     create_tables()

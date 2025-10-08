@@ -1,60 +1,97 @@
-from fastapi import FastAPI, Request, UploadFile, File, Query, Form, Depends, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from starlette.middleware.base import BaseHTTPMiddleware
-from contextlib import asynccontextmanager
-
-from sqlmodel import select, Session, func
-from sqlalchemy import or_, not_, case, func
-
-import pandas as pd
-import uuid
-import os
 import io
-import zipfile
-import asyncio
 import math
-import httpx
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-
-# Service Layer Imports
-from services.booking_service import BookingService
-from services.property_service import PropertyService
-from services.revenue_service import RevenueService
-from services.upload_service import UploadService
-from services.salesperson_service import SalespersonService
-from services.initialization_service import InitializationService
-from datetime import datetime, date, timedelta
+import os
+import uuid
 from calendar import monthrange
 from collections import defaultdict
-from types import SimpleNamespace
-from typing import Optional, List
+from contextlib import asynccontextmanager
+from datetime import date, datetime, timedelta
+from typing import List, Optional
 from urllib.parse import urlencode
 
+import httpx
+import pandas as pd
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 from dotenv import load_dotenv
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+    status,
+)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from sqlalchemy import not_, or_
+from sqlmodel import func, select
+from starlette.middleware.base import BaseHTTPMiddleware
+
+# Service Layer Imports
+from services.analytics_service import AnalyticsService
+from services.booking_service import BookingService
+from services.expense_service import ExpenseService
+from services.initialization_service import InitializationService
+from services.property_service import PropertyService
+from services.revenue_service import RevenueService
+from services.salesperson_service import SalespersonService
+from services.upload_service import UploadService
+
+# Pydantic schemas
+from schemas.expense_schemas import ExpenseCreateRequest
+
 load_dotenv()  # <-- để tự động nạp .env
 
-from db import init_db, get_session, get_session_context
-from models import Booking, Property, Channel, ImportLog, Building, Salesperson, ExtraCharge, ExpenseCategory, User
-from utils import parse_date_mixed
 
-# routers OPEX
-from routes_expense import (
-    router as expense_router,
-    rec_router as recurring_router,
-    aux as expense_aux_router,
-    extra_charges_router,
-)
+from auth.dependencies import get_optional_current_user
 
 # Authentication
 from auth.routes import router as auth_router
-from auth.dependencies import get_optional_current_user, get_current_active_user
-from routes_extra_fees import extra_fees_router
+from auth.auth_service import get_current_user_or_redirect
+from csrf_protection import (
+    init_csrf_protection,
+    set_csrf_token_cookie,
+    validate_csrf_token,
+)
+from db import get_session_context, init_db, get_session as get_db
+from sqlmodel import Session
+
+# Initialize logging early
+from logging_config import log_api_access, log_security_event
+from models import (
+    Booking,
+    Building,
+    Channel,
+    ExpenseCategory,
+    ExtraCharge,
+    ImportLog,
+    Property,
+    Salesperson,
+    User,
+)
+from rate_limiter import (
+    check_rate_limit,
+    get_rate_limit_headers,
+    init_rate_limiters,
+    rate_limit_exceeded_response,
+)
 from routes_brain import router as brain_router
+
+# routers OPEX
+from routes_expense import aux as expense_aux_router
+from routes_expense import extra_charges_router
+from routes_expense import rec_router as recurring_router
+from routes_expense import router as expense_router
+from routes_extra_fees import extra_fees_router
+from routes_go_live import router as go_live_router  # Go-Live Import Pipeline
+from utils import parse_date_mixed
 
 # Payment Ledger Module - Temporarily disabled for basic demo
 # from routes_payments import router as payments_router
@@ -62,17 +99,19 @@ from routes_brain import router as brain_router
 # from services.google_sheets.service import sheets_service
 
 
-
 # --- Mật khẩu quản trị ---
 PASSWORD = os.getenv("ADMIN_PASSWORD", "ocean2025")
+
 
 # --- Middleware bảo vệ truy cập ---
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        if (request.url.path.startswith("/login") or 
-            request.url.path.startswith("/static") or
-            request.url.path.startswith("/brain") or
-            request.url.path.startswith("/.brain/")):  # Allow brain system access
+        if (
+            request.url.path.startswith("/login")
+            or request.url.path.startswith("/static")
+            or request.url.path.startswith("/brain")
+            or request.url.path.startswith("/.brain/")
+        ):  # Allow brain system access
             return await call_next(request)
 
         session_token = request.cookies.get("session")
@@ -81,8 +120,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         return await call_next(request)
 
+
 # Global scheduler variable
 scheduler = None
+
 
 async def _trigger_ingest_page1():
     """Gọi ingest trang 1 (limit 40) qua endpoint nội bộ."""
@@ -95,14 +136,30 @@ async def _trigger_ingest_page1():
     except Exception as e:
         print(f"[DailyIngest] error: {e}")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifecycle with proper scheduler initialization."""
     global scheduler
-    
+
     # Startup
     print("[Startup] Initializing application...")
     init_db()
+
+    # Initialize CSRF protection
+    from auth.security import SECRET_KEY
+
+    init_csrf_protection(SECRET_KEY)
+    print("[Security] CSRF protection initialized")
+
+    # Initialize rate limiters
+    api_limit = int(os.getenv("RATE_LIMIT_PER_MINUTE", "100"))
+    auth_limit = int(os.getenv("AUTH_RATE_LIMIT_PER_MINUTE", "10"))
+    init_rate_limiters(api_limit, auth_limit)
+    print(
+        f"[Security] Rate limiters initialized (API: {api_limit}/min, Auth: {auth_limit}/min)"
+    )
+
     with get_session_context() as session:
         # Use service to ensure default channels
         init_service = InitializationService(session, None)
@@ -123,7 +180,7 @@ async def lifespan(app: FastAPI):
                 _trigger_ingest_page1,
                 CronTrigger(hour=2, minute=0),
                 id="daily_ingest",
-                name="Daily Airbnb Data Ingest"
+                name="Daily Airbnb Data Ingest",
             )
             scheduler.start()
             print("[Scheduler] Daily ingest scheduled at 02:00 Asia/Ho_Chi_Minh")
@@ -134,9 +191,9 @@ async def lifespan(app: FastAPI):
         print("[Scheduler] Skip: AIRBNB_COOKIE not set")
 
     print("[Startup] Application startup complete")
-    
+
     yield  # Application runs here
-    
+
     # Shutdown
     print("[Shutdown] Shutting down application...")
     if scheduler:
@@ -147,12 +204,175 @@ async def lifespan(app: FastAPI):
             print(f"[Scheduler] Shutdown error: {e}")
     print("[Shutdown] Application shutdown complete")
 
+
 # ✅ Khởi tạo FastAPI với lifespan
-app = FastAPI(
-    title="Airbnb Revenue Management System",
-    lifespan=lifespan
-)
+app = FastAPI(title="Airbnb Revenue Management System", lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
+
+# Production-grade CORS configuration
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000",
+).split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add security headers to all responses"""
+    response = await call_next(request)
+
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+
+    # Content Security Policy (basic)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data:; "
+        "connect-src 'self'"
+    )
+
+    return response
+
+
+# Rate limiting middleware
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Rate limiting middleware"""
+
+    # Determine limiter type based on path
+    limiter_type = "auth" if request.url.path.startswith("/auth/") else "api"
+
+    # Check rate limit
+    if not check_rate_limit(request, limiter_type):
+        log_security_event(
+            action="rate_limit_exceeded",
+            ip_address=request.client.host if request.client else None,
+            resource=request.url.path,
+            success=False,
+            details={"limiter_type": limiter_type},
+        )
+        raise rate_limit_exceeded_response()
+
+    # Process request
+    response = await call_next(request)
+
+    # Add rate limit headers
+    headers = get_rate_limit_headers(request, limiter_type)
+    for key, value in headers.items():
+        response.headers[key] = value
+
+    return response
+
+
+# CSRF Protection middleware
+@app.middleware("http")
+async def csrf_protection_middleware(request: Request, call_next):
+    """CSRF protection for state-changing requests"""
+
+    # Skip CSRF for API endpoints and GET requests
+    if request.url.path.startswith("/api/") or request.method in (
+        "GET",
+        "HEAD",
+        "OPTIONS",
+    ):
+        response = await call_next(request)
+
+        # Set CSRF token for GET requests to pages that will need it
+        if request.method == "GET" and request.headers.get("accept", "").startswith(
+            "text/html"
+        ):
+            token = set_csrf_token_cookie(response)
+            if hasattr(response, "context"):
+                response.context["csrf_token"] = token
+
+        return response
+
+    # Validate CSRF for state-changing requests
+    if not validate_csrf_token(request, None):
+        log_security_event(
+            action="csrf_validation_failed",
+            ip_address=request.client.host if request.client else None,
+            resource=request.url.path,
+            success=False,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="CSRF token validation failed"
+        )
+
+    return await call_next(request)
+
+
+# API access logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all API requests for monitoring and security"""
+    import time
+
+    start_time = time.time()
+
+    # Get user info if available
+    user_id = None
+    try:
+        from auth.dependencies import get_optional_current_user
+        from db import get_session_context
+
+        with get_session_context() as db:
+            user = await get_optional_current_user(request, db)
+            if user:
+                user_id = user.id
+    except Exception:
+        pass  # Don't fail request if user lookup fails
+
+    # Process request
+    response = await call_next(request)
+
+    # Calculate duration
+    duration = (time.time() - start_time) * 1000
+
+    # Log the request
+    log_api_access(
+        request_path=str(request.url.path),
+        method=request.method,
+        user_id=user_id,
+        ip_address=request.client.host if request.client else None,
+        status_code=response.status_code,
+        duration=duration,
+    )
+
+    return response
+
+
+# Input validation middleware
+@app.middleware("http")
+async def validate_input_size(request: Request, call_next):
+    """Validate request size and prevent oversized uploads"""
+    MAX_SIZE = int(os.getenv("MAX_UPLOAD_SIZE", "52428800"))  # 50MB default
+
+    content_length = request.headers.get("content-length")
+    if content_length:
+        content_length = int(content_length)
+        if content_length > MAX_SIZE:
+            return Response(content="Request too large", status_code=413)
+
+    return await call_next(request)
+
 
 # Include routers
 app.include_router(auth_router)  # Authentication routes
@@ -162,6 +382,7 @@ app.include_router(expense_aux_router)
 app.include_router(extra_charges_router)
 app.include_router(extra_fees_router)
 app.include_router(brain_router)  # Brain management dashboard - Internal developer tool
+app.include_router(go_live_router)  # Go-Live Import Pipeline APIs
 
 # Payment Ledger Module routers - Temporarily disabled
 # app.include_router(payment_auth_router)  # Payment auth routes
@@ -170,14 +391,27 @@ app.include_router(brain_router)  # Brain management dashboard - Internal develo
 # Mount .brain folder as static files for brain system access
 app.mount("/.brain", StaticFiles(directory=".brain"), name="brain_files")
 
+
 # Route hiển thị giao diện phụ phí căn hộ
 @app.get("/property_charges", response_class=HTMLResponse)
 def property_charges_page(request: Request):
     return templates.TemplateResponse("property_charges.html", {"request": request})
 
+
 @app.get("/expenses/ledger", response_class=HTMLResponse)
 def expenses_ledger(request: Request):
-    return templates.TemplateResponse("expenses_ledger.html", {"request": request, "month": ""})
+    return templates.TemplateResponse(
+        "expenses_ledger.html", {"request": request, "month": ""}
+    )
+
+
+@app.get("/analytics", response_class=HTMLResponse)
+async def show_analytics_dashboard(request: Request):
+    """
+    Analytics Dashboard - Business Intelligence với charts và KPIs
+    """
+    return templates.TemplateResponse("analytics_dashboard.html", {"request": request})
+
 
 # Payment Ledger Template Routes - Temporarily disabled
 # @app.get("/payments/login", response_class=HTMLResponse)
@@ -193,23 +427,38 @@ def expenses_ledger(request: Request):
 
 # --- Jinja2 Filters ---
 def vn_date(v):
-    if not v: return ""
-    try: return v.strftime("%d/%m/%Y")
-    except: return str(v)
+    if not v:
+        return ""
+    try:
+        return v.strftime("%d/%m/%Y")
+    except:
+        return str(v)
+
 
 def vn_month(v):
-    if not v: return ""
-    try: return v.strftime("%m/%Y")
-    except: return str(v)
+    if not v:
+        return ""
+    try:
+        return v.strftime("%m/%Y")
+    except:
+        return str(v)
+
 
 def vnd(v):
-    try: return f"{int(v):,}"
-    except: return "0"
+    try:
+        return f"{int(v):,}"
+    except:
+        return "0"
+
 
 def vn_dt(v):
-    if not v: return ""
-    try: return v.strftime("%d/%m/%Y %H:%M")
-    except: return str(v)
+    if not v:
+        return ""
+    try:
+        return v.strftime("%d/%m/%Y %H:%M")
+    except:
+        return str(v)
+
 
 templates.env.filters["vn_date"] = vn_date
 templates.env.filters["vn_month"] = vn_month
@@ -221,13 +470,17 @@ templates.env.filters["vn_dt"] = vn_dt
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
+
 @app.post("/login")
 def login_submit(response: Response, password: str = Form(...)):
     if password == PASSWORD:
         response = RedirectResponse(url="/", status_code=302)
         response.set_cookie("session", PASSWORD, httponly=True)
         return response
-    return templates.TemplateResponse("login.html", {"request": {}, "error": "Sai mật khẩu"})
+    return templates.TemplateResponse(
+        "login.html", {"request": {}, "error": "Sai mật khẩu"}
+    )
+
 
 def _get_total_properties():
     try:
@@ -238,6 +491,7 @@ def _get_total_properties():
     except Exception as e:
         print("WARNING: Cannot compute total properties dynamically:", e)
         return 0
+
 
 def get_next_run_time():
     try:
@@ -250,52 +504,64 @@ def get_next_run_time():
     return None
 
 
-
 @app.get("/airbnb/ingest/run-now")
 def run_now():
     # mở trang ingest trang 1 (limit 40) và hiển thị kết quả ngay
     return RedirectResponse(
-        url="/airbnb/ingest?page_from=1&page_to=1&limit=40",
-        status_code=303
+        url="/airbnb/ingest?page_from=1&page_to=1&limit=40", status_code=303
     )
 
-        
+
 @app.get("/airbnb/csv-link")
 def airbnb_csv_link(page: int = 1, limit: int = 40):
     offset = (page - 1) * limit
     base = "https://www.airbnb.com.vn/api/v2/download_reservations"
     params = {
-        "_format":"for_remy","_limit":str(limit),"_offset":str(offset),
-        "collection_strategy":"for_reservations_list","sort_field":"start_date","sort_order":"desc",
-        "status":"accepted,request,canceled","page":str(page),
-        "key":"d306zoyjsyarp7ifhu67rjxn52tv0t20","currency":"VND","locale":"vi",
+        "_format": "for_remy",
+        "_limit": str(limit),
+        "_offset": str(offset),
+        "collection_strategy": "for_reservations_list",
+        "sort_field": "start_date",
+        "sort_order": "desc",
+        "status": "accepted,request,canceled",
+        "page": str(page),
+        "key": "d306zoyjsyarp7ifhu67rjxn52tv0t20",
+        "currency": "VND",
+        "locale": "vi",
     }
     qs = urlencode(params, safe=",")
     return RedirectResponse(url=f"{base}?{qs}")
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request, msg: Optional[str] = None, success: Optional[bool] = None):
+async def index(
+    request: Request, msg: Optional[str] = None, success: Optional[bool] = None
+):
     last_ingest = None
     with get_session_context() as session:
         last_ingest = session.exec(
             select(ImportLog)
             .where(ImportLog.filename.ilike("airbnb:%"))
-            .order_by(ImportLog.finished_at.desc())
+            .order_by(ImportLog.imported_at.desc())
         ).first()
     next_run = get_next_run_time()
-    return templates.TemplateResponse("upload.html", {
-        "request": request,
-        "msg": msg, "success": success,
-        "ingest_last": last_ingest,
-        "ingest_next": next_run,
-    })
+    return templates.TemplateResponse(
+        "upload.html",
+        {
+            "request": request,
+            "msg": msg,
+            "success": success,
+            "ingest_last": last_ingest,
+            "ingest_next": next_run,
+        },
+    )
 
 
 @app.get("/test-upload")
 async def test_upload():
     """Test route để debug upload issue."""
     return {"message": "Upload route accessible"}
+
 
 @app.get("/upload", response_class=HTMLResponse)
 async def show_upload_form(request: Request):
@@ -305,100 +571,126 @@ async def show_upload_form(request: Request):
     except Exception as e:
         return HTMLResponse(f"Template error: {str(e)}", status_code=500)
 
+
 @app.post("/upload", response_class=HTMLResponse)
 async def upload(
-    request: Request, 
+    request: Request,
     files: List[UploadFile] = File(...),
     room_mapping: Optional[str] = Form(None),
-    user: Optional[User] = Depends(get_optional_current_user)
+    user: Optional[User] = Depends(get_optional_current_user),
 ):
     """Upload CSV với room mapping support."""
     with get_session_context() as session:
         upload_service = UploadService(session, user)
-        
+
         # Parse room mapping data if provided
         room_mapping_data = None
         if room_mapping:
             try:
                 import json
+
                 room_mapping_data = json.loads(room_mapping)
             except json.JSONDecodeError:
-                return templates.TemplateResponse("upload.html", {
-                    "request": request,
-                    "msg": "Dữ liệu Room Mapping không hợp lệ",
-                    "success": False
-                })
-        
+                return templates.TemplateResponse(
+                    "upload.html",
+                    {
+                        "request": request,
+                        "msg": "Dữ liệu Room Mapping không hợp lệ",
+                        "success": False,
+                    },
+                )
+
         # Use service for processing
         result = upload_service.process_upload_files(files, room_mapping_data)
-        
+
         if result["success"]:
             # Tạo message chi tiết bằng tiếng Việt
             totals = result.get("data", {}).get("totals", {})
             inserted = totals.get("inserted", 0)
             updated = totals.get("updated", 0)
             processing_time = totals.get("processing_time", 0)
-            
+
             # Tạo thống kê chi tiết
-            stats_msg = f"✅ Tải lên thành công!"
+            stats_msg = "✅ Tải lên thành công!"
             if inserted > 0 or updated > 0:
-                stats_msg += f"\n📊 Thống kê: {inserted} bản ghi mới, {updated} bản ghi cập nhật"
+                stats_msg += (
+                    f"\n📊 Thống kê: {inserted} bản ghi mới, {updated} bản ghi cập nhật"
+                )
             if processing_time > 0:
                 stats_msg += f"\n⏱️ Thời gian xử lý: {processing_time:.2f} giây"
-            
+
             # Hiển thị chi tiết từng file nếu có
             summaries = result.get("data", {}).get("summaries", [])
             if len(summaries) > 1:
                 stats_msg += f"\n📁 Đã xử lý {len(summaries)} file"
-            
-            return templates.TemplateResponse("upload.html", {
-                "request": request,
-                "msg": stats_msg,
-                "success": True,
-                "upload_stats": totals  # Truyền thêm stats để template có thể dùng
-            })
+
+            return templates.TemplateResponse(
+                "upload.html",
+                {
+                    "request": request,
+                    "msg": stats_msg,
+                    "success": True,
+                    "upload_stats": totals,  # Truyền thêm stats để template có thể dùng
+                },
+            )
         else:
-            return templates.TemplateResponse("upload.html", {
-                "request": request,
-                "msg": f"❌ Lỗi upload: {result.get('error', 'Unknown error')}",
-                "success": False
-            })
+            return templates.TemplateResponse(
+                "upload.html",
+                {
+                    "request": request,
+                    "msg": f"❌ Lỗi upload: {result.get('error', 'Unknown error')}",
+                    "success": False,
+                },
+            )
 
 
 # 1. HIỂN THỊ FORM THÊM MỚI (ĐẶT LÊN ĐẦU TIÊN)
 
+
 @app.get("/bookings/new", response_class=HTMLResponse)
 async def show_add_booking_form(
     request: Request,
-    channel: Optional[str] = Query(None),      # ví dụ: ?channel=Offline
-    channel_id: Optional[int] = Query(None),   # ví dụ: ?channel_id=2
-    offline: Optional[bool] = Query(False)     # ví dụ: ?offline=1
+    channel: Optional[str] = Query(None),  # ví dụ: ?channel=Offline
+    channel_id: Optional[int] = Query(None),  # ví dụ: ?channel_id=2
+    offline: Optional[bool] = Query(False),  # ví dụ: ?offline=1
 ):
     """Hiển thị form để thêm booking mới, hỗ trợ chọn sẵn kênh."""
     with get_session_context() as session:
-        properties = session.exec(select(Property).order_by(Property.property_name)).all()
+        properties = session.exec(
+            select(Property).order_by(Property.property_name)
+        ).all()
         channels = session.exec(select(Channel).order_by(Channel.channel_name)).all()
-        salespeople = session.exec(select(Salesperson).where(Salesperson.is_active == True)).all()
+        salespeople = session.exec(
+            select(Salesperson).where(Salesperson.is_active)
+        ).all()
 
         # Xác định channel mặc định
         default_channel_id = None
         if channel_id:
             default_channel_id = channel_id
         elif channel:
-            ch = session.exec(select(Channel).where(Channel.channel_name.ilike(channel))).first()
+            ch = session.exec(
+                select(Channel).where(Channel.channel_name.ilike(channel))
+            ).first()
             default_channel_id = ch.id if ch else None
         elif offline:
-            ch = session.exec(select(Channel).where(Channel.channel_name == "Offline")).first()
+            ch = session.exec(
+                select(Channel).where(Channel.channel_name == "Offline")
+            ).first()
             default_channel_id = ch.id if ch else None
 
-        return templates.TemplateResponse("add_booking.html", {
-            "request": request,
-            "properties": properties,
-            "channels": channels,
-            "salespeople": salespeople,
-            "default_channel_id": default_channel_id,  # <--- truyền qua template
-        })
-        
+        return templates.TemplateResponse(
+            "add_booking.html",
+            {
+                "request": request,
+                "properties": properties,
+                "channels": channels,
+                "salespeople": salespeople,
+                "default_channel_id": default_channel_id,  # <--- truyền qua template
+            },
+        )
+
+
 @app.post("/bookings/new")
 async def create_booking(
     request: Request,
@@ -417,7 +709,7 @@ async def create_booking(
     with get_session_context() as session:
         user = get_optional_current_user(request)
         booking_service = BookingService(session, user)
-        
+
         if not confirmation_code:
             confirmation_code = f"OFF-{uuid.uuid4().hex[:8].upper()}"
 
@@ -437,9 +729,9 @@ async def create_booking(
             "status": "xác nhận",
             "booking_date": date.today(),
             "salesperson_id": salesperson_id,
-            "notes": notes
+            "notes": notes,
         }
-        
+
         # Use service to create booking
         result = booking_service.create_booking(booking_data)
         if not result["success"]:
@@ -447,7 +739,7 @@ async def create_booking(
             pass
 
     return RedirectResponse(url="/bookings", status_code=303)
- 
+
 
 @app.get("/bookings/{booking_id}/edit", response_class=HTMLResponse)
 async def edit_booking_form(request: Request, booking_id: int):
@@ -456,17 +748,26 @@ async def edit_booking_form(request: Request, booking_id: int):
         if not booking:
             return RedirectResponse("/bookings", status_code=302)
 
-        properties = session.exec(select(Property).order_by(Property.property_name)).all()
+        properties = session.exec(
+            select(Property).order_by(Property.property_name)
+        ).all()
         channels = session.exec(select(Channel).order_by(Channel.channel_name)).all()
-        salespeople = session.exec(select(Salesperson).where(Salesperson.is_active == True)).all()
+        salespeople = session.exec(
+            select(Salesperson).where(Salesperson.is_active)
+        ).all()
 
-        return templates.TemplateResponse("edit_booking.html", {
-            "request": request,
-            "booking": booking,
-            "properties": properties,
-            "channels": channels,
-            "salespeople": salespeople
-        })
+        return templates.TemplateResponse(
+            "edit_booking.html",
+            {
+                "request": request,
+                "booking": booking,
+                "properties": properties,
+                "channels": channels,
+                "salespeople": salespeople,
+            },
+        )
+
+
 @app.post("/bookings/{booking_id}/edit")
 async def update_booking(
     booking_id: int,
@@ -478,7 +779,7 @@ async def update_booking(
     guest_name: str = Form(None),
     guest_contact: str = Form(None),
     salesperson_id: Optional[int] = Form(None),
-    notes: Optional[str] = Form(None)
+    notes: Optional[str] = Form(None),
 ):
     with get_session_context() as session:
         booking = session.get(Booking, booking_id)
@@ -501,6 +802,7 @@ async def update_booking(
 
         return RedirectResponse("/bookings", status_code=302)
 
+
 @app.post("/bookings/{booking_id}/delete")
 async def delete_booking(booking_id: int):
     with get_session_context() as session:
@@ -510,38 +812,51 @@ async def delete_booking(booking_id: int):
             session.commit()
     return RedirectResponse("/bookings", status_code=303)
 
+
 # ============ ROOM ASSIGNMENT ROUTES ============
+
 
 @app.get("/bookings/{booking_id}/room-assignment", response_class=HTMLResponse)
 async def get_room_assignment_form(request: Request, booking_id: int):
     """Display room assignment form for a booking."""
     with get_session_context() as session:
         booking_service = BookingService(session)
-        
+
         # Get booking
         booking_result = booking_service.get_booking_detail(booking_id)
         if not booking_result["success"]:
-            return templates.TemplateResponse("upload.html", {
-                "request": request,
-                "msg": booking_result["message"],
-                "success": False
-            })
-        
+            return templates.TemplateResponse(
+                "upload.html",
+                {
+                    "request": request,
+                    "msg": booking_result["message"],
+                    "success": False,
+                },
+            )
+
         booking = booking_result["data"]
-        
+
         # Get existing room assignment
         assignment_result = booking_service.get_booking_room_assignment(booking_id)
-        room_assignment = assignment_result["data"] if assignment_result["success"] else None
-        
+        room_assignment = (
+            assignment_result["data"] if assignment_result["success"] else None
+        )
+
         # Get properties for dropdown
-        properties = session.exec(select(Property).order_by(Property.property_short, Property.property_name)).all()
-        
-        return templates.TemplateResponse("room_assignment.html", {
-            "request": request,
-            "booking": booking,
-            "room_assignment": room_assignment,
-            "properties": properties
-        })
+        properties = session.exec(
+            select(Property).order_by(Property.property_short, Property.property_name)
+        ).all()
+
+        return templates.TemplateResponse(
+            "room_assignment.html",
+            {
+                "request": request,
+                "booking": booking,
+                "room_assignment": room_assignment,
+                "properties": properties,
+            },
+        )
+
 
 @app.post("/bookings/{booking_id}/room-assignment")
 async def handle_room_assignment(
@@ -552,12 +867,12 @@ async def handle_room_assignment(
     change_reason: str = Form(...),
     changed_date: Optional[date] = Form(None),
     changed_by: Optional[str] = Form(None),
-    notes: Optional[str] = Form(None)
+    notes: Optional[str] = Form(None),
 ):
     """Handle room assignment creation/update."""
     with get_session_context() as session:
         booking_service = BookingService(session)
-        
+
         assignment_data = {
             "booked_room": booked_room.strip() if booked_room else None,
             "actual_room": actual_room.strip() if actual_room else None,
@@ -565,24 +880,31 @@ async def handle_room_assignment(
             "change_reason": change_reason if change_reason else None,
             "changed_date": changed_date,
             "changed_by": changed_by.strip() if changed_by else None,
-            "notes": notes.strip() if notes else None
+            "notes": notes.strip() if notes else None,
         }
-        
+
         result = booking_service.create_room_assignment(booking_id, assignment_data)
-        
+
         if result["success"]:
             return RedirectResponse(f"/bookings/{booking_id}", status_code=303)
         else:
             # Return to form with error
             booking_result = booking_service.get_booking_detail(booking_id)
-            return templates.TemplateResponse("room_assignment.html", {
-                "request": {},
-                "booking": booking_result["data"] if booking_result["success"] else None,
-                "room_assignment": None,
-                "error": result["message"]
-            })
+            return templates.TemplateResponse(
+                "room_assignment.html",
+                {
+                    "request": {},
+                    "booking": booking_result["data"]
+                    if booking_result["success"]
+                    else None,
+                    "room_assignment": None,
+                    "error": result["message"],
+                },
+            )
+
 
 # ============ /ROOM ASSIGNMENT ROUTES ============
+
 
 @app.get("/salespeople", response_class=HTMLResponse)
 async def manage_salespeople(request: Request):
@@ -590,24 +912,25 @@ async def manage_salespeople(request: Request):
     with get_session_context() as session:
         salesperson_service = SalespersonService(session)
         salespeople = salesperson_service.get_all_salespeople()
-        return templates.TemplateResponse("salespeople.html", {
-            "request": request,
-            "salespeople": salespeople
-        })
+        return templates.TemplateResponse(
+            "salespeople.html", {"request": request, "salespeople": salespeople}
+        )
+
 
 @app.post("/salespeople/new")
 async def handle_add_salesperson(
     name: str = Form(...),
     email: Optional[str] = Form(None),
-    phone: Optional[str] = Form(None), 
-    commission_rate_pct: float = Form(...)
+    phone: Optional[str] = Form(None),
+    commission_rate_pct: float = Form(...),
 ):
     """Xử lý thêm nhân viên sale mới."""
     with get_session_context() as session:
         salesperson_service = SalespersonService(session)
-        result = salesperson_service.create_salesperson(name, commission_rate_pct, email, phone)
-        
+        salesperson_service.create_salesperson(name, commission_rate_pct, email, phone)
+
     return RedirectResponse(url="/salespeople", status_code=303)
+
 
 # 2. HIỂN THỊ CHI TIẾT 1 BOOKING (ĐẶT SAU /new)
 @app.get("/bookings/{booking_id}", response_class=HTMLResponse)
@@ -617,22 +940,27 @@ async def get_booking_detail(request: Request, booking_id: int):
     """
     with get_session_context() as session:
         booking_service = BookingService(session)
-        
+
         # Get booking detail
         booking_result = booking_service.get_booking_detail(booking_id)
         if not booking_result["success"]:
-            return templates.TemplateResponse("upload.html", {
-                "request": request,
-                "msg": booking_result["message"],
-                "success": False
-            })
-        
+            return templates.TemplateResponse(
+                "upload.html",
+                {
+                    "request": request,
+                    "msg": booking_result["message"],
+                    "success": False,
+                },
+            )
+
         booking = booking_result["data"]
-        prop = session.get(Property, booking.property_id) if booking.property_id else None
+        prop = (
+            session.get(Property, booking.property_id) if booking.property_id else None
+        )
         chan = session.get(Channel, booking.channel_id) if booking.channel_id else None
 
         booking_vm = {
-            "id": booking.id, # Thêm ID để có thể dùng trong template nếu cần
+            "id": booking.id,  # Thêm ID để có thể dùng trong template nếu cần
             "confirmation_code": booking.confirmation_code,
             "listing_raw": booking.listing_raw,
             "building_name": prop.building_name if prop else None,
@@ -655,18 +983,28 @@ async def get_booking_detail(request: Request, booking_id: int):
 
         # Get room assignment info
         room_assignment_result = booking_service.get_booking_room_assignment(booking_id)
-        room_assignment = room_assignment_result["data"] if room_assignment_result["success"] else None
-        
+        room_assignment = (
+            room_assignment_result["data"]
+            if room_assignment_result["success"]
+            else None
+        )
+
         # Get revenue attribution
         revenue_result = booking_service.calculate_room_revenue_attribution(booking_id)
-        revenue_attribution = revenue_result["data"] if revenue_result["success"] else None
+        revenue_attribution = (
+            revenue_result["data"] if revenue_result["success"] else None
+        )
 
-        return templates.TemplateResponse("booking_detail.html", {
-            "request": request,
-            "b": booking_vm,
-            "room_assignment": room_assignment,
-            "revenue_attribution": revenue_attribution
-        })
+        return templates.TemplateResponse(
+            "booking_detail.html",
+            {
+                "request": request,
+                "b": booking_vm,
+                "room_assignment": room_assignment,
+                "revenue_attribution": revenue_attribution,
+            },
+        )
+
 
 # 3. HIỂN THỊ DANH SÁCH BOOKING (ROUTE GỐC)
 @app.get("/bookings", response_class=HTMLResponse)
@@ -678,11 +1016,11 @@ async def list_bookings(
     channel: Optional[str] = None,
     building: Optional[str] = None,
     property_name: Optional[str] = Query(None),  # Đã thêm dấu ngoặc đóng
-    p: int = Query(1, ge=1),                    # <-- trang hiện tại
+    p: int = Query(1, ge=1),  # <-- trang hiện tại
     page_size: int = Query(50, ge=10, le=200),  # <-- số dòng / trang
 ):
     start_date = parse_date_mixed(start) if start else None
-    end_date   = parse_date_mixed(end)   if end else None
+    end_date = parse_date_mixed(end) if end else None
 
     with get_session_context() as session:
         # lookup maps
@@ -693,19 +1031,32 @@ async def list_bookings(
         matched_prop_ids = None
         if building:
             matched_prop_ids = [
-                pid for pid, p in props.items()
+                pid
+                for pid, p in props.items()
                 if p and p.building_name and building.lower() in p.building_name.lower()
             ]
 
         if property_name:
             ids_by_prop = [
-                pid for pid, p in props.items()
-                if p and (
-                    (p.property_short and property_name.lower() in p.property_short.lower())
-                    or (p.property_name and property_name.lower() in p.property_name.lower())
+                pid
+                for pid, p in props.items()
+                if p
+                and (
+                    (
+                        p.property_short
+                        and property_name.lower() in p.property_short.lower()
+                    )
+                    or (
+                        p.property_name
+                        and property_name.lower() in p.property_name.lower()
+                    )
                 )
             ]
-            matched_prop_ids = ids_by_prop if matched_prop_ids is None else list(set(matched_prop_ids).intersection(ids_by_prop))
+            matched_prop_ids = (
+                ids_by_prop
+                if matched_prop_ids is None
+                else list(set(matched_prop_ids).intersection(ids_by_prop))
+            )
 
         # ---- base WHERE ----
         where_clauses = []
@@ -713,7 +1064,11 @@ async def list_bookings(
             where_clauses.append(Booking.status.ilike(f"%{status}%"))
 
         if channel:
-            channel_ids = [cid for cid, name in ch_map.items() if name and channel.lower() in name.lower()]
+            channel_ids = [
+                cid
+                for cid, name in ch_map.items()
+                if name and channel.lower() in name.lower()
+            ]
             if channel_ids:
                 where_clauses.append(Booking.channel_id.in_(channel_ids))
             else:
@@ -754,24 +1109,26 @@ async def list_bookings(
         for r in results:
             total_vnd = int(r.total_payout_vnd or 0)
             pinfo = props.get(r.property_id)
-            bookings_vm.append({
-                "id": r.id,
-                "confirmation_code": r.confirmation_code,
-                "listing_raw": r.listing_raw,
-                "property_short": (pinfo.property_short if pinfo else None),
-                "start_date": vn_date(r.start_date),
-                "end_date": vn_date(r.end_date),
-                "num_nights": r.num_nights,
-                "status": r.status,
-                "total_payout_vnd": total_vnd,
-                "channel_name": ch_map.get(r.channel_id),
-                "guest_name": r.guest_name,
-                "guest_contact": r.guest_contact,
-                "num_adults": r.num_adults,
-                "num_children": r.num_children,
-                "num_infants": r.num_infants,
-                "booking_date": vn_date(r.booking_date),
-            })
+            bookings_vm.append(
+                {
+                    "id": r.id,
+                    "confirmation_code": r.confirmation_code,
+                    "listing_raw": r.listing_raw,
+                    "property_short": (pinfo.property_short if pinfo else None),
+                    "start_date": vn_date(r.start_date),
+                    "end_date": vn_date(r.end_date),
+                    "num_nights": r.num_nights,
+                    "status": r.status,
+                    "total_payout_vnd": total_vnd,
+                    "channel_name": ch_map.get(r.channel_id),
+                    "guest_name": r.guest_name,
+                    "guest_contact": r.guest_contact,
+                    "num_adults": r.num_adults,
+                    "num_children": r.num_children,
+                    "num_infants": r.num_infants,
+                    "booking_date": vn_date(r.booking_date),
+                }
+            )
 
         # danh sách tòa nhà cho filter
         all_buildings = session.exec(select(Building.building_name).distinct()).all()
@@ -785,28 +1142,33 @@ async def list_bookings(
         "end": offset + len(bookings_vm),
     }
 
-    return templates.TemplateResponse("bookings.html", {
-        "request": request,
-        "bookings": bookings_vm,
-        "start": start_date,
-        "end": end_date,
-        "status": status,
-        "channel": channel,
-        "building": building,
-        "property": property_name,
-        "all_buildings": all_buildings,
-        "pagination": pagination,
-    })
+    return templates.TemplateResponse(
+        "bookings.html",
+        {
+            "request": request,
+            "bookings": bookings_vm,
+            "start": start_date,
+            "end": end_date,
+            "status": status,
+            "channel": channel,
+            "building": building,
+            "property": property_name,
+            "all_buildings": all_buildings,
+            "pagination": pagination,
+        },
+    )
 
 
-    
 def month_key(d: date) -> date:
     return date(d.year, d.month, 1)
+
 
 def days_in_month(dt: date) -> int:
     return monthrange(dt.year, dt.month)[1]
 
+
 # Trong file main.py
+
 
 def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     """
@@ -820,10 +1182,7 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     with get_session_context() as session:
         bookings = session.exec(
             select(Booking).where(
-                or_(
-                    Booking.status.is_(None),
-                    not_(Booking.status.ilike("%hủy%"))
-                )
+                or_(Booking.status.is_(None), not_(Booking.status.ilike("%hủy%")))
             )
         ).all()
         props = {p.id: p for p in session.exec(select(Property)).all()}
@@ -832,20 +1191,37 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
 
         # Tích hợp phụ phí theo charge_name
         extra_charges = session.exec(
-            select(ExtraCharge.charge_month, ExtraCharge.charge_name, func.sum(ExtraCharge.charge_amount))
-            .where(ExtraCharge.charge_month >= start_date.strftime("%Y-%m"), ExtraCharge.charge_month <= end_date.strftime("%Y-%m"))
+            select(
+                ExtraCharge.charge_month,
+                ExtraCharge.charge_name,
+                func.sum(ExtraCharge.charge_amount),
+            )
+            .where(
+                ExtraCharge.charge_month >= start_date.strftime("%Y-%m"),
+                ExtraCharge.charge_month <= end_date.strftime("%Y-%m"),
+            )
             .group_by(ExtraCharge.charge_month, ExtraCharge.charge_name)
         ).all()
         extra_charges_map = defaultdict(lambda: defaultdict(float))
         for ec in extra_charges:
-            charge_month = date(int(ec[0][:4]), int(ec[0][5:]), 1)  # Chuyển "YYYY-MM" thành date
+            charge_month = date(
+                int(ec[0][:4]), int(ec[0][5:]), 1
+            )  # Chuyển "YYYY-MM" thành date
             extra_charges_map[charge_month][ec[1]] += ec[2]
 
         # Fix: Thêm category_map để tránh lỗi
         categories = session.exec(select(ExpenseCategory)).all()
-        category_map = {cat.id: cat.name for cat in categories}
+        {cat.id: cat.name for cat in categories}
 
-    results = defaultdict(lambda: {"sold_nights": 0, "revenue": 0.0, "commission": 0.0, "prop_ids": set(), "expenses": defaultdict(float)})
+    results = defaultdict(
+        lambda: {
+            "sold_nights": 0,
+            "revenue": 0.0,
+            "commission": 0.0,
+            "prop_ids": set(),
+            "expenses": defaultdict(float),
+        }
+    )
     monthly_sold = defaultdict(int)
     monthly_rev = defaultdict(float)
     monthly_props_any = defaultdict(set)
@@ -854,7 +1230,12 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     monthly_airbnb_rev = defaultdict(float)
 
     for b in bookings:
-        if not (b.start_date and b.end_date and b.num_nights and b.total_payout_vnd is not None):
+        if not (
+            b.start_date
+            and b.end_date
+            and b.num_nights
+            and b.total_payout_vnd is not None
+        ):
             continue
 
         cur = max(b.start_date, start_date)
@@ -866,7 +1247,9 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
             p = props.get(b.property_id)
             group_val = p.building_name if p else "N/A"
         elif group_by == "channel":
-            group_val = chans.get(b.channel_id).channel_name if b.channel_id in chans else "N/A"
+            group_val = (
+                chans.get(b.channel_id).channel_name if b.channel_id in chans else "N/A"
+            )
         elif group_by == "salesperson":
             sale = sales_map.get(b.salesperson_id)
             group_val = sale.name if sale else "Không có"
@@ -877,7 +1260,9 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
         nightly_revenue = (b.total_payout_vnd or 0) / max(b.num_nights, 1)
         sale = sales_map.get(b.salesperson_id)
         nightly_commission = nightly_revenue * (sale.commission_rate if sale else 0)
-        chan_name = chans.get(b.channel_id).channel_name if b.channel_id in chans else "N/A"
+        chan_name = (
+            chans.get(b.channel_id).channel_name if b.channel_id in chans else "N/A"
+        )
 
         d = cur
         while d < last:
@@ -920,9 +1305,13 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     elif group_by == "salesperson":
         all_groups = {s.name for s in sales_map.values()}
     else:
-        all_groups = {(p.property_short or p.property_name or "N/A") for p in props.values()}
+        all_groups = {
+            (p.property_short or p.property_name or "N/A") for p in props.values()
+        }
 
-    months_in_range = set(date(d.year, d.month, 1) for d in pd.date_range(start_date, end_date))
+    months_in_range = set(
+        date(d.year, d.month, 1) for d in pd.date_range(start_date, end_date)
+    )
     for mk in months_in_range:
         for g in all_groups:
             key = (mk, g)
@@ -939,11 +1328,27 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
         adr = int(round(rev / sold)) if sold else 0
 
         if group_by == "building":
-            active_props = len([p for p in props.values() if p.building_name == group_val])
+            active_props = len(
+                [p for p in props.values() if p.building_name == group_val]
+            )
         elif group_by == "channel":
-            active_props = len([b for b in bookings if chans.get(b.channel_id) and chans[b.channel_id].channel_name == group_val])
+            active_props = len(
+                [
+                    b
+                    for b in bookings
+                    if chans.get(b.channel_id)
+                    and chans[b.channel_id].channel_name == group_val
+                ]
+            )
         elif group_by == "salesperson":
-            active_props = len([b for b in bookings if sales_map.get(b.salesperson_id) and sales_map[b.salesperson_id].name == group_val])
+            active_props = len(
+                [
+                    b
+                    for b in bookings
+                    if sales_map.get(b.salesperson_id)
+                    and sales_map[b.salesperson_id].name == group_val
+                ]
+            )
         else:
             active_props = 1
 
@@ -960,26 +1365,44 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
         # Fix: Sử dụng charge_name thay vì category_id
         # expense_details = {category_map[cat_id]: int(round(amount)) for cat_id, amount in agg["expenses"].items()}
 
-        rows.append({
-            "month": mk, "group": group_val, "sold_nights": sold,
-            "vacant_nights": vacant, "revenue_vnd": rev, "adr_vnd": adr,
-            "available_nights": avail, "occupancy_pct": occ,
-            "revpar_vnd": revpar, "commission_vnd": comm
-        })
+        rows.append(
+            {
+                "month": mk,
+                "group": group_val,
+                "sold_nights": sold,
+                "vacant_nights": vacant,
+                "revenue_vnd": rev,
+                "adr_vnd": adr,
+                "available_nights": avail,
+                "occupancy_pct": occ,
+                "revpar_vnd": revpar,
+                "commission_vnd": comm,
+            }
+        )
 
     # --- tổng hợp KPI cho tiêu đề báo cáo ---
-    total_rows = len(rows)
+    len(rows)
     total_revenue = int(round(sum(r["revenue_vnd"] for r in rows)))
     total_commission = int(round(sum(r["commission_vnd"] for r in rows)))
     total_sold_nights = sum(r["sold_nights"] for r in rows)
     total_vacant_nights = sum(r["vacant_nights"] for r in rows)
     total_available_nights = sum(r["available_nights"] for r in rows)
 
-    total_occupancy_pct = round((total_sold_nights / total_available_nights) * 100, 1) if total_available_nights else 0.0
-    total_revpar_vnd = int(round(total_revenue / total_available_nights)) if total_available_nights else 0
+    total_occupancy_pct = (
+        round((total_sold_nights / total_available_nights) * 100, 1)
+        if total_available_nights
+        else 0.0
+    )
+    total_revpar_vnd = (
+        int(round(total_revenue / total_available_nights))
+        if total_available_nights
+        else 0
+    )
 
     # --- trend data cho chart ---
-    monthly_trend = defaultdict(lambda: {"sold_nights": 0, "revenue": 0.0, "commission": 0.0})
+    monthly_trend = defaultdict(
+        lambda: {"sold_nights": 0, "revenue": 0.0, "commission": 0.0}
+    )
     for (mk, group_val), agg in results.items():
         sold = agg["sold_nights"]
         rev = agg["revenue"]
@@ -993,7 +1416,10 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     sorted_trend = sorted(monthly_trend.items())
 
     # tách riêng tháng và dữ liệu
-    trend_months = [m[0].strftime("%Y-%m") if hasattr(m[0], 'strftime') else str(m[0]) for m in sorted_trend]  # Fix: Convert dates to strings
+    trend_months = [
+        m[0].strftime("%Y-%m") if hasattr(m[0], "strftime") else str(m[0])
+        for m in sorted_trend
+    ]  # Fix: Convert dates to strings
     trend_data = [m[1] for m in sorted_trend]
 
     # --- pie chart data cho doanh thu theo kênh ---
@@ -1001,14 +1427,22 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     for chan_name, rev in channel_totals.items():
         channel_revenue_pie[chan_name] += rev
 
-    sorted_channel_revenue = sorted(channel_revenue_pie.items(), key=lambda x: x[1], reverse=True)
+    sorted_channel_revenue = sorted(
+        channel_revenue_pie.items(), key=lambda x: x[1], reverse=True
+    )
 
     # tính tổng doanh thu để tính tỷ lệ phần trăm
     total_channel_revenue = sum(channel_revenue_pie.values())
 
     # thêm thông tin phần trăm vào dữ liệu pie chart
     channel_revenue_pie_data = [
-        {"channel": chan, "revenue": int(round(rev)), "percentage": round((rev / total_channel_revenue) * 100, 2) if total_channel_revenue > 0 else 0}
+        {
+            "channel": chan,
+            "revenue": int(round(rev)),
+            "percentage": round((rev / total_channel_revenue) * 100, 2)
+            if total_channel_revenue > 0
+            else 0,
+        }
         for chan, rev in sorted_channel_revenue
     ]
 
@@ -1027,16 +1461,18 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
     # Calculate monthly metrics for charts
     for mk in [datetime.strptime(m, "%Y-%m").date() for m in month_labels]:
         # For occupancy calculation, we need to aggregate differently
-        month_revenue = monthly_rev.get(mk, 0)
+        monthly_rev.get(mk, 0)
         month_sold = monthly_sold.get(mk, 0)
         month_airbnb = monthly_airbnb_rev.get(mk, 0)
         month_offline = monthly_offline_rev.get(mk, 0)
-        
-        # Calculate available nights for this month  
+
+        # Calculate available nights for this month
         month_props = len(monthly_props_any.get(mk, set()))
         month_available = month_props * days_in_month(mk) if month_props > 0 else 0
-        month_occ = round((month_sold / month_available) * 100, 1) if month_available > 0 else 0
-        
+        month_occ = (
+            round((month_sold / month_available) * 100, 1) if month_available > 0 else 0
+        )
+
         occupancy_pct_by_month.append(month_occ)
         airbnb_revenue_by_month.append(int(month_airbnb))
         offline_revenue_by_month.append(int(month_offline))
@@ -1074,59 +1510,79 @@ def compute_monthly_report(start_date: date, end_date: date, group_by: str):
         "channel_revenue_pie": channel_revenue_pie_data,
     }
 
+
 # ================= ROUTE BÁO CÁO BỊ THIẾU =================
+
 
 @app.get("/reports/monthly", response_class=HTMLResponse)
 async def report_monthly(
     request: Request,
     start: Optional[str] = Query(None, description="YYYY-MM-DD"),
-    end: Optional[str]   = Query(None, description="YYYY-MM-DD"),
-    group_by: str = Query("property", description="property|building|channel|salesperson"),
-    p: int = Query(1, ge=1),                      # <-- trang hiện tại
-    page_size: int = Query(22, ge=5, le=200),     # <-- số dòng mỗi trang
+    end: Optional[str] = Query(None, description="YYYY-MM-DD"),
+    group_by: str = Query(
+        "property", description="property|building|channel|salesperson"
+    ),
+    p: int = Query(1, ge=1),  # <-- trang hiện tại
+    page_size: int = Query(22, ge=5, le=200),  # <-- số dòng mỗi trang
 ):
     try:
         today = date.today()
-        default_end = date(today.year, today.month, monthrange(today.year, today.month)[1])
-        default_start = (default_end.replace(day=1) - timedelta(days=150)).replace(day=1)
+        default_end = date(
+            today.year, today.month, monthrange(today.year, today.month)[1]
+        )
+        default_start = (default_end.replace(day=1) - timedelta(days=150)).replace(
+            day=1
+        )
 
         start_date = parse_date_mixed(start) or default_start
-        end_date   = parse_date_mixed(end)   or default_end
+        end_date = parse_date_mixed(end) or default_end
 
         with get_session_context() as session:
             revenue_service = RevenueService(session)
-            rows, totals, chart_data = revenue_service.compute_monthly_report(start_date, end_date, group_by)
-        
+            rows, totals, chart_data = revenue_service.compute_monthly_report(
+                start_date, end_date, group_by
+            )
+
         # Convert dates to strings for template serialization
         rows_serializable = []
         for row in rows:
             row_copy = row.copy()
-            if 'month' in row_copy and hasattr(row_copy['month'], 'strftime'):
-                row_copy['month'] = row_copy['month'].strftime("%Y-%m")
+            if "month" in row_copy and hasattr(row_copy["month"], "strftime"):
+                row_copy["month"] = row_copy["month"].strftime("%Y-%m")
             rows_serializable.append(row_copy)
-        
+
         # Convert totals dict to match template expectations
         from types import SimpleNamespace
+
         template_totals = {
             "revenue_vnd": totals.get("total_revenue", 0),
-            "sold_nights": totals.get("total_sold_nights", 0), 
+            "sold_nights": totals.get("total_sold_nights", 0),
             "vacant_nights": totals.get("total_vacant_nights", 0),
             "occupancy_pct": totals.get("total_occupancy_pct", 0.0),
             "revpar_vnd": totals.get("total_revpar_vnd", 0),
-            "forecast_revenue_vnd": 0  # Placeholder for now
+            "forecast_revenue_vnd": 0,  # Placeholder for now
         }
         totals_obj = SimpleNamespace(**template_totals)
-        
+
         # Convert chart_data to match template expectations
         template_chart = {
             "month_labels": chart_data.get("trend_months", []),
-            "revenue_by_month": [int(d.get("revenue", 0)) for d in chart_data.get("trend_data", [])],
-            "sold_nights_by_month": [d.get("sold_nights", 0) for d in chart_data.get("trend_data", [])],
-            "occupancy_pct_by_month": [0] * len(chart_data.get("trend_months", [])),  # Placeholder
+            "revenue_by_month": [
+                int(d.get("revenue", 0)) for d in chart_data.get("trend_data", [])
+            ],
+            "sold_nights_by_month": [
+                d.get("sold_nights", 0) for d in chart_data.get("trend_data", [])
+            ],
+            "occupancy_pct_by_month": [0]
+            * len(chart_data.get("trend_months", [])),  # Placeholder
             "airbnb_revenue_by_month": chart_data.get("airbnb_monthly", []),
             "offline_revenue_by_month": chart_data.get("offline_monthly", []),
-            "channel_labels": [item.get("channel", "") for item in chart_data.get("channel_pie", [])],
-            "channel_revenue": [item.get("revenue", 0) for item in chart_data.get("channel_pie", [])]
+            "channel_labels": [
+                item.get("channel", "") for item in chart_data.get("channel_pie", [])
+            ],
+            "channel_revenue": [
+                item.get("revenue", 0) for item in chart_data.get("channel_pie", [])
+            ],
         }
 
         # ---------- PHÂN TRANG ----------
@@ -1135,7 +1591,7 @@ async def report_monthly(
         page = min(max(1, p), pages)
 
         start_idx = (page - 1) * page_size
-        end_idx   = min(start_idx + page_size, total_rows)
+        end_idx = min(start_idx + page_size, total_rows)
         rows_page = rows_serializable[start_idx:end_idx]
 
         pagination = {
@@ -1147,31 +1603,36 @@ async def report_monthly(
             "end": end_idx,
         }
 
-        return templates.TemplateResponse("reports_monthly.html", {
-            "request": request,
-            "rows": rows_page,          # chỉ trả trang hiện tại
-            "start": start_date.strftime("%Y-%m-%d"),  # Convert to string
-            "end": end_date.strftime("%Y-%m-%d"),      # Convert to string
-            "group_by": group_by,
-            "totals": totals_obj,       # Use object format for template
-            "chart": template_chart,    # Use converted chart format
-            "geo_data": [],  # Tạm thời để trống, có thể thêm sau
-            "pagination": pagination,   # thông tin phân trang
-        })
-        
+        return templates.TemplateResponse(
+            "reports_monthly.html",
+            {
+                "request": request,
+                "rows": rows_page,  # chỉ trả trang hiện tại
+                "start": start_date.strftime("%Y-%m-%d"),  # Convert to string
+                "end": end_date.strftime("%Y-%m-%d"),  # Convert to string
+                "group_by": group_by,
+                "totals": totals_obj,  # Use object format for template
+                "chart": template_chart,  # Use converted chart format
+                "geo_data": [],  # Tạm thời để trống, có thể thêm sau
+                "pagination": pagination,  # thông tin phân trang
+            },
+        )
+
     except Exception as e:
         # Debug: Trả về lỗi cụ thể
         import traceback
+
         error_details = traceback.format_exc()
         print(f"❌ Error in report_monthly: {e}")
         print(f"📋 Full traceback:\n{error_details}")
-        
+
         return HTMLResponse(
-            content=f"<h1>Debug Error</h1><pre>{error_details}</pre>", 
-            status_code=500
+            content=f"<h1>Debug Error</h1><pre>{error_details}</pre>", status_code=500
         )
 
+
 # ================= MISSING ROUTES - BUILDINGS & PROPERTIES =================
+
 
 @app.get("/buildings", response_class=HTMLResponse)
 async def show_buildings(request: Request):
@@ -1179,26 +1640,25 @@ async def show_buildings(request: Request):
         property_service = PropertyService(session)
         building_data = property_service.get_buildings_with_counts()
 
-    return templates.TemplateResponse("buildings.html", {
-        "request": request,
-        "buildings": building_data
-    })
+    return templates.TemplateResponse(
+        "buildings.html", {"request": request, "buildings": building_data}
+    )
+
 
 @app.post("/buildings/new")
 async def add_building(
     building_name: str = Form(...),
     building_code: str = Form(None),
-    address: str = Form(None)
+    address: str = Form(None),
 ):
     with get_session_context() as session:
         new_building = Building(
-            building_name=building_name,
-            building_code=building_code,
-            address=address
+            building_name=building_name, building_code=building_code, address=address
         )
         session.add(new_building)
         session.commit()
     return RedirectResponse(url="/buildings", status_code=303)
+
 
 @app.get("/properties", response_class=HTMLResponse)
 async def show_properties(request: Request):
@@ -1206,10 +1666,10 @@ async def show_properties(request: Request):
         property_service = PropertyService(session)
         properties = property_service.get_properties_with_buildings()
 
-    return templates.TemplateResponse("properties.html", {
-        "request": request,
-        "properties": properties
-    })
+    return templates.TemplateResponse(
+        "properties.html", {"request": request, "properties": properties}
+    )
+
 
 # API endpoints for AJAX
 @app.get("/api/buildings")
@@ -1218,16 +1678,391 @@ async def api_buildings():
         buildings = session.exec(select(Building)).all()
         return [{"id": b.id, "name": b.building_name} for b in buildings]
 
+
 @app.get("/api/properties")
-async def api_properties():
+async def api_properties(current_user: User = Depends(get_optional_current_user)):
+    """Get properties với user-aware filtering"""
+    from services.base_service import PropertyAwareService
+
     with get_session_context() as session:
-        properties = session.exec(select(Property)).all()
-        return [{"id": p.id, "name": p.property_name, "building_id": p.building_id} for p in properties]
+        service = PropertyAwareService(session, current_user)
+
+        # Check permission
+        service.require_permission("property", "read")
+
+        # Get accessible properties
+        properties = service.get_accessible_properties()
+
+        return service.format_response(
+            [
+                {"id": p.id, "name": p.property_name, "building_id": p.building_id}
+                for p in properties
+            ]
+        )
+
+
+@app.get("/api/bookings")
+async def api_bookings(
+    current_user: User = Depends(get_optional_current_user),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
+    """Get bookings với user-aware property filtering"""
+    from services.base_service import BaseService
+
+    with get_session_context() as session:
+        service = BaseService(session, current_user)
+
+        # Check permission
+        service.require_permission("booking", "read")
+
+        # Query bookings với property filtering
+        query = select(Booking).offset(offset).limit(limit)
+        filtered_query = service.apply_property_filter(query, "property_id")
+
+        bookings = session.exec(filtered_query).all()
+
+        return service.format_response(
+            [
+                {
+                    "id": b.id,
+                    "property_id": b.property_id,
+                    "guest_name": b.guest_name,
+                    "checkin_date": b.checkin_date.isoformat()
+                    if b.checkin_date
+                    else None,
+                    "checkout_date": b.checkout_date.isoformat()
+                    if b.checkout_date
+                    else None,
+                    "status": b.status,
+                    "total_amount": float(b.total_amount) if b.total_amount else 0,
+                }
+                for b in bookings
+            ]
+        )
+
+
+@app.get("/api/revenues")
+async def api_revenues(
+    current_user: User = Depends(get_optional_current_user),
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    include_cancelled: bool = Query(False, description="Include cancelled bookings"),
+):
+    """Get revenue analysis by property với user-aware filtering"""
+    from services.revenue_service import RevenueService
+    from utils import parse_date_mixed
+
+    with get_session_context() as session:
+        service = RevenueService(session, current_user)
+
+        # Parse dates
+        start_parsed = parse_date_mixed(start_date) if start_date else None
+        end_parsed = parse_date_mixed(end_date) if end_date else None
+
+        # Get revenue data
+        revenue_data = service.revenue_by_property(
+            start_date=start_parsed,
+            end_date=end_parsed,
+            include_cancelled=include_cancelled,
+        )
+
+        return service.format_response(revenue_data)
+
+
+# ==================== EXPENSE API ENDPOINTS ====================
+
+
+@app.post("/api/expenses")
+async def create_expense(
+    expense_data: ExpenseCreateRequest,
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    Tạo expense mới với user permission checking
+
+    Requires: expense.create permission
+    """
+    service = ExpenseService(db, current_user)
+    result = service.create_expense(expense_data.dict())
+    return result
+
+
+@app.get("/api/expenses")
+async def list_expenses(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    category_id: Optional[int] = Query(None, description="Lọc theo category"),
+    property_id: Optional[int] = Query(None, description="Lọc theo property"),
+    vendor: Optional[str] = Query(None, description="Lọc theo vendor"),
+    limit: int = Query(100, ge=1, le=1000, description="Số lượng kết quả"),
+    offset: int = Query(0, ge=0, description="Bỏ qua số kết quả (pagination)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    List expenses với filtering và pagination
+
+    Requires: expense.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+
+    service = ExpenseService(db, current_user)
+    result = service.list_expenses(
+        start_date=start_parsed,
+        end_date=end_parsed,
+        category_id=category_id,
+        property_id=property_id,
+        vendor=vendor,
+        limit=limit,
+        offset=offset,
+    )
+    return result
+
+
+@app.get("/api/expenses/summary")
+async def expense_summary_by_property(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    Expense summary grouped by property
+
+    Requires: expense.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+
+    service = ExpenseService(db, current_user)
+    result = service.summary_by_property(start_date=start_parsed, end_date=end_parsed)
+    return result
+
+
+# ==================== ANALYTICS DASHBOARD API ENDPOINTS ====================
+
+
+@app.get("/api/analytics/revenue-vs-expense")
+async def analytics_revenue_vs_expense(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    Revenue vs Expense analysis dashboard
+
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+
+    service = AnalyticsService(db, current_user)
+    result = service.get_revenue_vs_expense_dashboard(
+        start_date=start_parsed, end_date=end_parsed
+    )
+    return result
+
+
+@app.get("/api/analytics/occupancy")
+async def analytics_occupancy_metrics(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    Occupancy rates và utilization metrics
+
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+
+    service = AnalyticsService(db, current_user)
+    result = service.get_occupancy_metrics(start_date=start_parsed, end_date=end_parsed)
+    return result
+
+
+@app.get("/api/analytics/arpu")
+async def analytics_arpu_metrics(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    ARPU (Average Revenue Per User/Booking) metrics
+
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+
+    service = AnalyticsService(db, current_user)
+    result = service.get_arpu_metrics(start_date=start_parsed, end_date=end_parsed)
+    return result
+
+
+@app.get("/api/analytics/trends")
+async def analytics_monthly_trends(
+    months_back: int = Query(12, ge=3, le=24, description="Số tháng phân tích (3-24)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    Monthly trends cho revenue, expenses, bookings
+
+    Requires: analytics.read permission
+    """
+    service = AnalyticsService(db, current_user)
+    result = service.get_monthly_trends(months_back=months_back)
+    return result
+
+
+@app.get("/api/analytics/dashboard")
+async def analytics_full_dashboard(
+    start_date: Optional[str] = Query(None, description="Từ ngày (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="Đến ngày (YYYY-MM-DD)"),
+    current_user=Depends(get_current_user_or_redirect),
+    db: Session = Depends(get_db),
+):
+    """
+    Complete dashboard data - all analytics in one response
+
+    Requires: analytics.read permission
+    """
+    # Parse dates
+    start_parsed = None
+    end_parsed = None
+
+    if start_date:
+        try:
+            start_parsed = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid start_date format. Use YYYY-MM-DD"
+            )
+
+    if end_date:
+        try:
+            end_parsed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=400, detail="Invalid end_date format. Use YYYY-MM-DD"
+            )
+
+    service = AnalyticsService(db, current_user)
+
+    # Get all dashboard data
+    revenue_vs_expense = service.get_revenue_vs_expense_dashboard(
+        start_parsed, end_parsed
+    )
+    occupancy = service.get_occupancy_metrics(start_parsed, end_parsed)
+    arpu = service.get_arpu_metrics(start_parsed, end_parsed)
+    trends = service.get_monthly_trends(months_back=12)
+
+    return {
+        "revenue_vs_expense": revenue_vs_expense,
+        "occupancy": occupancy,
+        "arpu": arpu,
+        "trends": trends,
+        "generated_at": datetime.utcnow().isoformat(),
+        "period": {"start_date": start_date, "end_date": end_date},
+    }
+
 
 @app.post("/api/csv/preview")
 async def api_csv_preview(
-    files: List[UploadFile] = File(...),
-    room_mapping: Optional[str] = Form(None)
+    files: List[UploadFile] = File(...), room_mapping: Optional[str] = Form(None)
 ):
     """Preview CSV files với room mapping để kiểm tra trước khi upload."""
     try:
@@ -1235,55 +2070,102 @@ async def api_csv_preview(
         room_mapping_data = None
         if room_mapping:
             import json
+
             room_mapping_data = json.loads(room_mapping)
-        
+
         # Get room mapping preview from utils
         from utils import get_room_mapping_preview
+
         preview_data = []
-        
+
         for upload_file in files:
             content = await upload_file.read()
             df = pd.read_csv(io.BytesIO(content))
-            
+
             # Get preview for this file
             file_preview = get_room_mapping_preview(df, room_mapping_data)
-            preview_data.append({
-                "filename": upload_file.filename,
-                "preview": file_preview
-            })
-            
+            preview_data.append(
+                {"filename": upload_file.filename, "preview": file_preview}
+            )
+
             # Reset file pointer
             await upload_file.seek(0)
-        
+
         return {"success": True, "data": preview_data}
-        
+
     except Exception as e:
         return {"success": False, "error": str(e)}
+
 
 @app.post("/api/csv/preview-json")
 async def api_csv_preview_json(data: dict):
     """Preview CSV với JSON data để test."""
     try:
-        from utils import get_room_mapping_preview
         import io
-        
-        csv_content = data.get('csv_content', '')
-        room_mapping_data = data.get('room_mapping')
-        
+
+        from utils import get_room_mapping_preview
+
+        csv_content = data.get("csv_content", "")
+        room_mapping_data = data.get("room_mapping")
+
         # Parse CSV from string content
         df = pd.read_csv(io.StringIO(csv_content))
-        
+
         # Get preview
         preview = get_room_mapping_preview(df, room_mapping_data)
-        
+
         return {"success": True, "preview": preview}
-        
+
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
 
 # Calendar Route
 @app.get("/calendar", response_class=HTMLResponse)
 def show_calendar(request: Request):
     return templates.TemplateResponse("calendar.html", {"request": request})
+
+
+# Health Check Endpoints - Các endpoint kiểm tra sức khỏe hệ thống
+@app.get("/health")
+def health_check():
+    """Kiểm tra sức khỏe tổng thể của hệ thống"""
+    from db import check_database_health, get_database_info
+
+    # Kiểm tra database
+    db_health = check_database_health()
+    db_info = get_database_info()
+
+    # Kiểm tra các service quan trọng
+    system_health = {
+        "status": "healthy" if db_health["status"] == "healthy" else "unhealthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "database": {"health": db_health, "info": db_info},
+        "application": {
+            "name": "Airbnb Revenue WebApp",
+            "version": "1.0.0",
+            "environment": "production"
+            if os.getenv("PRODUCTION", "false").lower() == "true"
+            else "development",
+        },
+    }
+
+    return system_health
+
+
+@app.get("/health/database")
+def database_health():
+    """Kiểm tra sức khỏe database cụ thể"""
+    from db import check_database_health, get_database_info
+
+    health = check_database_health()
+    info = get_database_info()
+
+    return {
+        "database_health": health,
+        "database_info": info,
+        "timestamp": datetime.utcnow().isoformat(),
+    }

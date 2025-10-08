@@ -1,0 +1,52 @@
+{
+  "offline_to_airbnb": {
+    "Tên khách": "guest_name",
+    "Số đêm": "num_nights", 
+    "Ngày checkin": "start_date",
+    "Ngày checkout": "end_date",
+    "Số tiền": "total_payout_vnd",
+    "Ghi chú": "notes",
+    "Phòng": "listing_raw",
+    "Điện thoại": "guest_contact",
+    "Email": "guest_contact",
+    "Mã đặt": "external_ref",
+    "Kênh": "channel",
+    
+    "Facebook Booking ID": "external_ref",
+    "Zalo Booking ID": "external_ref",
+    "Offline Code": "external_ref",
+    
+    "Check-in": "start_date",
+    "Check-out": "end_date",
+    "Guest Name": "guest_name",
+    "Phone": "guest_contact",
+    "Room": "listing_raw",
+    "Amount": "total_payout_vnd",
+    "Nights": "num_nights",
+    "Notes": "notes"
+  },
+  
+  "date_formats": [
+    "%d/%m/%Y",
+    "%Y-%m-%d", 
+    "%d-%m-%Y",
+    "%m/%d/%Y",
+    "%Y/%m/%d"
+  ],
+  
+  "amount_formats": {
+    "remove_chars": [".", ",", "đ", "VND", "vnđ", " ", "₫"],
+    "multipliers": {
+      "k": 1000,
+      "K": 1000,
+      "tr": 1000000,
+      "triệu": 1000000
+    }
+  },
+  
+  "validation_rules": {
+    "adr_range": [10000, 10000000],
+    "nights_range": [1, 365],
+    "required_fields": ["guest_name", "start_date", "total_payout_vnd"]
+  }
+}

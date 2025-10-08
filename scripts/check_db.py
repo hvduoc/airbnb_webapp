@@ -1,4 +1,5 @@
-import sqlite3, os
+import os
+import sqlite3
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = os.path.join(BASE_DIR, "app.db")
@@ -7,7 +8,9 @@ conn = sqlite3.connect(DB_FILE)
 cur = conn.cursor()
 
 print("== Tables ==")
-for (name,) in cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"):
+for (name,) in cur.execute(
+    "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+):
     print("-", name)
 
 print("\n== Categories sample ==")

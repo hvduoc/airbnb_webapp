@@ -6,7 +6,8 @@ Write-Host "=== SETTING UP NGINX ===" -ForegroundColor Green
 $nginxDir = "C:\nginx"
 if (Test-Path $nginxDir) {
     Write-Host "Nginx already exists, skipping download..." -ForegroundColor Yellow
-} else {
+}
+else {
     Write-Host "Downloading Nginx..." -ForegroundColor Yellow
     $nginxUrl = "http://nginx.org/download/nginx-1.24.0.zip"
     $nginxZip = "$env:TEMP\nginx.zip"
@@ -99,7 +100,8 @@ Write-Host "Testing nginx configuration..." -ForegroundColor Yellow
 $testResult = & "C:\nginx\nginx.exe" -t 2>&1
 if ($testResult -like "*successful*") {
     Write-Host "✅ Nginx configuration is valid" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Nginx configuration error:" -ForegroundColor Red
     Write-Host $testResult -ForegroundColor Red
 }

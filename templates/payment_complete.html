@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,20 +14,35 @@
             padding: 0.25rem 0.5rem;
             border-radius: 9999px;
         }
-        .role-assistant { background-color: #dbeafe; color: #1e40af; }
-        .role-manager { background-color: #fef3c7; color: #d97706; }
-        .role-owner { background-color: #ecfdf5; color: #059669; }
+
+        .role-assistant {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .role-manager {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-owner {
+            background-color: #ecfdf5;
+            color: #059669;
+        }
+
         .receipt-preview {
             max-width: 200px;
             max-height: 200px;
             object-fit: cover;
             border-radius: 8px;
         }
+
         .handover-card {
             border-left: 4px solid #10b981;
         }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b">
@@ -43,7 +59,8 @@
                         <span id="currentTime"></span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <span class="text-sm text-gray-700" id="currentUser">{{ user.full_name if user else 'Loading...' }}</span>
+                        <span class="text-sm text-gray-700" id="currentUser">{{ user.full_name if user else 'Loading...'
+                            }}</span>
                         <span id="userRole" class="role-badge role-{{ user.role if user else 'unknown' }}">
                             {{ getRoleDisplayName(user.role) if user else 'Unknown' }}
                         </span>
@@ -60,22 +77,34 @@
         <!-- Navigation Tabs -->
         <div class="border-b border-gray-200 mb-8">
             <nav class="-mb-px flex space-x-8">
-                <button onclick="showTab('dashboard')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-green-500 text-green-600" data-tab="dashboard">
+                <button onclick="showTab('dashboard')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-green-500 text-green-600"
+                    data-tab="dashboard">
                     <i class="fas fa-chart-line mr-2"></i>Tổng quan
                 </button>
-                <button onclick="showTab('add-payment')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="add-payment">
+                <button onclick="showTab('add-payment')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="add-payment">
                     <i class="fas fa-plus-circle mr-2"></i>Ghi nhận thu
                 </button>
-                <button onclick="showTab('handover')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="handover">
+                <button onclick="showTab('handover')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="handover">
                     <i class="fas fa-handshake mr-2"></i>Bàn giao
                 </button>
-                <button onclick="showTab('payments-list')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="payments-list">
+                <button onclick="showTab('payments-list')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="payments-list">
                     <i class="fas fa-list mr-2"></i>Lịch sử thu
                 </button>
-                <button onclick="showTab('handover-list')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="handover-list">
+                <button onclick="showTab('handover-list')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="handover-list">
                     <i class="fas fa-history mr-2"></i>Lịch sử bàn giao
                 </button>
-                <button onclick="showTab('team')" class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500" data-tab="team" id="teamTab">
+                <button onclick="showTab('team')"
+                    class="tab-btn py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500"
+                    data-tab="team" id="teamTab">
                     <i class="fas fa-users mr-2"></i>Đội ngũ
                 </button>
             </nav>
@@ -96,7 +125,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-2 bg-blue-100 rounded-lg">
@@ -108,7 +137,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-2 bg-yellow-100 rounded-lg">
@@ -120,7 +149,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex items-center">
                         <div class="p-2 bg-purple-100 rounded-lg">
@@ -141,7 +170,7 @@
                     <div>
                         <h3 class="text-sm font-medium text-green-800">✅ Hệ thống hoạt động bình thường!</h3>
                         <p class="text-sm text-green-700">
-                            Chào mừng <strong>{{ user.full_name if user else 'User' }}</strong>! 
+                            Chào mừng <strong>{{ user.full_name if user else 'User' }}</strong>!
                             Database SQLite bền vững đã được kết nối thành công.
                         </p>
                     </div>
@@ -160,39 +189,39 @@
                                 Mã booking <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="bookingId" required
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tên khách <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="guestName" required
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Số tiền phải thu (VNĐ) <span class="text-red-500">*</span>
                             </label>
                             <input type="number" id="amountDue" required min="0"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Số tiền đã thu (VNĐ) <span class="text-red-500">*</span>
                             </label>
                             <input type="number" id="amountCollected" required min="0"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Phương thức thanh toán <span class="text-red-500">*</span>
                             </label>
                             <select id="paymentMethod" required
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                                 <option value="">Chọn phương thức</option>
                                 <option value="cash">Tiền mặt</option>
                                 <option value="bank_transfer">Chuyển khoản ngân hàng</option>
@@ -202,41 +231,41 @@
                                 <option value="vnpay">Ví VNPay</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Người thu <span class="text-red-500">*</span>
                             </label>
                             <input type="text" id="collectedBy" required
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
-                        
+
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Hình ảnh biên lai/chứng từ
                             </label>
                             <input type="file" id="receiptImage" accept="image/*"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <p class="text-xs text-gray-500 mt-1">Chọn hình ảnh biên lai, chuyển khoản hoặc chứng từ thu (JPG, PNG)</p>
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <p class="text-xs text-gray-500 mt-1">Chọn hình ảnh biên lai, chuyển khoản hoặc chứng từ thu
+                                (JPG, PNG)</p>
                         </div>
-                        
+
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Ghi chú
                             </label>
                             <textarea id="notes" rows="3"
-                                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                      placeholder="Thêm ghi chú về khoản thu này..."></textarea>
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Thêm ghi chú về khoản thu này..."></textarea>
                         </div>
                     </div>
-                    
+
                     <div class="flex justify-end space-x-4">
                         <button type="button" onclick="resetPaymentForm()"
-                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                             Xóa form
                         </button>
-                        <button type="submit"
-                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                             <i class="fas fa-save mr-2"></i>Lưu khoản thu
                         </button>
                     </div>
@@ -255,55 +284,56 @@
                                 Người nhận <span class="text-red-500">*</span>
                             </label>
                             <select id="recipientId" required
-                                    class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                                 <option value="">Chọn người nhận</option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Số tiền bàn giao (VNĐ) <span class="text-red-500">*</span>
                             </label>
                             <input type="number" id="handoverAmount" required min="0"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                         </div>
-                        
+
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Hình ảnh bàn giao
                             </label>
                             <input type="file" id="handoverImage" accept="image/*"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <p class="text-xs text-gray-500 mt-1">Chụp ảnh quá trình bàn giao, chữ ký xác nhận (JPG, PNG)</p>
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <p class="text-xs text-gray-500 mt-1">Chụp ảnh quá trình bàn giao, chữ ký xác nhận (JPG,
+                                PNG)</p>
                         </div>
-                        
+
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Ghi chú bàn giao
                             </label>
                             <textarea id="handoverNotes" rows="3"
-                                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                      placeholder="Ghi chú về việc bàn giao..."></textarea>
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Ghi chú về việc bàn giao..."></textarea>
                         </div>
                     </div>
-                    
+
                     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                         <div class="flex items-center">
                             <i class="fas fa-exclamation-triangle text-yellow-600 mr-3"></i>
                             <div>
                                 <h3 class="text-sm font-medium text-yellow-800">Lưu ý quan trọng</h3>
-                                <p class="text-sm text-yellow-700">Vui lòng kiểm tra kỹ số tiền và chụp ảnh xác nhận trước khi hoàn tất bàn giao.</p>
+                                <p class="text-sm text-yellow-700">Vui lòng kiểm tra kỹ số tiền và chụp ảnh xác nhận
+                                    trước khi hoàn tất bàn giao.</p>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="flex justify-end space-x-4">
                         <button type="button" onclick="resetHandoverForm()"
-                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                             Xóa form
                         </button>
-                        <button type="submit"
-                                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
                             <i class="fas fa-handshake mr-2"></i>Xác nhận bàn giao
                         </button>
                     </div>
@@ -317,19 +347,25 @@
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-xl font-semibold">Lịch sử khoản thu</h2>
                 </div>
-                
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã booking</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã booking
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khách</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phải thu</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phải thu
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đã thu</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phương thức</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Người thu</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hình ảnh</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phương thức
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Người thu
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hình ảnh
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="paymentsTableBody" class="bg-white divide-y divide-gray-200">
@@ -346,7 +382,7 @@
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-xl font-semibold">Lịch sử bàn giao</h2>
                 </div>
-                
+
                 <div id="handoverListContainer" class="p-6">
                     <!-- Danh sách bàn giao sẽ được load ở đây -->
                 </div>
@@ -359,7 +395,7 @@
                 <div class="p-6 border-b border-gray-200">
                     <h2 class="text-xl font-semibold">Danh sách đội ngũ</h2>
                 </div>
-                
+
                 <div id="teamListContainer" class="p-6">
                     <!-- Danh sách team sẽ được load ở đây -->
                 </div>
@@ -401,11 +437,11 @@
         window.currentUser = {{ user | tojson if user else '{}' }};
         let recipients = [];
         let teamMembers = [];
-        
+
         console.log('Current user from server:', window.currentUser);
 
         // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             updateClock();
             setInterval(updateClock, 1000);
             loadDashboard();
@@ -428,17 +464,17 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
-            
+
             document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-            
+
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('border-green-500', 'text-green-600');
                 btn.classList.add('border-transparent', 'text-gray-500');
             });
-            
+
             document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
             document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-green-500', 'text-green-600');
-            
+
             if (tabName === 'payments-list') {
                 loadPayments();
             } else if (tabName === 'handover-list') {
@@ -455,12 +491,12 @@
             try {
                 const response = await axios.get('/api/dashboard');
                 const data = response.data;
-                
+
                 document.getElementById('totalCollected').textContent = formatCurrency(data.total_collected);
                 document.getElementById('collectionRate').textContent = `${data.collection_rate}%`;
                 document.getElementById('cashPending').textContent = formatCurrency(data.cash_pending_handover);
                 document.getElementById('totalHandovers').textContent = data.total_handovers;
-                
+
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
                 if (error.response?.status === 401) {
@@ -474,11 +510,11 @@
             try {
                 const response = await axios.get('/api/recipients');
                 recipients = response.data.recipients;
-                
+
                 const select = document.getElementById('recipientId');
                 if (select) {
                     select.innerHTML = '<option value="">Chọn người nhận</option>';
-                    
+
                     recipients.forEach(recipient => {
                         const option = document.createElement('option');
                         option.value = recipient.id;
@@ -509,23 +545,23 @@
         function displayTeamMembers() {
             const container = document.getElementById('teamListContainer');
             if (!container) return;
-            
+
             container.innerHTML = '';
-            
+
             if (teamMembers.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-8">Không có quyền xem danh sách team</p>';
                 return;
             }
-            
+
             const grid = document.createElement('div');
             grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
-            
+
             teamMembers.forEach(member => {
                 const card = document.createElement('div');
                 card.className = 'bg-white border rounded-lg p-4 hover:shadow-md transition-shadow';
-                
+
                 const roleClass = `role-${member.role}`;
-                
+
                 card.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <div class="flex-shrink-0">
@@ -553,17 +589,17 @@
                         ${member.email ? `<p><i class="fas fa-envelope mr-2"></i>${member.email}</p>` : ''}
                     </div>
                 `;
-                
+
                 grid.appendChild(card);
             });
-            
+
             container.appendChild(grid);
         }
 
         // Payment form submission
-        document.getElementById('paymentForm')?.addEventListener('submit', async function(e) {
+        document.getElementById('paymentForm')?.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const formData = new FormData();
             formData.append('booking_id', document.getElementById('bookingId').value);
             formData.append('guest_name', document.getElementById('guestName').value);
@@ -572,25 +608,25 @@
             formData.append('payment_method', document.getElementById('paymentMethod').value);
             formData.append('collected_by', document.getElementById('collectedBy').value);
             formData.append('notes', document.getElementById('notes').value);
-            
+
             const receiptImage = document.getElementById('receiptImage')?.files[0];
             if (receiptImage) {
                 formData.append('receipt_image', receiptImage);
             }
-            
+
             try {
                 const response = await axios.post('/api/payments', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
-                
+
                 if (response.data.success) {
                     showToast('Đã lưu khoản thu thành công!', 'success');
                     resetPaymentForm();
                     await loadDashboard();
                 }
-                
+
             } catch (error) {
                 console.error('Payment submission error:', error);
                 if (error.response?.status === 401) {
@@ -603,32 +639,32 @@
         });
 
         // Handover form submission
-        document.getElementById('handoverForm')?.addEventListener('submit', async function(e) {
+        document.getElementById('handoverForm')?.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const formData = new FormData();
             formData.append('recipient_user_id', document.getElementById('recipientId').value);
             formData.append('amount', document.getElementById('handoverAmount').value);
             formData.append('notes', document.getElementById('handoverNotes').value);
-            
+
             const handoverImage = document.getElementById('handoverImage')?.files[0];
             if (handoverImage) {
                 formData.append('handover_image', handoverImage);
             }
-            
+
             try {
                 const response = await axios.post('/api/handovers', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
-                
+
                 if (response.data.success) {
                     showToast('Đã bàn giao thành công!', 'success');
                     resetHandoverForm();
                     await loadDashboard();
                 }
-                
+
             } catch (error) {
                 console.error('Handover submission error:', error);
                 if (error.response?.status === 401) {
@@ -645,12 +681,12 @@
             try {
                 const response = await axios.get('/api/payments');
                 const payments = response.data.payments;
-                
+
                 const tbody = document.getElementById('paymentsTableBody');
                 if (!tbody) return;
-                
+
                 tbody.innerHTML = '';
-                
+
                 if (payments.length === 0) {
                     tbody.innerHTML = `
                         <tr>
@@ -661,7 +697,7 @@
                     `;
                     return;
                 }
-                
+
                 payments.forEach(payment => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -687,17 +723,17 @@
                             ${payment.collected_by}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${payment.receipt_image ? 
-                                `<button onclick="showImage('${payment.receipt_image}')" class="text-green-600 hover:text-green-800">
+                            ${payment.receipt_image ?
+                            `<button onclick="showImage('${payment.receipt_image}')" class="text-green-600 hover:text-green-800">
                                     <i class="fas fa-image"></i> Xem ảnh
-                                </button>` : 
-                                '<span class="text-gray-400">Không có</span>'
-                            }
+                                </button>` :
+                            '<span class="text-gray-400">Không có</span>'
+                        }
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
-                
+
             } catch (error) {
                 console.error('Failed to load payments:', error);
                 if (error.response?.status === 401) {
@@ -711,17 +747,17 @@
             try {
                 const response = await axios.get('/api/handovers');
                 const handovers = response.data.handovers;
-                
+
                 const container = document.getElementById('handoverListContainer');
                 if (!container) return;
-                
+
                 container.innerHTML = '';
-                
+
                 if (handovers.length === 0) {
                     container.innerHTML = '<p class="text-gray-500 text-center py-8">Chưa có bàn giao nào</p>';
                     return;
                 }
-                
+
                 handovers.forEach(handover => {
                     const card = document.createElement('div');
                     card.className = 'handover-card bg-white border rounded-lg p-4 mb-4';
@@ -776,7 +812,7 @@
                     `;
                     container.appendChild(card);
                 });
-                
+
             } catch (error) {
                 console.error('Failed to load handovers:', error);
                 if (error.response?.status === 401) {
@@ -844,11 +880,11 @@
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
             const messageEl = document.getElementById('toastMessage');
-            
+
             if (!toast || !icon || !messageEl) return;
-            
+
             messageEl.textContent = message;
-            
+
             if (type === 'success') {
                 icon.className = 'fas fa-check-circle text-green-500 text-xl';
             } else if (type === 'error') {
@@ -856,9 +892,9 @@
             } else {
                 icon.className = 'fas fa-info-circle text-blue-500 text-xl';
             }
-            
+
             toast.classList.remove('hidden');
-            
+
             setTimeout(() => {
                 hideToast();
             }, 5000);
@@ -872,11 +908,12 @@
         }
 
         // Close modal when clicking outside
-        document.getElementById('imageModal')?.addEventListener('click', function(e) {
+        document.getElementById('imageModal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeImageModal();
             }
         });
     </script>
 </body>
+
 </html>

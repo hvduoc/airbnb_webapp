@@ -1,0 +1,276 @@
+# =====================================================
+# AIRBNB WEBAPP - ALERT RULES
+# Vietnamese Business Metrics và Infrastructure Alerts
+# =====================================================
+
+groups:
+  # ===================================================
+  # INFRASTRUCTURE ALERTS - Critical System Issues
+  # ===================================================
+  
+  - name: infrastructure.alerts
+    interval: 30s
+    rules:
+      # Database Connectivity - CRITICAL
+      - alert: DatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: database
+          category: infrastructure
+          team: devops
+        annotations:
+          summary: "🔴 Cơ sở dữ liệu Airbnb không khả dụng"
+          description: "Database PostgreSQL đã down trong {{ $value }} giây. Hệ thống booking và payment sẽ bị ảnh hưởng nghiêm trọng."
+          impact: "Khách hàng không thể đặt phòng, thanh toán bị gián đoạn"
+          action: "Kiểm tra ngay container postgres và disk space"
+          dashboard: "http://localhost:3000/d/postgres"
+          runbook: "https://wiki.company.com/database-outage"
+          
+      # Application Health - CRITICAL  
+      - alert: WebAppDown
+        expr: up{job="airbnb-webapp"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: application
+          category: infrastructure
+          team: backend
+        annotations:
+          summary: "🔴 Ứng dụng Airbnb không phản hồi"
+          description: "FastAPI application đã không phản hồi trong {{ $value }} phút"
+          impact: "Toàn bộ hệ thống Airbnb không khả dụng cho khách hàng"
+          action: "Restart container webapp và kiểm tra logs"
+          logs: "docker logs airbnb_webapp --tail 100"
+          
+      # High Memory Usage - WARNING
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          category: performance
+          team: devops
+        annotations:
+          summary: "⚠️ Mức sử dụng memory cao ({{ $value | humanizePercentage }})"
+          description: "Server đang sử dụng hơn 85% memory trong 5 phút qua"
+          current_usage: "{{ $value | humanizePercentage }}"
+          threshold: "85%"
+          action: "Kiểm tra processes đang tiêu thụ memory nhiều nhất"
+          
+      # High CPU Usage - WARNING
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+          category: performance
+          team: devops
+        annotations:
+          summary: "⚠️ Mức sử dụng CPU cao ({{ $value | printf \"%.1f\" }}%)"
+          description: "CPU usage đã vượt 80% trong 10 phút liên tục"
+          current_usage: "{{ $value | printf \"%.1f\" }}%"
+          threshold: "80%"
+          
+      # Disk Space Low - WARNING
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.2
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+          category: storage
+          team: devops
+        annotations:
+          summary: "⚠️ Dung lượng disk thấp (còn {{ $value | humanizePercentage }})"
+          description: "Disk space còn lại dưới 20% có thể ảnh hưởng đến hoạt động hệ thống"
+          available_space: "{{ $value | humanizePercentage }}"
+          action: "Dọn dẹp logs và temporary files"
+          
+      # Redis Cache Down - WARNING
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: cache
+          category: infrastructure
+          team: backend
+        annotations:
+          summary: "⚠️ Redis cache không khả dụng"
+          description: "Redis đã down trong {{ $value }} phút. Session và caching bị ảnh hưởng"
+          impact: "Hiệu suất hệ thống giảm, users có thể bị logout"
+          action: "Restart Redis container"
+
+  # ===================================================
+  # BUSINESS METRICS ALERTS - Vietnamese KPIs
+  # ===================================================
+  
+  - name: business.metrics
+    interval: 60s
+    rules:
+      # Booking Success Rate Drop - WARNING
+      - alert: BookingSuccessRateDrop
+        expr: (rate(airbnb_booking_success_total[1h]) / rate(airbnb_booking_attempts_total[1h])) < 0.9
+        for: 10m
+        labels:
+          severity: warning
+          service: booking
+          category: business
+          team: business
+        annotations:
+          summary: "📉 Tỷ lệ đặt phòng thành công giảm ({{ $value | humanizePercentage }})"
+          description: "Tỷ lệ booking thành công đã giảm xuống dưới 90% trong 10 phút qua"
+          current_rate: "{{ $value | humanizePercentage }}"
+          expected_rate: "> 90%"
+          impact: "Khách hàng gặp khó khăn khi đặt phòng, có thể mất doanh thu"
+          action: "Kiểm tra API booking và payment flow"
+          dashboard: "http://localhost:3000/d/bookings"
+          
+      # High Booking Cancellation Rate - WARNING  
+      - alert: HighCancellationRate
+        expr: (rate(airbnb_booking_cancelled_total[24h]) / rate(airbnb_booking_success_total[24h])) > 0.15
+        for: 30m
+        labels:
+          severity: warning
+          service: booking
+          category: business
+          team: business
+        annotations:
+          summary: "📉 Tỷ lệ hủy phòng cao ({{ $value | humanizePercentage }})"
+          description: "Tỷ lệ hủy booking trong 24h qua đã vượt 15%"
+          current_rate: "{{ $value | humanizePercentage }}"
+          threshold: "< 15%"
+          impact: "Ảnh hưởng đến doanh thu và hiệu quả kinh doanh"
+          action: "Phân tích lý do hủy và cải thiện quy trình"
+          
+      # Payment Failure Rate High - CRITICAL
+      - alert: PaymentFailureRateHigh
+        expr: (rate(airbnb_payment_failed_total[1h]) / rate(airbnb_payment_attempts_total[1h])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: payment
+          category: business
+          team: payment
+        annotations:
+          summary: "🔴 Tỷ lệ thanh toán thất bại cao ({{ $value | humanizePercentage }})"
+          description: "Hơn 5% giao dịch thanh toán thất bại trong 1 giờ qua"
+          current_rate: "{{ $value | humanizePercentage }}"
+          threshold: "< 5%"
+          impact: "Mất doanh thu trực tiếp, khách hàng không hoàn thành booking"
+          action: "Kiểm tra payment gateway và banking API ngay lập tức"
+          
+      # Low Daily Revenue - WARNING
+      - alert: LowDailyRevenue
+        expr: increase(airbnb_revenue_vnd_total[24h]) < 50000000  # < 50M VND per day
+        for: 2h
+        labels:
+          severity: warning
+          service: revenue
+          category: business
+          team: business
+        annotations:
+          summary: "📉 Doanh thu hàng ngày thấp ({{ $value | printf \"%.0f\" }} VND)"
+          description: "Doanh thu trong 24h qua dưới 50 triệu VND"
+          current_revenue: "{{ $value | printf \"%.0f\" }} VND"
+          expected_revenue: "> 50,000,000 VND"
+          impact: "Không đạt target doanh thu hàng ngày"
+          action: "Kiểm tra marketing campaigns và pricing strategy"
+          
+      # Response Time High - WARNING
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(airbnb_request_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+          service: performance
+          category: performance
+          team: backend
+        annotations:
+          summary: "⚠️ Thời gian phản hồi cao ({{ $value | printf \"%.2f\" }}s)"
+          description: "95% requests mất hơn 2 giây để hoàn thành"
+          current_p95: "{{ $value | printf \"%.2f\" }}s"
+          threshold: "< 2s"
+          impact: "Trải nghiệm người dùng kém, có thể mất khách hàng"
+          action: "Optimize database queries và application performance"
+
+  # ===================================================
+  # SECURITY ALERTS - Vietnamese Security Monitoring
+  # ===================================================
+  
+  - name: security.alerts
+    interval: 60s
+    rules:
+      # High Failed Login Rate - WARNING
+      - alert: HighFailedLoginRate
+        expr: rate(airbnb_failed_logins_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          service: authentication
+          category: security
+          team: security
+        annotations:
+          summary: "🛡️ Tỷ lệ đăng nhập thất bại cao ({{ $value | printf \"%.1f\" }}/phút)"
+          description: "Hơn 10 lần đăng nhập thất bại mỗi phút trong 2 phút qua"
+          current_rate: "{{ $value | printf \"%.1f\" }} failures/minute"
+          threshold: "< 10/minute"
+          threat_level: "Có thể bị brute force attack"
+          action: "Kiểm tra source IPs và implement rate limiting"
+          
+      # Suspicious API Usage - WARNING
+      - alert: SuspiciousAPIUsage
+        expr: rate(airbnb_api_requests_total{status_code=~"4.*"}[10m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+          category: security
+          team: security
+        annotations:
+          summary: "🛡️ Hoạt động API đáng ngờ ({{ $value | printf \"%.1f\" }} 4xx/phút)"
+          description: "Nhiều requests bị từ chối (4xx errors) có thể là tấn công"
+          error_rate: "{{ $value | printf \"%.1f\" }} 4xx/minute"
+          action: "Phân tích access logs để xác định source"
+          dashboard: "http://localhost:3000/d/security"
+
+  # ===================================================
+  # APPLICATION HEALTH ALERTS
+  # ===================================================
+  
+  - name: application.health
+    interval: 30s
+    rules:
+      # Database Connection Pool Exhausted - CRITICAL
+      - alert: DatabaseConnectionPoolExhausted
+        expr: airbnb_db_connections_active / airbnb_db_connections_max > 0.9
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+          category: performance
+          team: backend
+        annotations:
+          summary: "🔴 Database connection pool gần hết ({{ $value | humanizePercentage }})"
+          description: "Sử dụng hơn 90% connection pool có thể gây database timeout"
+          usage: "{{ $value | humanizePercentage }}"
+          action: "Tăng pool size hoặc optimize database queries"
+          
+      # Slow Database Queries - WARNING
+      - alert: SlowDatabaseQueries
+        expr: histogram_quantile(0.95, rate(airbnb_db_query_duration_seconds_bucket[5m])) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: database
+          category: performance
+          team: backend
+        annotations:
+          summary: "⚠️ Database queries chậm ({{ $value | printf \"%.2f\" }}s)"
+          description: "95% queries mất hơn 1 giây để hoàn thành"
+          p95_duration: "{{ $value | printf \"%.2f\" }}s"
+          action: "Kiểm tra slow query log và optimize indexes"

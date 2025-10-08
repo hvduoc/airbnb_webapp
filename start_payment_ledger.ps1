@@ -9,7 +9,8 @@ Write-Host "`n📋 Checking prerequisites..." -ForegroundColor Yellow
 try {
     $pythonVersion = python --version 2>&1
     Write-Host "✅ Python found: $pythonVersion" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "❌ Python not found. Please install Python first." -ForegroundColor Red
     exit 1
 }
@@ -19,7 +20,8 @@ Write-Host "`n📦 Installing Python dependencies..." -ForegroundColor Yellow
 try {
     pip install -r requirements_payments.txt
     Write-Host "✅ Dependencies installed successfully" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️  Some dependencies may have failed to install" -ForegroundColor Yellow
 }
 
@@ -28,7 +30,8 @@ Write-Host "`n🔧 Running setup script..." -ForegroundColor Yellow
 try {
     python setup_payment_ledger.py
     Write-Host "✅ Setup completed" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️  Setup script encountered issues" -ForegroundColor Yellow
 }
 
@@ -37,7 +40,8 @@ Write-Host "`n👥 Creating demo users..." -ForegroundColor Yellow
 try {
     python create_payment_users.py
     Write-Host "✅ Demo users created" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "⚠️  Demo users creation will run when server starts" -ForegroundColor Yellow
 }
 

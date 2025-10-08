@@ -1,4 +1,6 @@
-import sqlite3, os, re
+import os
+import re
+import sqlite3
 
 # Đường dẫn gốc của project (nơi có main.py)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -15,7 +17,7 @@ with open(SQL_FILE, "r", encoding="utf-8") as f:
     sql_script = f.read()
 
 # Loại bỏ comment kiểu HTML (<!-- ... -->) nếu có
-sql_script = re.sub(r'<!--.*?-->', '', sql_script, flags=re.S)
+sql_script = re.sub(r"<!--.*?-->", "", sql_script, flags=re.S)
 
 conn = sqlite3.connect(DB_FILE)
 cur = conn.cursor()

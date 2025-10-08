@@ -1,0 +1,200 @@
+# =====================================================
+# FILEBEAT CONFIGURATION
+# Airbnb WebApp - Log Shipping với Vietnamese Support
+# =====================================================
+
+# Filebeat Global Settings
+filebeat.registry.path: /usr/share/filebeat/data/registry
+filebeat.config.modules.path: /usr/share/filebeat/modules.d/*.yml
+
+# =====================================================
+# INPUTS - LOG FILE COLLECTION
+# =====================================================
+
+filebeat.inputs:
+  # FastAPI Application Logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/airbnb/app.log
+      - /var/log/airbnb/access.log
+    fields:
+      log_type: application
+      service: fastapi
+      environment: production
+    fields_under_root: true
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    close_inactive: 5m
+    scan_frequency: 10s
+    
+    # Vietnamese log processing
+    processors:
+      - add_fields:
+          target: ""
+          fields:
+            application: "airbnb-webapp"
+            vietnamese_supported: true
+            
+  # Nginx Access Logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/airbnb/nginx_access.log
+    fields:
+      log_type: nginx_access
+      service: nginx
+    fields_under_root: true
+    close_inactive: 5m
+    
+  # Nginx Error Logs  
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/airbnb/nginx_error.log
+    fields:
+      log_type: nginx_error
+      service: nginx
+    fields_under_root: true
+    multiline.pattern: '^\d{4}/\d{2}/\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    close_inactive: 5m
+    
+  # PostgreSQL Logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/airbnb/postgres.log
+    fields:
+      log_type: postgres
+      service: postgresql
+    fields_under_root: true
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+    close_inactive: 5m
+    
+  # Redis Logs
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/airbnb/redis.log
+    fields:
+      log_type: redis
+      service: redis
+    fields_under_root: true
+    close_inactive: 5m
+    
+  # Container Logs từ Docker
+  - type: container
+    enabled: true
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+      - add_fields:
+          target: ""
+          fields:
+            log_source: "docker_container"
+
+# =====================================================
+# PROCESSORS - LOG ENHANCEMENT
+# =====================================================
+
+processors:
+  # Add host information
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+      
+  # Add Docker metadata
+  - add_docker_metadata: ~
+  
+  # Add Vietnamese timestamp
+  - timestamp:
+      field: "@timestamp"
+      layouts:
+        - '2006-01-02T15:04:05.000Z'
+        - '2006-01-02 15:04:05'
+      test:
+        - '2023-10-03T10:30:45.123Z'
+        - '2023-10-03 10:30:45'
+        
+  # Vietnamese field mapping
+  - rename:
+      fields:
+        - from: "log.file.path"
+          to: "file_path"
+        - from: "host.name"
+          to: "host_name"
+          
+  # Filter sensitive information
+  - drop_fields:
+      fields: ["agent", "ecs", "host.os", "host.containerized"]
+      ignore_missing: true
+
+# =====================================================
+# OUTPUTS - WHERE TO SEND LOGS
+# =====================================================
+
+# Primary Output: Logstash
+output.logstash:
+  hosts: ["logstash:5044"]
+  worker: 2
+  compression_level: 3
+  bulk_max_size: 2048
+  template.name: "airbnb-logs"
+  template.pattern: "airbnb-logs-*"
+  
+# Backup Output: Direct to Elasticsearch (commented out)
+# output.elasticsearch:
+#   hosts: ["elasticsearch:9200"]
+#   index: "airbnb-logs-%{[fields.log_type]:application}-%{+yyyy.MM.dd}"
+#   template.name: "airbnb-logs"
+#   template.pattern: "airbnb-logs-*"
+
+# =====================================================
+# LOGGING SETTINGS
+# =====================================================
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat.log
+  keepfiles: 7
+  permissions: 0600
+
+# =====================================================
+# MONITORING SETTINGS
+# =====================================================
+
+monitoring.enabled: false
+
+# HTTP Endpoint cho Health Check
+http.enabled: true
+http.host: "0.0.0.0"
+http.port: 5066
+
+# =====================================================
+# PERFORMANCE TUNING
+# =====================================================
+
+queue.mem:
+  events: 4096
+  flush.min_events: 512
+  flush.timeout: 1s
+
+# File watching settings
+filebeat.shutdown_timeout: 5s
+
+# Vietnamese specific settings
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+  index.refresh_interval: "5s"
+  index.analysis.analyzer.vietnamese_analyzer.type: "custom"
+  index.analysis.analyzer.vietnamese_analyzer.tokenizer: "standard"
+  index.analysis.analyzer.vietnamese_analyzer.filter: ["lowercase", "stop"]

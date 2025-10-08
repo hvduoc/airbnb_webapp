@@ -1,19 +1,20 @@
 """Add category_id to ExtraCharge
 
 Revision ID: ff2cc8a4dc60
-Revises: 
+Revises:
 Create Date: 2025-09-07 11:01:13.465017
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import inspect
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'ff2cc8a4dc60'
+revision: str = "ff2cc8a4dc60"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

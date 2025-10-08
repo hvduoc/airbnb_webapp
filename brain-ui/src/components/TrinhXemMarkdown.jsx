@@ -9,7 +9,7 @@ function TrinhXemMarkdown({ file }) {
   const [noiDung, setNoiDung] = useState('')
   const [dangTai, setDangTai] = useState(true)
   const [loi, setLoi] = useState(null)
-  
+
   const tenFile = file || fileName || 'README.md'
 
   // Dữ liệu markdown mẫu cho các file khác nhau
@@ -296,18 +296,18 @@ Brain System là một framework để tổ chức và quản lý context, docum
     const taiNoiDung = async () => {
       setDangTai(true)
       setLoi(null)
-      
+
       try {
         // Trong production, sẽ fetch từ /brain/fileName
         // const response = await fetch(`/brain/${tenFile}`)
         // const text = await response.text()
-        
+
         // Hiện tại dùng dữ liệu mẫu
         const content = duLieuMau[tenFile] || duLieuMau['README.md']
-        
+
         // Simulate loading delay
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         setNoiDung(content)
       } catch (error) {
         console.error('Lỗi tải file:', error)
@@ -343,7 +343,7 @@ Brain System là một framework để tổ chức và quản lý context, docum
             <p>Tài liệu Brain System</p>
           </div>
         </div>
-        <a 
+        <a
           href={`https://github.com/your-org/airbnb-webapp/blob/main/.brain/${tenFile}`}
           target="_blank"
           rel="noopener noreferrer"
