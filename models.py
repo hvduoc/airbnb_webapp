@@ -364,11 +364,6 @@ class ImportLog(SQLModel, table=True):
             Index("idx_importlog_ingestion", "ingestion_id"),
         ]
 
-    started_at: datetime
-    finished_at: datetime
-    status: str
-    message: Optional[str] = None
-
 
 class Salesperson(SQLModel, table=True):
     __table_args__ = {"extend_existing": True}

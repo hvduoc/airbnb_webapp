@@ -26,7 +26,7 @@
   <div style="font-weight:600; margin-bottom:6px">Trạng thái đồng bộ</div>
   <div>
     Lần cập nhật gần nhất:
-    <strong>{{ ingest_last.finished_at | vn_dt if ingest_last else '—' }}</strong>
+    <strong>{{ ingest_last.completed_at | vn_dt if ingest_last else '—' }}</strong>
     {% if ingest_last %}
       · <span class="muted">+{{ ingest_last.rows_inserted }} mới, {{ ingest_last.rows_updated }} cập nhật</span>
     {% endif %}
