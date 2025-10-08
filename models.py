@@ -526,33 +526,6 @@ class ExpenseAllocation(SQLModel, table=True):
 # ==== /ENHANCED OPEX MODELS ====
 
 
-class ImportLog(SQLModel, table=True):
-    """Log import CSV - Optimized for analytics"""
-
-    __tablename__ = "import_log"
-
-    id: Optional[int] = Field(default=None, primary_key=True)
-    filename: str = Field(max_length=255, index=True)  # Index cho file tracking
-    imported_at: datetime = Field(
-        default_factory=datetime.utcnow, index=True
-    )  # Index cho time-based queries
-    rows_processed: int = Field(default=0, index=True)  # Index cho analytics
-    rows_successful: int = Field(default=0)
-    user_id: Optional[int] = Field(
-        default=None, foreign_key="user.id", index=True
-    )  # Index cho user tracking
-
-    class Config:
-        indexes = [
-            Index(
-                "idx_import_user_date", "user_id", "imported_at"
-            ),  # User import history
-            Index(
-                "idx_import_performance", "imported_at", "rows_processed"
-            ),  # Performance tracking
-        ]
-
-
 # ==== /OPEX MODELS ====
 
 

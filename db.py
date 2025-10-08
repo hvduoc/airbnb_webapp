@@ -31,7 +31,7 @@ def create_database_engine():
         # Production PostgreSQL với connection pooling
         if DATABASE_URL.startswith("postgresql"):
             try:
-                print("🗄️ Đang thử kết nối PostgreSQL Production...")
+                print("Database: Trying PostgreSQL Production...")
                 engine = create_engine(
                     DATABASE_URL,
                     pool_pre_ping=True,  # Kiểm tra kết nối trước khi sử dụng
@@ -47,12 +47,12 @@ def create_database_engine():
                 with engine.connect() as conn:
                     conn.execute(text("SELECT 1"))
                 print(
-                    f"✅ PostgreSQL kết nối thành công (Pool: {POOL_SIZE}, Max: {POOL_SIZE + MAX_OVERFLOW})"
+                    f"Success: PostgreSQL connected (Pool: {POOL_SIZE}, Max: {POOL_SIZE + MAX_OVERFLOW})"
                 )
                 return engine
             except Exception as e:
-                print(f"❌ PostgreSQL thất bại: {e}")
-                print("🔄 Fallback về SQLite để ứng dụng có thể chạy...")
+                print(f"Error: PostgreSQL failed: {e}")
+                print("Fallback: Using SQLite for application availability...")
                 # Fallback to SQLite in production if PostgreSQL fails
                 engine = create_engine(
                     "sqlite:///app_fallback.db",
@@ -60,22 +60,22 @@ def create_database_engine():
                     echo=not PRODUCTION,
                     future=True,
                 )
-                print("✅ SQLite Fallback Database đã sẵn sàng")
+                print("Success: SQLite Fallback Database ready")
                 return engine
         else:
             # Các database khác
             engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
-            print(f"✅ Database Engine đã sẵn sàng: {DATABASE_URL.split('://')[0]}")
+            print(f"Success: Database Engine ready: {DATABASE_URL.split('://')[0]}")
     else:
         # Development SQLite
-        print("🗄️ Sử dụng SQLite cho Development...")
+        print("Database: Using SQLite for Development...")
         engine = create_engine(
             "sqlite:///app.db",
             connect_args={"check_same_thread": False},
             echo=not PRODUCTION,
             future=True,
         )
-        print("✅ SQLite Development Database đã sẵn sàng")
+        print("Success: SQLite Development Database ready")
 
     return engine
 
