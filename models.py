@@ -4,6 +4,8 @@ Bao gồm indexing, foreign keys, và performance optimization
 Việt hóa hoàn toàn với cấu hình production-ready
 """
 
+import hashlib
+import uuid
 from datetime import date, datetime
 from typing import Optional
 
@@ -183,6 +185,14 @@ class Booking(SQLModel, table=True):
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow, index=True)
     updated_at: Optional[datetime] = Field(default=None)
     
+    # Go-Live Import Pipeline Fields - New for data source tracking
+    source: Optional[str] = Field(default="airbnb", max_length=50, index=True)  # "airbnb", "offline"
+    channel: Optional[str] = Field(default="official_csv", max_length=100, index=True)  # "official_csv", "facebook", "zalo"
+    external_ref: Optional[str] = Field(default=None, max_length=255)  # ID cho offline bookings
+    imported_at: Optional[datetime] = Field(default_factory=datetime.utcnow, index=True)  # Import timestamp
+    ingestion_id: Optional[str] = Field(default=None, max_length=36, index=True)  # UUID cho import batch
+    row_hash: Optional[str] = Field(default=None, max_length=64, unique=True, index=True)  # SHA-256 hash cho idempotency
+    
     class Config:
         indexes = [
             # Core performance indexes
@@ -191,17 +201,61 @@ class Booking(SQLModel, table=True):
             Index("idx_booking_revenue", "property_id", "booking_date", "total_payout_vnd"),  # Revenue reports
             Index("idx_booking_channel_status", "channel_id", "status"),  # Channel performance
             Index("idx_booking_monthly", "property_id", "booking_date"),  # Monthly reports
+            # Go-Live Import Pipeline indexes
+            Index("idx_booking_source_channel", "source", "channel"),  # Data source tracking
+            Index("idx_booking_ingestion", "ingestion_id", "imported_at"),  # Import batch tracking
+            Index("idx_booking_hash", "row_hash"),  # Idempotency check
         ]
+    
+    def generate_row_hash(self) -> str:
+        """Generate SHA-256 hash for idempotency check"""
+        hash_data = f"{self.guest_name or ''}-{self.start_date or ''}-{self.total_payout_vnd or 0}-{self.property_id or 0}"
+        return hashlib.sha256(hash_data.encode()).hexdigest()
+    
+    def set_import_metadata(self, source: str, channel: str, ingestion_id: str, external_ref: str = None):
+        """Set import metadata fields"""
+        self.source = source
+        self.channel = channel  
+        self.ingestion_id = ingestion_id
+        self.external_ref = external_ref
+        self.imported_at = datetime.utcnow()
+        self.row_hash = self.generate_row_hash()
     listing_raw: Optional[str] = None
     salesperson_id: Optional[int] = Field(default=None, foreign_key="salesperson.id")
     notes: Optional[str] = None    
 
 class ImportLog(SQLModel, table=True):
+    """Log import CSV - Enhanced cho Go-Live pipeline"""
+    __tablename__ = "importlog"
+    
     id: Optional[int] = Field(default=None, primary_key=True)
-    filename: str
-    source: str = "upload-form"
-    rows_inserted: int = 0
-    rows_updated: int = 0
+    filename: str = Field(max_length=255)
+    source: str = Field(default="upload-form", max_length=50, index=True)  # "airbnb", "offline"
+    channel: str = Field(default="official_csv", max_length=100, index=True)  # "official_csv", "facebook", "zalo"
+    ingestion_id: str = Field(max_length=36, unique=True, index=True)  # UUID cho import batch
+    
+    # Import statistics
+    rows_total: int = Field(default=0)
+    rows_inserted: int = Field(default=0)
+    rows_updated: int = Field(default=0)
+    rows_skipped: int = Field(default=0)  # Duplicate/invalid rows
+    rows_errors: int = Field(default=0)  # Validation errors
+    
+    # Metadata
+    file_size_bytes: Optional[int] = Field(default=None)
+    processing_time_seconds: Optional[float] = Field(default=None)
+    error_log_file: Optional[str] = Field(default=None, max_length=255)  # Path to error CSV
+    
+    # Audit trail
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    completed_at: Optional[datetime] = Field(default=None)
+    
+    class Config:
+        indexes = [
+            Index("idx_importlog_source_channel", "source", "channel"),
+            Index("idx_importlog_created", "created_at"),
+            Index("idx_importlog_ingestion", "ingestion_id"),
+        ]
     started_at: datetime
     finished_at: datetime
     status: str

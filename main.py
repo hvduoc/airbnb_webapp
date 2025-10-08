@@ -61,6 +61,7 @@ from routes_expense import extra_charges_router
 from routes_expense import rec_router as recurring_router
 from routes_expense import router as expense_router
 from routes_extra_fees import extra_fees_router
+from routes_go_live import router as go_live_router  # Go-Live Import Pipeline
 from utils import parse_date_mixed
 
 # Payment Ledger Module - Temporarily disabled for basic demo
@@ -338,6 +339,7 @@ app.include_router(expense_aux_router)
 app.include_router(extra_charges_router)
 app.include_router(extra_fees_router)
 app.include_router(brain_router)  # Brain management dashboard - Internal developer tool
+app.include_router(go_live_router)  # Go-Live Import Pipeline APIs
 
 # Payment Ledger Module routers - Temporarily disabled
 # app.include_router(payment_auth_router)  # Payment auth routes
