@@ -1,0 +1,3 @@
+# nixpacks.toml
+[providers]
+python = "3.11"
