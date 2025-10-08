@@ -1,17 +1,19 @@
 #!/bin/bash
 
-# Railway Startup Script for Airbnb WebApp
+# Railway Startup Script
+echo "🚀 Starting Airbnb WebApp..."
 
-echo "🚀 Starting Airbnb WebApp on Railway..."
-
-# Set environment variables
+# Set environment
 export PYTHONUNBUFFERED=1
-export PORT=${PORT:-8000}
 
-# Run database migrations
-echo "📋 Running database migrations..."
-alembic upgrade head
+# Run migrations only if DATABASE_URL is set
+if [ -n "$DATABASE_URL" ]; then
+    echo "📋 Running database migrations..."
+    alembic upgrade head
+else
+    echo "⚠️ No DATABASE_URL set, skipping migrations"
+fi
 
-# Start the FastAPI application  
-echo "🌐 Starting FastAPI server..."
-exec uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1
+# Start app
+echo "🌐 Starting server on port $PORT..."
+exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
