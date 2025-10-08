@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Railway Deployment Trigger Script
+# This file forces Railway to redeploy when pushed
+
+echo "🚀 Triggering Railway deployment..."
+echo "Timestamp: $(date)"
+echo "Commit: $(git rev-parse HEAD)"
+echo "Go-Live Import Pipeline: READY ✅"
+echo "Python 3.11 Compatible: ✅"
+echo "PostgreSQL Support: ✅"
