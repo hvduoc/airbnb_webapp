@@ -2,7 +2,7 @@
 # Mục tiêu: Kiểm tra brain system sau khi setup từ template
 
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$BrainPath = ".brain"
 )
 
@@ -18,10 +18,10 @@ Write-Info "📁 Kiểm tra thư mục: $BrainPath"
 # Tracking results
 $results = @{
     "files_checked" = 0
-    "passed" = 0
-    "warnings" = 0
-    "failed" = 0
-    "issues" = @()
+    "passed"        = 0
+    "warnings"      = 0
+    "failed"        = 0
+    "issues"        = @()
 }
 
 function Add-Result {
@@ -65,7 +65,8 @@ foreach ($dir in $requiredDirs) {
     $fullPath = Join-Path $BrainPath $dir
     if (Test-Path $fullPath) {
         Add-Result "PASS" "Thư mục required: $dir"
-    } else {
+    }
+    else {
         Add-Result "FAIL" "Thiếu thư mục: $dir" "Create missing directory structure"
     }
 }
@@ -75,8 +76,8 @@ Write-Info "📄 **KIỂM TRA FILES CỐT LÕI**"
 
 # Kiểm tra core files
 $coreFiles = @{
-    "SCOPE.md" = "Project scope definition"
-    "tasks/ACTIVE_TASKS.json" = "Active tasks tracking"  
+    "SCOPE.md"                 = "Project scope definition"
+    "tasks/ACTIVE_TASKS.json"  = "Active tasks tracking"  
     "context/CONTEXT_INDEX.md" = "Context index"
 }
 
@@ -86,7 +87,8 @@ foreach ($file in $coreFiles.Keys) {
     
     if (Test-Path $filePath) {
         Add-Result "PASS" "File tồn tại: $file ($description)"
-    } else {
+    }
+    else {
         Add-Result "FAIL" "Thiếu file: $file" $description
     }
 }
@@ -104,20 +106,24 @@ if (Test-Path $jsonPath) {
         # Kiểm tra required fields trong JSON
         if ($jsonContent.project) {
             Add-Result "PASS" "JSON có project metadata"
-        } else {
+        }
+        else {
             Add-Result "WARN" "JSON thiếu project metadata" "Add project info to JSON"
         }
         
         if ($jsonContent.active_tasks -and $jsonContent.active_tasks.Count -gt 0) {
             Add-Result "PASS" "JSON có active tasks ($($jsonContent.active_tasks.Count) tasks)"
-        } else {
+        }
+        else {
             Add-Result "WARN" "JSON không có active tasks" "Add initial tasks to get started"
         }
         
-    } catch {
+    }
+    catch {
         Add-Result "FAIL" "JSON syntax không hợp lệ: ACTIVE_TASKS.json" $_.Exception.Message
     }
-} else {
+}
+else {
     Add-Result "FAIL" "Không tìm thấy ACTIVE_TASKS.json" "Create tasks file"
 }
 
@@ -137,7 +143,8 @@ foreach ($file in $filesToCheck) {
         
         if ($matches.Count -eq 0) {
             Add-Result "PASS" "Không còn placeholder: $file"
-        } else {
+        }
+        else {
             $placeholderList = ($matches | ForEach-Object { $_.Value }) -join ", "
             Add-Result "WARN" "Còn $($matches.Count) placeholder trong: $file" "Placeholders: $placeholderList"
         }
@@ -153,7 +160,8 @@ $todayLogPath = Join-Path $BrainPath "logs/daily/$today.md"
 
 if (Test-Path $todayLogPath) {
     Add-Result "PASS" "Daily log tồn tại: $today.md"
-} else {
+}
+else {
     Add-Result "WARN" "Chưa có daily log hôm nay: $today.md" "Create daily log entry"
 }
 
@@ -186,8 +194,8 @@ Write-Host "└─────────────────────�
 
 # Overall status
 $overallStatus = if ($results["failed"] -gt 0) { "FAILED" } 
-                elseif ($results["warnings"] -gt 0) { "WARNINGS" } 
-                else { "PASSED" }
+elseif ($results["warnings"] -gt 0) { "WARNINGS" } 
+else { "PASSED" }
 
 switch ($overallStatus) {
     "PASSED" { 
@@ -219,6 +227,7 @@ Write-Info "📊 Tổng số items kiểm tra: $($results["files_checked"])"
 # Return exit code
 if ($results["failed"] -gt 0) {
     exit 1
-} else {
+}
+else {
     exit 0
 }

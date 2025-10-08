@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+
 <body class="bg-gray-50">
     <!-- Debug Header -->
     <header class="bg-red-100 border-b-2 border-red-300 p-4">
@@ -72,18 +74,18 @@
             debugDiv.innerHTML = debugLog.map(log => `<p class="text-gray-700">${log}</p>`).join('');
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             addDebugLog('🚀 Page loaded, starting authentication check...');
             testAuth();
         });
 
         async function testAuth() {
             addDebugLog('🔐 Testing authentication...');
-            
+
             try {
                 const response = await axios.get('/api/test-auth');
                 addDebugLog(`✅ Auth response: ${JSON.stringify(response.data)}`);
-                
+
                 const userDiv = document.getElementById('userInfo');
                 if (response.data.status === 'authenticated') {
                     userDiv.innerHTML = `
@@ -95,7 +97,7 @@
                             <p>Role: ${response.data.user.role}</p>
                         </div>
                     `;
-                    
+
                     // Auto test dashboard
                     setTimeout(testDashboard, 1000);
                 } else {
@@ -107,7 +109,7 @@
                         </div>
                     `;
                 }
-                
+
             } catch (error) {
                 addDebugLog(`❌ Auth error: ${error.message}`);
                 const userDiv = document.getElementById('userInfo');
@@ -122,11 +124,11 @@
 
         async function testDashboard() {
             addDebugLog('📊 Testing dashboard...');
-            
+
             try {
                 const response = await axios.get('/api/dashboard');
                 addDebugLog(`✅ Dashboard response: ${JSON.stringify(response.data)}`);
-                
+
                 const dashboardDiv = document.getElementById('dashboardInfo');
                 dashboardDiv.innerHTML = `
                     <div class="text-green-700">
@@ -137,7 +139,7 @@
                         <p>Total Handovers: ${response.data.total_handovers}</p>
                     </div>
                 `;
-                
+
             } catch (error) {
                 addDebugLog(`❌ Dashboard error: ${error.message}`);
                 const dashboardDiv = document.getElementById('dashboardInfo');
@@ -170,4 +172,5 @@
         }
     </script>
 </body>
+
 </html>

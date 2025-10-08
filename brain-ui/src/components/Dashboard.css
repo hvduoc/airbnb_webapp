@@ -303,11 +303,11 @@
     grid-template-columns: 1fr;
     gap: 30px;
   }
-  
+
   .header-content {
     padding: 0 20px;
   }
-  
+
   .project-info h1 {
     font-size: 2.5rem;
   }
@@ -317,42 +317,42 @@
   .dashboard {
     padding: 16px;
   }
-  
+
   .dashboard-header {
     padding: 32px 0;
   }
-  
+
   .header-content {
     flex-direction: column;
     align-items: flex-start;
     gap: 24px;
   }
-  
+
   .project-info h1 {
     font-size: 2rem;
   }
-  
+
   .project-domain {
     font-size: 1.1rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
-  
+
   .stat-card {
     padding: 20px;
   }
-  
+
   .stat-content h3 {
     font-size: 2rem;
   }
-  
+
   .content-section {
     padding: 24px;
   }
-  
+
   .dashboard-footer {
     flex-direction: column;
     align-items: flex-start;
@@ -364,31 +364,31 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .project-meta {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .stat-card {
     flex-direction: column;
     text-align: center;
     gap: 12px;
   }
-  
+
   .quick-link-card {
     flex-direction: column;
     text-align: center;
     gap: 12px;
   }
-  
+
   .activity-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .activity-time {
     margin-left: 0;
   }

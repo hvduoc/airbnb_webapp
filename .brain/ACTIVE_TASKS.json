@@ -36,7 +36,7 @@
       "progress": {
         "completed": [
           "Fixed auth/auth_service.py - added get_current_user_or_redirect",
-          "Fixed auth/security.py - enforced SECRET_KEY requirement", 
+          "Fixed auth/security.py - enforced SECRET_KEY requirement",
           "Fixed main.py - added missing imports",
           "Fixed db.py - proper text() wrapper for health check",
           "Verified fixes with import and unit tests",
@@ -69,21 +69,21 @@
   ],
   "completed_tasks": [
     {
-      "id": "FIX-001", 
+      "id": "FIX-001",
       "title": "Auth import error resolution",
       "completed_at": "2025-10-03T14:30:00Z",
       "summary": "Added missing get_current_user_or_redirect function"
     },
     {
       "id": "FIX-002",
-      "title": "DB health check SQLAlchemy fix", 
+      "title": "DB health check SQLAlchemy fix",
       "completed_at": "2025-10-03T14:35:00Z",
       "summary": "Wrapped SQL queries with text() for proper execution"
     },
     {
       "id": "FIX-003",
       "title": "SECRET_KEY security enforcement",
-      "completed_at": "2025-10-03T14:40:00Z", 
+      "completed_at": "2025-10-03T14:40:00Z",
       "summary": "Removed default fallback, enforce environment variable"
     }
   ],
@@ -103,7 +103,7 @@
         "command": "python -c \"from main import app; print('✅ Main.py import OK')\""
       },
       {
-        "type": "db_health", 
+        "type": "db_health",
         "status": "pass",
         "command": "python -c \"from db import check_database_health; print('DB Health:', check_database_health())\""
       }

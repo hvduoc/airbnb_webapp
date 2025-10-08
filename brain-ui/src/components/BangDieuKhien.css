@@ -303,11 +303,11 @@
     grid-template-columns: 1fr;
     gap: 30px;
   }
-  
+
   .noi-dung-header {
     padding: 0 20px;
   }
-  
+
   .thong-tin-du-an h1 {
     font-size: 2.5rem;
   }
@@ -317,42 +317,42 @@
   .bang-dieu-khien {
     padding: 16px;
   }
-  
+
   .header-dashboard {
     padding: 32px 0;
   }
-  
+
   .noi-dung-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 24px;
   }
-  
+
   .thong-tin-du-an h1 {
     font-size: 2rem;
   }
-  
+
   .domain-du-an {
     font-size: 1.1rem;
   }
-  
+
   .luoi-thong-ke {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
-  
+
   .the-thong-ke {
     padding: 20px;
   }
-  
+
   .noi-dung-thong-ke h3 {
     font-size: 2rem;
   }
-  
+
   .phan-noi-dung {
     padding: 24px;
   }
-  
+
   .footer-dashboard {
     flex-direction: column;
     align-items: flex-start;
@@ -364,31 +364,31 @@
   .luoi-thong-ke {
     grid-template-columns: 1fr;
   }
-  
+
   .meta-du-an {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .the-thong-ke {
     flex-direction: column;
     text-align: center;
     gap: 12px;
   }
-  
+
   .the-link-nhanh {
     flex-direction: column;
     text-align: center;
     gap: 12px;
   }
-  
+
   .muc-hoat-dong {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .thoi-gian-hoat-dong {
     margin-left: 0;
   }

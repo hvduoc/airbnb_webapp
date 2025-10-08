@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -6,6 +5,7 @@ from db import get_session
 from models import Expense
 
 extra_fees_router = APIRouter(prefix="/extra_fees", tags=["extra_fees"])
+
 
 @extra_fees_router.post("")
 def create_extra_fee(payload: dict, session: Session = Depends(get_session)):
@@ -25,7 +25,7 @@ def create_extra_fee(payload: dict, session: Session = Depends(get_session)):
             month=month,
             category_id=1,  # Assuming 1 is the category_id for electricity
             amount=electricity,
-            note=note
+            note=note,
         )
         session.add(electricity_expense)
 
@@ -35,24 +35,28 @@ def create_extra_fee(payload: dict, session: Session = Depends(get_session)):
             month=month,
             category_id=2,  # Assuming 2 is the category_id for water
             amount=water,
-            note=note
+            note=note,
         )
         session.add(water_expense)
 
         session.commit()
         return {"message": "Extra fees added successfully"}
 
+
 @extra_fees_router.get("")
-def list_extra_fees(property_id: int, month: str, session: Session = Depends(get_session)):
+def list_extra_fees(
+    property_id: int, month: str, session: Session = Depends(get_session)
+):
     with session:
         expenses = session.exec(
             select(Expense).where(
                 Expense.property_id == property_id,
                 Expense.month == month,
-                Expense.category_id.in_([1, 2])  # Filter for electricity and water
+                Expense.category_id.in_([1, 2]),  # Filter for electricity and water
             )
         ).all()
         return expenses
+
 
 @extra_fees_router.delete("/{expense_id}")
 def delete_extra_fee(expense_id: int, session: Session = Depends(get_session)):

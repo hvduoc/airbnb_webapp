@@ -7,15 +7,16 @@ try {
     $publicIP = (Invoke-RestMethod -Uri "https://ipapi.co/ip/").Trim()
     Write-Host "✅ Public IP: $publicIP" -ForegroundColor Green
     $publicIP | Out-File -FilePath "public-ip.txt"
-} catch {
+}
+catch {
     Write-Host "❌ Cannot get public IP. Check internet connection." -ForegroundColor Red
     exit 1
 }
 
 # Check local IP  
-$localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.PrefixOrigin -eq "Dhcp" -and $_.IPAddress -notlike "169.254.*"}).IPAddress | Select-Object -First 1
+$localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.PrefixOrigin -eq "Dhcp" -and $_.IPAddress -notlike "169.254.*" }).IPAddress | Select-Object -First 1
 if (-not $localIP) {
-    $localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -like "192.168.*" -or $_.IPAddress -like "10.*" -or $_.IPAddress -like "172.*"}).IPAddress | Select-Object -First 1
+    $localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -like "192.168.*" -or $_.IPAddress -like "10.*" -or $_.IPAddress -like "172.*" }).IPAddress | Select-Object -First 1
 }
 Write-Host "✅ Local IP: $localIP" -ForegroundColor Green
 
@@ -24,7 +25,8 @@ Write-Host "Testing internet connection..." -ForegroundColor Yellow
 $testResult = Test-NetConnection -ComputerName "8.8.8.8" -Port 53 -InformationLevel Quiet
 if ($testResult) {
     Write-Host "✅ Internet connection: OK" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Internet connection: FAILED" -ForegroundColor Red
 }
 

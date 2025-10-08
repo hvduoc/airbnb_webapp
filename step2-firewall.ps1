@@ -1,8 +1,7 @@
 # Step 2: Setup Firewall (Run as Administrator!)
 
 # Check if running as admin
-if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-{
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     Write-Host "❌ Please run PowerShell as Administrator!" -ForegroundColor Red
     Write-Host "Right-click PowerShell -> Run as Administrator" -ForegroundColor Yellow
     exit 1

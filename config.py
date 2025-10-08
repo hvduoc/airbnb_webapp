@@ -1,6 +1,7 @@
 """
 Cấu hình môi trường cho deployment
 """
+
 import os
 
 # Database

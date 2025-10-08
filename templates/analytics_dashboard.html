@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +11,11 @@
         .dashboard-card {
             background: white;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 20px;
         }
+
         .metric-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -21,20 +23,24 @@
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .metric-value {
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 5px;
         }
+
         .metric-label {
             font-size: 0.9rem;
             opacity: 0.9;
         }
+
         .chart-container {
             position: relative;
             height: 400px;
             margin-bottom: 20px;
         }
+
         .loading {
             display: flex;
             justify-content: center;
@@ -44,10 +50,11 @@
         }
     </style>
 </head>
+
 <body style="background-color: #f8f9fa;">
     <div class="container-fluid py-4">
         <h1 class="mb-4">📊 Analytics Dashboard</h1>
-        
+
         <!-- Date Filter -->
         <div class="row mb-4">
             <div class="col-md-12">
@@ -173,7 +180,9 @@
                                 </tr>
                             </thead>
                             <tbody id="propertyTableBody">
-                                <tr><td colspan="8" class="text-center">Đang tải dữ liệu...</td></tr>
+                                <tr>
+                                    <td colspan="8" class="text-center">Đang tải dữ liệu...</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -188,14 +197,14 @@
         let charts = {};
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Set default dates (last 30 days)
             const today = new Date();
             const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
-            
+
             document.getElementById('endDate').value = today.toISOString().split('T')[0];
             document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
-            
+
             // Load initial data
             refreshDashboard();
         });
@@ -203,27 +212,27 @@
         async function refreshDashboard() {
             try {
                 showLoading();
-                
+
                 const startDate = document.getElementById('startDate').value;
                 const endDate = document.getElementById('endDate').value;
-                
+
                 let url = '/api/analytics/dashboard';
                 const params = new URLSearchParams();
                 if (startDate) params.append('start_date', startDate);
                 if (endDate) params.append('end_date', endDate);
                 if (params.toString()) url += '?' + params.toString();
-                
+
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 dashboardData = await response.json();
-                
+
                 updateMetrics();
                 updateCharts();
                 updatePropertyTable();
-                
+
             } catch (error) {
                 console.error('Error loading dashboard:', error);
                 alert('Lỗi tải dữ liệu dashboard: ' + error.message);
@@ -240,7 +249,7 @@
         function updateMetrics() {
             const revenueData = dashboardData.revenue_vs_expense;
             const occupancyData = dashboardData.occupancy;
-            
+
             document.getElementById('totalRevenue').textContent = revenueData.summary.formatted.total_revenue;
             document.getElementById('totalExpenses').textContent = revenueData.summary.formatted.total_expenses;
             document.getElementById('netProfit').textContent = revenueData.summary.formatted.net_profit;
@@ -258,9 +267,9 @@
         function updateRevenueExpenseChart() {
             const ctx = document.getElementById('revenueExpenseChart').getContext('2d');
             const data = dashboardData.revenue_vs_expense;
-            
+
             if (charts.revenueExpense) charts.revenueExpense.destroy();
-            
+
             charts.revenueExpense = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -289,7 +298,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
                                 }
                             }
@@ -298,9 +307,9 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + 
-                                           new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
+                                label: function (context) {
+                                    return context.dataset.label + ': ' +
+                                        new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
                                 }
                             }
                         }
@@ -312,9 +321,9 @@
         function updateMarginChart() {
             const ctx = document.getElementById('marginChart').getContext('2d');
             const data = dashboardData.revenue_vs_expense;
-            
+
             if (charts.margin) charts.margin.destroy();
-            
+
             charts.margin = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -333,7 +342,7 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return context.label + ': ' + context.parsed + '%';
                                 }
                             }
@@ -346,12 +355,12 @@
         function updateArpuChart() {
             const ctx = document.getElementById('arpuChart').getContext('2d');
             const data = dashboardData.arpu;
-            
+
             if (charts.arpu) charts.arpu.destroy();
-            
+
             const propertyNames = data.properties.slice(0, 10).map(p => p.property_name);
             const arpuValues = data.properties.slice(0, 10).map(p => p.arpu);
-            
+
             charts.arpu = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -371,7 +380,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
                                 }
                             }
@@ -384,12 +393,12 @@
         function updateOccupancyChart() {
             const ctx = document.getElementById('occupancyChart').getContext('2d');
             const data = dashboardData.occupancy;
-            
+
             if (charts.occupancy) charts.occupancy.destroy();
-            
+
             const propertyNames = data.properties.slice(0, 10).map(p => p.property_name);
             const occupancyRates = data.properties.slice(0, 10).map(p => p.occupancy_rate);
-            
+
             charts.occupancy = new Chart(ctx, {
                 type: 'horizontalBar',
                 data: {
@@ -410,7 +419,7 @@
                             beginAtZero: true,
                             max: 100,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + '%';
                                 }
                             }
@@ -423,9 +432,9 @@
         function updateTrendsChart() {
             const ctx = document.getElementById('trendsChart').getContext('2d');
             const data = dashboardData.trends;
-            
+
             if (charts.trends) charts.trends.destroy();
-            
+
             charts.trends = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -461,7 +470,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return new Intl.NumberFormat('vi-VN').format(value) + ' VNĐ';
                                 }
                             }
@@ -470,9 +479,9 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + 
-                                           new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
+                                label: function (context) {
+                                    return context.dataset.label + ': ' +
+                                        new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
                                 }
                             }
                         }
@@ -485,22 +494,22 @@
             const revenueData = dashboardData.revenue_vs_expense.properties;
             const arpuData = dashboardData.arpu.properties;
             const occupancyData = dashboardData.occupancy.properties;
-            
+
             // Create lookup maps
             const arpuMap = {};
             arpuData.forEach(p => arpuMap[p.property_id] = p.arpu);
-            
+
             const occupancyMap = {};
             occupancyData.forEach(p => occupancyMap[p.property_id] = p.occupancy_rate);
-            
+
             const tbody = document.getElementById('propertyTableBody');
             tbody.innerHTML = '';
-            
+
             revenueData.forEach(property => {
                 const row = tbody.insertRow();
                 const arpu = arpuMap[property.property_id] || 0;
                 const occupancy = occupancyMap[property.property_id] || 0;
-                
+
                 row.innerHTML = `
                     <td>${property.rank}</td>
                     <td>${property.property_name}</td>
@@ -519,11 +528,11 @@
                 alert('Chưa có dữ liệu để xuất');
                 return;
             }
-            
+
             const dataStr = JSON.stringify(dashboardData, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(dataBlob);
-            
+
             const link = document.createElement('a');
             link.href = url;
             link.download = `analytics_dashboard_${new Date().toISOString().split('T')[0]}.json`;
@@ -534,4 +543,5 @@
         }
     </script>
 </body>
+
 </html>

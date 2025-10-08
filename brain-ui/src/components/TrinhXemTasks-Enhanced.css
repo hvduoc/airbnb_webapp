@@ -99,10 +99,21 @@
 }
 
 /* Status colors */
-.text-green { color: var(--mau-thanh-cong); }
-.text-blue { color: var(--mau-chinh); }
-.text-yellow { color: var(--mau-canh-bao); }
-.text-orange { color: #f59e0b; }
+.text-green {
+  color: var(--mau-thanh-cong);
+}
+
+.text-blue {
+  color: var(--mau-chinh);
+}
+
+.text-yellow {
+  color: var(--mau-canh-bao);
+}
+
+.text-orange {
+  color: #f59e0b;
+}
 
 .trang-thai-huy {
   background: #6b7280;
@@ -156,6 +167,7 @@
 
 /* Responsive updates */
 @media (max-width: 1200px) {
+
   .header-bang,
   .dong-task {
     grid-template-columns: 80px 1fr 110px 100px 80px 100px 80px;
@@ -163,6 +175,13 @@
 }
 
 @media (max-width: 768px) {
-  .cot-assignee::before { content: "Người làm: "; font-weight: 600; }
-  .cot-actions::before { content: "Thao tác: "; font-weight: 600; }
+  .cot-assignee::before {
+    content: "Người làm: ";
+    font-weight: 600;
+  }
+
+  .cot-actions::before {
+    content: "Thao tác: ";
+    font-weight: 600;
+  }
 }

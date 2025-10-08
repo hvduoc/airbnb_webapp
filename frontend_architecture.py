@@ -68,21 +68,21 @@ PACKAGE_JSON = {
         "react-toastify": "^9.1.0",
         "tailwindcss": "^3.2.0",
         "@headlessui/react": "^1.7.0",
-        "@heroicons/react": "^2.0.0"
+        "@heroicons/react": "^2.0.0",
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^3.1.0",
         "vite": "^4.1.0",
         "eslint": "^8.35.0",
-        "prettier": "^2.8.0"
+        "prettier": "^2.8.0",
     },
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
         "lint": "eslint src --ext js,jsx",
-        "format": "prettier --write src"
-    }
+        "format": "prettier --write src",
+    },
 }
 
 print("Frontend architecture and dependencies defined")

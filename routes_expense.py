@@ -7,10 +7,16 @@ from models import ExtraCharge
 
 extra_charges_router = APIRouter(prefix="/extra_charges", tags=["extra_charges"])
 
+
 @extra_charges_router.get("")
 def list_extra_charges(property_id: int, session: Session = Depends(get_session)):
-    rows = session.exec(select(ExtraCharge).where(ExtraCharge.property_id == property_id).order_by(ExtraCharge.charge_month.desc())).all()
+    rows = session.exec(
+        select(ExtraCharge)
+        .where(ExtraCharge.property_id == property_id)
+        .order_by(ExtraCharge.charge_month.desc())
+    ).all()
     return rows
+
 
 @extra_charges_router.post("")
 def create_extra_charge(payload: ExtraCharge, session: Session = Depends(get_session)):
@@ -18,6 +24,7 @@ def create_extra_charge(payload: ExtraCharge, session: Session = Depends(get_ses
     session.commit()
     session.refresh(payload)
     return payload
+
 
 @extra_charges_router.delete("/{charge_id}")
 def delete_extra_charge(charge_id: int, session: Session = Depends(get_session)):
@@ -27,6 +34,8 @@ def delete_extra_charge(charge_id: int, session: Session = Depends(get_session))
     session.delete(row)
     session.commit()
     return {"ok": True}
+
+
 from datetime import datetime
 
 from fastapi import APIRouter, Depends
@@ -34,6 +43,7 @@ from sqlmodel import Session
 
 # và db.py ở gốc, có hàm get_session
 from db import get_session
+
 # dự án của anh có models.py ở gốc
 from models import Expense, ExpenseAllocation, RecurringExpense
 
@@ -42,6 +52,7 @@ router = APIRouter(prefix="/expenses", tags=["expenses"])
 rec_router = APIRouter(prefix="/recurring-expenses", tags=["recurring-expenses"])
 
 # ===== Expenses CRUD =====
+
 
 @router.get("")
 def list_expenses(
@@ -60,6 +71,7 @@ def list_expenses(
     q = q.order_by(Expense.date)
     return session.exec(q).all()
 
+
 @router.post("")
 def create_expense(payload: Expense, session: Session = Depends(get_session)):
     payload.updated_at = datetime.utcnow()
@@ -67,6 +79,7 @@ def create_expense(payload: Expense, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(payload)
     return payload
+
 
 @router.delete("/{expense_id}")
 def delete_expense(expense_id: int, session: Session = Depends(get_session)):
@@ -77,22 +90,32 @@ def delete_expense(expense_id: int, session: Session = Depends(get_session)):
     session.commit()
     return {"ok": True}
 
+
 # ===== Recurring templates =====
+
 
 @rec_router.get("")
 def list_recurring(session: Session = Depends(get_session)):
-    return session.exec(select(RecurringExpense).where(RecurringExpense.is_active == 1)).all()
+    return session.exec(
+        select(RecurringExpense).where(RecurringExpense.is_active == 1)
+    ).all()
+
 
 @rec_router.post("")
-def create_recurring(payload: RecurringExpense, session: Session = Depends(get_session)):
+def create_recurring(
+    payload: RecurringExpense, session: Session = Depends(get_session)
+):
     session.add(payload)
     session.commit()
     session.refresh(payload)
     return payload
 
+
 @rec_router.post("/run")
 def run_recurring(month: str, session: Session = Depends(get_session)):
-    rows = session.exec(select(RecurringExpense).where(RecurringExpense.is_active == 1)).all()
+    rows = session.exec(
+        select(RecurringExpense).where(RecurringExpense.is_active == 1)
+    ).all()
     created = 0
     for r in rows:
         if month < r.start_month:
@@ -116,7 +139,9 @@ def run_recurring(month: str, session: Session = Depends(get_session)):
         created += 1
     return {"created": created}
 
+
 # ===== Allocation (tạm dùng số liệu giả để test) =====
+
 
 @router.post("/allocate")
 def allocate(
@@ -127,8 +152,9 @@ def allocate(
 ):
     # tránh lỗi nếu anh chưa thêm hàm trong utils.py
     try:
-        from utils import \
-            get_properties_stats  # -> list[{"property_id", "available_nights", "sold_nights"}]
+        from utils import (
+            get_properties_stats,
+        )  # -> list[{"property_id", "available_nights", "sold_nights"}]
     except Exception as e:
         raise HTTPException(500, f"Thiếu utils.get_properties_stats(): {e}")
 
@@ -172,25 +198,33 @@ def allocate(
 
     return {"allocated_expenses": len(rows)}
 
+
 # ---- AUX endpoints: categories / buildings / properties ----
 from models import Building  # 2 model này đã có trong models.py của anh
 from models import ExpenseCategory, Property
 
 aux = APIRouter(prefix="/expense-aux", tags=["expense-aux"])
 
+
 @aux.get("/categories")
 def categories():
     with get_session() as session:
-        rows = session.exec(select(ExpenseCategory).order_by(ExpenseCategory.name)).all()
+        rows = session.exec(
+            select(ExpenseCategory).order_by(ExpenseCategory.name)
+        ).all()
         return [{"id": r.id, "name": r.name} for r in rows]
+
 
 @aux.get("/buildings")
 def buildings(session: Session = Depends(get_session)):
     rows = session.exec(select(Building).order_by(Building.id)).all()
     return [{"id": r.id, "name": r.building_name} for r in rows]
 
+
 @aux.get("/properties")
 def properties(session: Session = Depends(get_session)):
     rows = session.exec(select(Property).order_by(Property.id)).all()
-    return [{"id": r.id, "name": r.property_name, "building_id": r.building_id} for r in rows]
-
+    return [
+        {"id": r.id, "name": r.property_name, "building_id": r.building_id}
+        for r in rows
+    ]

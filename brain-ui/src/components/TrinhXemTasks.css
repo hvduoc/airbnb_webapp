@@ -91,10 +91,21 @@
   margin-bottom: 24px;
 }
 
-.text-green { color: var(--mau-thanh-cong); }
-.text-blue { color: var(--mau-chinh); }
-.text-yellow { color: var(--mau-canh-bao); }
-.text-orange { color: #f59e0b; }
+.text-green {
+  color: var(--mau-thanh-cong);
+}
+
+.text-blue {
+  color: var(--mau-chinh);
+}
+
+.text-yellow {
+  color: var(--mau-canh-bao);
+}
+
+.text-orange {
+  color: #f59e0b;
+}
 
 /* Thống Kê Dự Án */
 .thong-ke-du-an {
@@ -358,16 +369,17 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+
   .header-bang,
   .dong-task {
     grid-template-columns: 80px 1fr 100px 80px 100px 100px;
     gap: 12px;
   }
-  
+
   .trinh-xem-tasks {
     padding: 16px;
   }
-  
+
   .thong-tin-header h1 {
     font-size: 2rem;
   }
@@ -379,29 +391,29 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .thong-ke-du-an {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .bo-loc {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .hop-tim-kiem {
     min-width: auto;
   }
-  
+
   .nhom-loc {
     justify-content: flex-start;
   }
-  
+
   /* Stack table on mobile */
   .header-bang {
     display: none;
   }
-  
+
   .dong-task {
     display: block;
     padding: 20px;
@@ -409,31 +421,31 @@
     margin-bottom: 12px;
     border: 1px solid var(--vien);
   }
-  
+
   .dong-task:hover {
     border-color: var(--mau-chinh);
   }
-  
+
   .cot-id .id-task {
     float: right;
     margin-bottom: 8px;
   }
-  
+
   .cot-tieu-de {
     margin-bottom: 12px;
   }
-  
+
   .cot-trang-thai,
   .cot-uu-tien {
     display: inline-block;
     margin-right: 12px;
     margin-bottom: 8px;
   }
-  
+
   .cot-tien-do {
     margin-bottom: 8px;
   }
-  
+
   .cot-han-cuoi {
     font-size: 0.8rem;
   }
@@ -443,11 +455,11 @@
   .thong-ke-du-an {
     grid-template-columns: 1fr;
   }
-  
+
   .gia-tri-thong-ke {
     font-size: 2rem;
   }
-  
+
   .thong-tin-header h1 {
     font-size: 1.8rem;
   }

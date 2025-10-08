@@ -8,7 +8,9 @@ conn = sqlite3.connect(DB_FILE)
 cur = conn.cursor()
 
 print("== Tables ==")
-for (name,) in cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"):
+for (name,) in cur.execute(
+    "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+):
     print("-", name)
 
 print("\n== Categories sample ==")

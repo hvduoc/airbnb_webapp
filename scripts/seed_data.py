@@ -21,18 +21,22 @@ def seed_channels():
         else:
             print("✅ Danh sách kênh đã đầy đủ.")
 
+
 def seed_salespeople():
     with get_session() as session:
         existing = session.exec(select(Salesperson)).all()
         if not existing:
-            session.add_all([
-                Salesperson(name="Dược", commission_rate=0.03, is_active=True),
-                Salesperson(name="Hồng", commission_rate=0.04, is_active=True),
-            ])
+            session.add_all(
+                [
+                    Salesperson(name="Dược", commission_rate=0.03, is_active=True),
+                    Salesperson(name="Hồng", commission_rate=0.04, is_active=True),
+                ]
+            )
             session.commit()
             print("✅ Đã thêm nhân viên sale.")
         else:
             print("✅ Nhân viên sale đã có.")
+
 
 if __name__ == "__main__":
     seed_channels()

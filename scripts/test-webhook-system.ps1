@@ -58,18 +58,18 @@ function Test-GitHubWebhook {
     
     # Tạo payload giả lập GitHub
     $payload = @{
-        ref = "refs/heads/main"
+        ref     = "refs/heads/main"
         commits = @(
             @{
-                id = "abc123def456"
-                message = "Test webhook: Update brain data"
-                author = @{
-                    name = "Test User"
+                id       = "abc123def456"
+                message  = "Test webhook: Update brain data"
+                author   = @{
+                    name  = "Test User"
                     email = "test@example.com"
                 }
-                added = @(".brain/test.md")
+                added    = @(".brain/test.md")
                 modified = @(".brain/SCOPE.md")
-                removed = @()
+                removed  = @()
             }
         )
     } | ConvertTo-Json -Depth 10
@@ -87,9 +87,9 @@ function Test-GitHubWebhook {
         $signature = "sha256=" + [Convert]::ToHexString($hashBytes).ToLower()
         
         $headers = @{
-            'X-GitHub-Event' = 'push'
+            'X-GitHub-Event'      = 'push'
             'X-Hub-Signature-256' = $signature
-            'Content-Type' = 'application/json'
+            'Content-Type'        = 'application/json'
         }
         
         $response = Invoke-RestMethod -Uri "$WebhookUrl/api/webhook" -Method POST -Body $payload -Headers $headers
@@ -126,7 +126,8 @@ function Test-History {
             $latest = $history.history[-1]
             Write-Host "   Latest sync: $($latest.timestamp)" -ForegroundColor White
             Write-Host "   Latest status: $($latest.status)" -ForegroundColor White
-        } else {
+        }
+        else {
             Write-Host "⚠️ No sync history found" -ForegroundColor Yellow
         }
         
@@ -155,7 +156,8 @@ function Test-BrainUIIntegration {
         }
         
         return $true
-    } else {
+    }
+    else {
         Write-Host "❌ Brain public directory not found" -ForegroundColor Red
         return $false
     }
@@ -225,7 +227,8 @@ if ($allPassed) {
     Write-Host "1. Configure GitHub webhook in repository settings" -ForegroundColor White
     Write-Host "2. Use ngrok or deploy to expose webhook endpoint" -ForegroundColor White
     Write-Host "3. Test with real GitHub push events" -ForegroundColor White
-} else {
+}
+else {
     Write-Host "❌ Some tests failed" -ForegroundColor Red
     Write-Host "💡 Check the logs and fix issues before proceeding" -ForegroundColor Yellow
 }

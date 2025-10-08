@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
             display: flex;
             align-items: center;
         }
+
         .login-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -20,23 +22,28 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+
         .login-header {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             border-radius: 20px 20px 0 0;
         }
+
         .form-control:focus {
             border-color: #ff6b6b;
             box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
         }
+
         .btn-primary {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             border: none;
         }
+
         .btn-primary:hover {
             background: linear-gradient(135deg, #ee5a24, #ff6b6b);
             transform: translateY(-2px);
         }
+
         .demo-credentials {
             background: rgba(255, 193, 7, 0.1);
             border: 1px solid rgba(255, 193, 7, 0.3);
@@ -44,6 +51,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="row justify-content-center">
@@ -54,7 +62,7 @@
                         <h3 class="mb-0">Airbnb Revenue</h3>
                         <p class="mb-0 opacity-75">Management System</p>
                     </div>
-                    
+
                     <div class="p-4">
                         <!-- Error Display -->
                         {% if error %}
@@ -63,25 +71,25 @@
                             {{ error }}
                         </div>
                         {% endif %}
-                        
+
                         <!-- Login Form -->
                         <form method="post" action="/auth/login">
                             <div class="mb-3">
                                 <label for="username" class="form-label">
                                     <i class="bi bi-envelope me-2"></i>Email
                                 </label>
-                                <input type="email" class="form-control" id="username" name="username" 
-                                       placeholder="admin@airbnb.local" required>
+                                <input type="email" class="form-control" id="username" name="username"
+                                    placeholder="admin@airbnb.local" required>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="password" class="form-label">
                                     <i class="bi bi-lock me-2"></i>Mật khẩu
                                 </label>
-                                <input type="password" class="form-control" id="password" name="password" 
-                                       placeholder="Nhập mật khẩu" required>
+                                <input type="password" class="form-control" id="password" name="password"
+                                    placeholder="Nhập mật khẩu" required>
                             </div>
-                            
+
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="bi bi-box-arrow-in-right me-2"></i>
@@ -89,7 +97,7 @@
                                 </button>
                             </div>
                         </form>
-                        
+
                         <!-- Demo Credentials -->
                         <div class="demo-credentials mt-4 p-3">
                             <h6 class="text-warning mb-2">
@@ -100,23 +108,25 @@
                                 <strong>User:</strong> user@airbnb.local / user123
                             </small>
                         </div>
-                        
+
                         <!-- Quick Login Buttons -->
                         <div class="row mt-3">
                             <div class="col-6">
-                                <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="quickLogin('admin')">
+                                <button type="button" class="btn btn-outline-success btn-sm w-100"
+                                    onclick="quickLogin('admin')">
                                     <i class="bi bi-shield-check me-1"></i>Admin
                                 </button>
                             </div>
                             <div class="col-6">
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="quickLogin('user')">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                    onclick="quickLogin('user')">
                                     <i class="bi bi-person me-1"></i>User
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Footer -->
                 <div class="text-center mt-4 text-white">
                     <small>
@@ -139,9 +149,10 @@
                 document.getElementById('password').value = 'user123';
             }
         }
-        
+
         // Auto-focus on username field
         document.getElementById('username').focus();
     </script>
 </body>
+
 </html>

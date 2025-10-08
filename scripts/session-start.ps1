@@ -36,7 +36,8 @@ $MissingFiles = @()
 foreach ($file in $RequiredFiles) {
     if (-not (Test-Path $file)) {
         $MissingFiles += $file
-    } else {
+    }
+    else {
         Write-Host "✅ $file" -ForegroundColor Green
     }
 }
@@ -100,7 +101,8 @@ Session start: {1}
 
     $LogTemplate | Out-File -FilePath $DailyLogPath -Encoding UTF8
     Write-Host "✅ Daily log created" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host ""
     Write-Host "📝 Using existing daily log: $DailyLogPath" -ForegroundColor Green
 }
@@ -129,15 +131,18 @@ if (Test-Path ".brain\ACTIVE_TASKS.json") {
                 Write-Host "   Title: $($selectedTask.title)" -ForegroundColor White
                 Write-Host "   Scope: $($selectedTask.scope -join ', ')" -ForegroundColor Gray
                 Write-Host "   Files: $($selectedTask.files -join ', ')" -ForegroundColor Gray
-            } else {
+            }
+            else {
                 Write-Host ""
                 Write-Host "❌ Task ID '$TaskId' not found in ACTIVE_TASKS.json" -ForegroundColor Red
             }
         }
-    } catch {
+    }
+    catch {
         Write-Host "❌ Error reading ACTIVE_TASKS.json: $($_.Exception.Message)" -ForegroundColor Red
     }
-} else {
+}
+else {
     Write-Host "❌ ACTIVE_TASKS.json not found" -ForegroundColor Red
 }
 
@@ -154,13 +159,16 @@ if (-not $SkipGitCheck) {
                 git status --short
                 Write-Host ""
                 Write-Host "💡 Consider committing changes before starting new work" -ForegroundColor Cyan
-            } else {
+            }
+            else {
                 Write-Host "✅ Working directory clean" -ForegroundColor Green
             }
-        } else {
+        }
+        else {
             Write-Host "ℹ️  Not a git repository or git not available" -ForegroundColor Gray
         }
-    } catch {
+    }
+    catch {
         Write-Host "ℹ️  Git status check skipped" -ForegroundColor Gray
     }
 }
@@ -173,7 +181,8 @@ Write-Host "🔧 ENVIRONMENT CHECK..." -ForegroundColor Yellow
 if (Test-Path "venv\Scripts\Activate.ps1") {
     Write-Host "✅ Python virtual environment found" -ForegroundColor Green
     Write-Host "💡 Activate with: .\venv\Scripts\Activate.ps1" -ForegroundColor Cyan
-} else {
+}
+else {
     Write-Host "⚠️  Python virtual environment not found" -ForegroundColor Yellow
     Write-Host "💡 Create with: python -m venv venv" -ForegroundColor Cyan
 }
@@ -182,7 +191,8 @@ if (Test-Path "venv\Scripts\Activate.ps1") {
 $AppRunning = Get-Process -Name "uvicorn" -ErrorAction SilentlyContinue
 if ($AppRunning) {
     Write-Host "✅ FastAPI app appears to be running" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "ℹ️  FastAPI app not detected running" -ForegroundColor Gray
     Write-Host "💡 Start with: uvicorn main:app --reload" -ForegroundColor Cyan
 }

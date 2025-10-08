@@ -13,13 +13,14 @@ try {
     $publicIP = (Invoke-RestMethod -Uri "https://ipapi.co/ip/").Trim()
     Write-Host "✅ Public IP: $publicIP" -ForegroundColor Green
     $publicIP | Out-File -FilePath "public-ip.txt"
-} catch {
+}
+catch {
     Write-Host "❌ Cannot get public IP. Check internet connection." -ForegroundColor Red
     exit 1
 }
 
 # Check local IP  
-$localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.PrefixOrigin -eq "Dhcp"}).IPAddress | Select-Object -First 1
+$localIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.PrefixOrigin -eq "Dhcp" }).IPAddress | Select-Object -First 1
 Write-Host "✅ Local IP: $localIP" -ForegroundColor Green
 
 # Test connection
@@ -27,7 +28,8 @@ Write-Host "Testing internet connection..." -ForegroundColor Yellow
 $testResult = Test-NetConnection -ComputerName "8.8.8.8" -Port 53 -InformationLevel Quiet
 if ($testResult) {
     Write-Host "✅ Internet connection: OK" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Internet connection: FAILED" -ForegroundColor Red
 }
 
@@ -48,8 +50,7 @@ Write-Host "3. Run Step 2 after router configuration" -ForegroundColor White
 Write-Host "=== CONFIGURING WINDOWS FIREWALL ===" -ForegroundColor Green
 
 # Check if running as admin
-if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-{
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     Write-Host "❌ Please run PowerShell as Administrator!" -ForegroundColor Red
     exit 1
 }
@@ -86,7 +87,8 @@ Write-Host "=== SETTING UP NGINX ===" -ForegroundColor Green
 $nginxDir = "C:\nginx"
 if (Test-Path $nginxDir) {
     Write-Host "Nginx already exists, skipping download..." -ForegroundColor Yellow
-} else {
+}
+else {
     Write-Host "Downloading Nginx..." -ForegroundColor Yellow
     $nginxUrl = "http://nginx.org/download/nginx-1.24.0.zip"
     $nginxZip = "$env:TEMP\nginx.zip"
@@ -179,7 +181,8 @@ Write-Host "Testing nginx configuration..." -ForegroundColor Yellow
 $testResult = & "C:\nginx\nginx.exe" -t 2>&1
 if ($testResult -like "*successful*") {
     Write-Host "✅ Nginx configuration is valid" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Nginx configuration error:" -ForegroundColor Red
     Write-Host $testResult -ForegroundColor Red
 }
@@ -200,7 +203,8 @@ Start-Sleep -Seconds 2
 $nginxProcess = Get-Process nginx -ErrorAction SilentlyContinue
 if ($nginxProcess) {
     Write-Host "✅ Nginx started (PID: $($nginxProcess.Id))" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "❌ Nginx failed to start" -ForegroundColor Red
 }
 

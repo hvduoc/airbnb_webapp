@@ -53,7 +53,8 @@ $todayLog = ".brain/logs/daily/$(Get-Date -Format 'yyyy-MM-dd').md"
 if (Test-Path $todayLog) {
     Write-Host ""
     Write-Host "📅 Daily log hôm nay đã tồn tại" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host ""
     Write-Host "📅 Chưa có daily log hôm nay - nên tạo entry mới" -ForegroundColor Yellow
 }

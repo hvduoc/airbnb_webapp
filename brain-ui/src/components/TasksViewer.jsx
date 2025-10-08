@@ -24,29 +24,29 @@ function TasksViewer() {
         title: "Database Migration Schema Updates",
         description: "Maintain and update database schema cho expense categories và extra charges",
         status: "In Progress",
-        priority: "Medium", 
+        priority: "Medium",
         assigned_to: "Development Team",
         due_date: "2025-10-15",
         progress: "60%"
       },
       {
         id: "FEAT-002",
-        title: "Enhanced Vietnamese CSV Support", 
+        title: "Enhanced Vietnamese CSV Support",
         description: "Cải thiện parsing Vietnamese headers trong CSV files từ Airbnb",
         status: "Todo",
         priority: "Low",
-        assigned_to: "Development Team", 
+        assigned_to: "Development Team",
         due_date: "2025-11-01",
         progress: "0%"
       },
       {
         id: "OPT-003",
         title: "Performance Optimization Reports",
-        description: "Tối ưu performance cho monthly revenue reports với large datasets", 
+        description: "Tối ưu performance cho monthly revenue reports với large datasets",
         status: "Todo",
         priority: "Low",
         assigned_to: "Development Team",
-        due_date: "2025-12-01", 
+        due_date: "2025-12-01",
         progress: "0%"
       }
     ],
@@ -82,7 +82,7 @@ function TasksViewer() {
     // Search filter
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
-      filtered = filtered.filter(task => 
+      filtered = filtered.filter(task =>
         task.title.toLowerCase().includes(search) ||
         task.description.toLowerCase().includes(search) ||
         task.id.toLowerCase().includes(search)
@@ -95,7 +95,7 @@ function TasksViewer() {
   const getPriorityClass = (priority) => {
     switch (priority.toLowerCase()) {
       case 'high': return 'priority-high'
-      case 'medium': return 'priority-medium'  
+      case 'medium': return 'priority-medium'
       case 'low': return 'priority-low'
       default: return 'priority-medium'
     }
@@ -122,10 +122,10 @@ function TasksViewer() {
           <h1>Active Tasks</h1>
           <p>{tasks.project.name} - {tasks.project.domain}</p>
         </div>
-        <a 
+        <a
           href="https://github.com/your-org/airbnb-webapp/blob/main/.brain/tasks/ACTIVE_TASKS.json"
           target="_blank"
-          rel="noopener noreferrer" 
+          rel="noopener noreferrer"
           className="external-link"
         >
           <ExternalLink size={16} />
@@ -164,11 +164,11 @@ function TasksViewer() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
+
         <div className="filter-group">
           <Filter size={16} />
-          <select 
-            value={statusFilter} 
+          <select
+            value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="all">Tất cả trạng thái</option>
@@ -177,7 +177,7 @@ function TasksViewer() {
             <option value="done">Done</option>
             <option value="blocked">Blocked</option>
           </select>
-          
+
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
@@ -200,7 +200,7 @@ function TasksViewer() {
           <div className="col-progress">Progress</div>
           <div className="col-due">Due Date</div>
         </div>
-        
+
         {filteredTasks.length === 0 ? (
           <div className="no-tasks">Không tìm thấy task nào phù hợp</div>
         ) : (
@@ -225,7 +225,7 @@ function TasksViewer() {
               </div>
               <div className="col-progress">
                 <div className="progress-bar">
-                  <div 
+                  <div
                     className="progress-fill"
                     style={{ width: task.progress }}
                   />

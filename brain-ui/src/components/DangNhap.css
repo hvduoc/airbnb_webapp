@@ -302,7 +302,7 @@
     gap: 32px;
     max-width: 600px;
   }
-  
+
   .thong-tin-he-thong {
     order: -1;
   }
@@ -312,24 +312,24 @@
   .trang-dang-nhap {
     padding: 16px;
   }
-  
+
   .form-dang-nhap {
     padding: 32px 24px;
   }
-  
+
   .logo-dang-nhap {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .logo-dang-nhap h1 {
     font-size: 2rem;
   }
-  
+
   .header-dang-nhap h2 {
     font-size: 1.3rem;
   }
-  
+
   .card-thong-tin,
   .card-bao-mat {
     padding: 24px;
@@ -340,15 +340,15 @@
   .form-dang-nhap {
     padding: 24px 20px;
   }
-  
+
   .input-wrapper input {
     padding: 14px 14px 14px 44px;
   }
-  
+
   .nut-dang-nhap {
     padding: 14px;
   }
-  
+
   .tai-khoan-item {
     flex-direction: column;
     align-items: flex-start;

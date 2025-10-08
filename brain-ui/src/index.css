@@ -15,27 +15,27 @@
   --mau-chinh: #3b82f6;
   --mau-chinh-dam: #2563eb;
   --mau-chinh-nhe: #93c5fd;
-  
+
   /* Màu nền */
   --nen-chinh: #ffffff;
   --nen-phu: #f8fafc;
   --nen-the: #ffffff;
   --nen-hover: #f1f5f9;
   --nen-active: #e0f2fe;
-  
+
   /* Màu chữ */
   --chu-chinh: #1e293b;
   --chu-phu: #64748b;
   --chu-nhe: #94a3b8;
-  
+
   /* Đường viền */
   --vien: #e2e8f0;
   --vien-nhe: #f1f5f9;
   --vien-dam: #cbd5e1;
-  
+
   /* Nền input */
   --nen-input: #ffffff;
-  
+
   /* Bóng đổ */
   --bong-nhe: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --bong-vua: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -47,21 +47,21 @@
   --mau-chinh: #60a5fa;
   --mau-chinh-dam: #3b82f6;
   --mau-chinh-nhe: #1e40af;
-  
+
   --nen-chinh: #0f172a;
   --nen-phu: #1e293b;
   --nen-the: #334155;
   --nen-hover: #475569;
   --nen-active: #1e3a8a;
-  
+
   --chu-chinh: #f1f5f9;
   --chu-phu: #cbd5e1;
   --chu-nhe: #94a3b8;
-  
+
   --vien: #475569;
   --vien-nhe: #334155;
   --vien-dam: #64748b;
-  
+
   --nen-input: #1e293b;
 }
 
@@ -92,21 +92,21 @@ body {
     --mau-chinh: #60a5fa;
     --mau-chinh-dam: #3b82f6;
     --mau-chinh-nhe: #1e40af;
-    
+
     --nen-chinh: #0f172a;
     --nen-phu: #1e293b;
     --nen-the: #334155;
     --nen-hover: #475569;
     --nen-active: #1e3a8a;
-    
+
     --chu-chinh: #f1f5f9;
     --chu-phu: #cbd5e1;
     --chu-nhe: #94a3b8;
-    
+
     --vien: #475569;
     --vien-nhe: #334155;
     --vien-dam: #64748b;
-    
+
     --nen-input: #1e293b;
   }
 }
@@ -162,7 +162,8 @@ body {
   border-radius: 4px;
 }
 
-.noi-dung-markdown ul, .noi-dung-markdown ol {
+.noi-dung-markdown ul,
+.noi-dung-markdown ol {
   padding-left: 1.5rem;
   margin: 0.5rem 0;
 }
@@ -176,7 +177,8 @@ body {
   overflow: hidden;
 }
 
-.noi-dung-markdown th, .noi-dung-markdown td {
+.noi-dung-markdown th,
+.noi-dung-markdown td {
   border: 1px solid var(--vien);
   padding: 0.75rem;
   text-align: left;

@@ -19,7 +19,7 @@ function App() {
     // Kiểm tra localStorage để xem user đã đăng nhập chưa
     const phienLamViec = localStorage.getItem('brain-ui-session')
     const thoiGianHetHan = localStorage.getItem('brain-ui-session-expiry')
-    
+
     if (phienLamViec && thoiGianHetHan) {
       const hienTai = new Date().getTime()
       if (hienTai < parseInt(thoiGianHetHan)) {
@@ -62,19 +62,19 @@ function App() {
 
   return (
     <div className="app">
-      <button 
+      <button
         className="nut-menu-mobile"
         onClick={() => setSidebarMo(!sidebarMo)}
       >
         {sidebarMo ? <X size={24} /> : <Menu size={24} />}
       </button>
-      
-      <ThanhDieuHuong 
-        isOpen={sidebarMo} 
+
+      <ThanhDieuHuong
+        isOpen={sidebarMo}
         onClose={() => setSidebarMo(false)}
         onDangXuat={xuLyDangXuat}
       />
-      
+
       <main className="noi-dung-chinh">
         <Routes>
           <Route path="/" element={<BangDieuKhien />} />
@@ -89,7 +89,7 @@ function App() {
           <Route path="/readme" element={<TrinhXemMarkdown file="README.md" />} />
         </Routes>
       </main>
-      
+
       {/* Sync notification system */}
       <ThongBaoSync />
     </div>

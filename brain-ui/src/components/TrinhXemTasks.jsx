@@ -41,49 +41,49 @@ function TrinhXemTasks() {
         tieuDe: "Cập Nhật Schema Database Migration",
         moTa: "Maintain và update database schema cho expense categories và extra charges",
         trangThai: "Đang Thực Hiện",
-        uuTien: "Trung Bình", 
+        uuTien: "Trung Bình",
         phanCong: "Development Team",
         hanCuoi: "15/10/2025",
         tienDo: "60%"
       },
       {
         id: "FEAT-002",
-        tieuDe: "Tăng Cường Hỗ Trợ CSV Tiếng Việt", 
+        tieuDe: "Tăng Cường Hỗ Trợ CSV Tiếng Việt",
         moTa: "Cải thiện parsing Vietnamese headers trong CSV files từ Airbnb",
         trangThai: "Cần Làm",
         uuTien: "Thấp",
-        phanCong: "Development Team", 
+        phanCong: "Development Team",
         hanCuoi: "01/11/2025",
         tienDo: "0%"
       },
       {
         id: "OPT-003",
         tieuDe: "Tối Ưu Performance Reports",
-        moTa: "Tối ưu performance cho monthly revenue reports với large datasets", 
+        moTa: "Tối ưu performance cho monthly revenue reports với large datasets",
         trangThai: "Cần Làm",
         uuTien: "Thấp",
         phanCong: "Development Team",
-        hanCuoi: "01/12/2025", 
+        hanCuoi: "01/12/2025",
         tienDo: "0%"
       },
       {
         id: "UI-004",
         tieuDe: "Brain UI System Hoàn Chỉnh",
-        moTa: "Hoàn thiện React UI để hiển thị nội dung .brain/ với interface tiếng Việt", 
+        moTa: "Hoàn thiện React UI để hiển thị nội dung .brain/ với interface tiếng Việt",
         trangThai: "Đang Thực Hiện",
         uuTien: "Cao",
         phanCong: "Frontend Team",
-        hanCuoi: "30/09/2025", 
+        hanCuoi: "30/09/2025",
         tienDo: "85%"
       },
       {
         id: "DOC-005",
         tieuDe: "Cập Nhật Tài Liệu API",
-        moTa: "Hoàn thiện documentation cho FastAPI endpoints với examples", 
+        moTa: "Hoàn thiện documentation cho FastAPI endpoints với examples",
         trangThai: "Hoàn Thành",
         uuTien: "Trung Bình",
         phanCong: "Development Team",
-        hanCuoi: "25/09/2025", 
+        hanCuoi: "25/09/2025",
         tienDo: "100%"
       }
     ],
@@ -103,7 +103,7 @@ function TrinhXemTasks() {
       if (response.ok) {
         const realData = await response.json()
         setTasks(realData)
-        
+
         // Flatten all tasks from all phases
         const allTasks = []
         if (realData.phases) {
@@ -132,11 +132,11 @@ function TrinhXemTasks() {
 
   const capNhatTrangThaiTask = async (taskId, newStatus, comment = '') => {
     setDangCapNhat(true)
-    
+
     try {
       // Simulate API call - trong thực tế sẽ gọi backend API
       await new Promise(resolve => setTimeout(resolve, 500))
-      
+
       // Update local state
       const updatedTasks = tasksLoc.map(task => {
         if (task.id === taskId) {
@@ -146,7 +146,7 @@ function TrinhXemTasks() {
             updated_at: new Date().toISOString(),
             progress: getProgressByStatus(newStatus)
           }
-          
+
           // Add comment if provided
           if (comment) {
             if (!updatedTask.comments) {
@@ -158,18 +158,18 @@ function TrinhXemTasks() {
               status_change: `${task.status} → ${newStatus}`
             })
           }
-          
+
           return updatedTask
         }
         return task
       })
-      
+
       setTasksLoc(updatedTasks)
       setTaskDangSua(null)
-      
+
       // Show success message (có thể thêm toast notification)
       console.log(`Task ${taskId} updated to ${newStatus}`)
-      
+
     } catch (error) {
       console.error('Error updating task:', error)
       alert('Lỗi cập nhật task. Vui lòng thử lại.')
@@ -231,7 +231,7 @@ function TrinhXemTasks() {
     // Tìm kiếm
     if (tuKhoaTimKiem) {
       const search = tuKhoaTimKiem.toLowerCase()
-      filtered = filtered.filter(task => 
+      filtered = filtered.filter(task =>
         task.title?.toLowerCase().includes(search) ||
         task.description?.toLowerCase().includes(search) ||
         task.id?.toLowerCase().includes(search)
@@ -250,7 +250,7 @@ function TrinhXemTasks() {
   const layClassUuTien = (uuTien) => {
     switch (uuTien.toLowerCase()) {
       case 'cao': return 'uu-tien-cao'
-      case 'trung bình': return 'uu-tien-trung-binh'  
+      case 'trung bình': return 'uu-tien-trung-binh'
       case 'thấp': return 'uu-tien-thap'
       default: return 'uu-tien-trung-binh'
     }
@@ -278,7 +278,7 @@ function TrinhXemTasks() {
           <p>{tasks?.duAn?.ten || 'Airbnb Revenue WebApp'} - Tasks Management</p>
         </div>
         <div className="nhom-nut-header">
-          <button 
+          <button
             className="nut-tai-lai"
             onClick={loadTasks}
             disabled={dangCapNhat}
@@ -287,10 +287,10 @@ function TrinhXemTasks() {
             <RefreshCw size={16} className={dangCapNhat ? 'spinning' : ''} />
             Tải Lại
           </button>
-          <a 
+          <a
             href="/brain/ACTIVE_TASKS.json"
             target="_blank"
-            rel="noopener noreferrer" 
+            rel="noopener noreferrer"
             className="link-ngoai"
           >
             <ExternalLink size={16} />
@@ -349,11 +349,11 @@ function TrinhXemTasks() {
             onChange={(e) => setTuKhoaTimKiem(e.target.value)}
           />
         </div>
-        
+
         <div className="nhom-loc">
           <Filter size={16} />
-          <select 
-            value={locTrangThai} 
+          <select
+            value={locTrangThai}
             onChange={(e) => setLocTrangThai(e.target.value)}
           >
             <option value="tat-ca">Tất cả trạng thái</option>
@@ -363,7 +363,7 @@ function TrinhXemTasks() {
               </option>
             ))}
           </select>
-          
+
           <select
             value={locUuTien}
             onChange={(e) => setLocUuTien(e.target.value)}
@@ -389,7 +389,7 @@ function TrinhXemTasks() {
           <div className="cot-assignee">Người Làm</div>
           <div className="cot-actions">Thao Tác</div>
         </div>
-        
+
         {tasksLoc.length === 0 ? (
           <div className="khong-co-tasks">
             {dangCapNhat ? 'Đang cập nhật...' : 'Không tìm thấy task nào phù hợp'}
@@ -417,7 +417,7 @@ function TrinhXemTasks() {
                   <select
                     value={task.status}
                     onChange={(e) => {
-                      const newTasks = tasksLoc.map(t => 
+                      const newTasks = tasksLoc.map(t =>
                         t.id === task.id ? { ...t, status: e.target.value } : t
                       )
                       setTasksLoc(newTasks)
@@ -443,7 +443,7 @@ function TrinhXemTasks() {
               </div>
               <div className="cot-tien-do">
                 <div className="thanh-tien-do">
-                  <div 
+                  <div
                     className="do-tien-do"
                     style={{ width: `${task.progress || 0}%` }}
                   />

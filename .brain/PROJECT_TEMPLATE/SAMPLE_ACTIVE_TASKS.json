@@ -25,7 +25,10 @@
         "{{DEPENDENCY_1_1}}",
         "{{DEPENDENCY_1_2}}"
       ],
-      "tags": ["{{TAG_1_1}}", "{{TAG_1_2}}"],
+      "tags": [
+        "{{TAG_1_1}}",
+        "{{TAG_1_2}}"
+      ],
       "complexity": "{{COMPLEXITY_1}}",
       "estimated_hours": "{{ESTIMATED_HOURS_1}}"
     },
@@ -37,7 +40,10 @@
       "priority": "{{TASK_PRIORITY_2}}",
       "assigned_to": "{{ASSIGNEE_2}}",
       "due_date": "{{DUE_DATE_2}}",
-      "progress": {{PROGRESS_2}},
+      "progress": {
+        {PROGRESS_2
+        }
+      },
       "definition_of_done": [
         "{{DOD_ITEM_2_1}}",
         "{{DOD_ITEM_2_2}}",
@@ -46,9 +52,15 @@
       "dependencies": [
         "{{DEPENDENCY_2_1}}"
       ],
-      "tags": ["{{TAG_2_1}}", "{{TAG_2_2}}"],
+      "tags": [
+        "{{TAG_2_1}}",
+        "{{TAG_2_2}}"
+      ],
       "complexity": "{{COMPLEXITY_2}}",
-      "estimated_hours": {{ESTIMATED_HOURS_2}}
+      "estimated_hours": {
+        {ESTIMATED_HOURS_2
+        }
+      }
     },
     {
       "id": "{{TASK_ID_3}}",
@@ -58,47 +70,118 @@
       "priority": "{{TASK_PRIORITY_3}}",
       "assigned_to": "{{ASSIGNEE_3}}",
       "due_date": "{{DUE_DATE_3}}",
-      "progress": {{PROGRESS_3}},
+      "progress": {
+        {PROGRESS_3
+        }
+      },
       "definition_of_done": [
         "{{DOD_ITEM_3_1}}",
         "{{DOD_ITEM_3_2}}"
       ],
       "dependencies": [],
-      "tags": ["{{TAG_3_1}}"],
+      "tags": [
+        "{{TAG_3_1}}"
+      ],
       "complexity": "{{COMPLEXITY_3}}",
-      "estimated_hours": {{ESTIMATED_HOURS_3}}
+      "estimated_hours": {
+        {ESTIMATED_HOURS_3
+        }
+      }
     }
   ],
   "metrics": {
     "current_sprint": {
-      "sprint_number": {{SPRINT_NUMBER}},
+      "sprint_number": {
+        {SPRINT_NUMBER
+        }
+      },
       "start_date": "{{SPRINT_START_DATE}}",
       "end_date": "{{SPRINT_END_DATE}}",
-      "capacity": {{SPRINT_CAPACITY}},
-      "committed_points": {{COMMITTED_POINTS}},
-      "completed_points": {{COMPLETED_POINTS}},
+      "capacity": {
+        {SPRINT_CAPACITY
+        }
+      },
+      "committed_points": {
+        {COMMITTED_POINTS
+        }
+      },
+      "completed_points": {
+        {COMPLETED_POINTS
+        }
+      },
       "burndown": [
-        {"date": "{{BURNDOWN_DATE_1}}", "remaining": {{REMAINING_1}}},
-        {"date": "{{BURNDOWN_DATE_2}}", "remaining": {{REMAINING_2}}},
-        {"date": "{{BURNDOWN_DATE_3}}", "remaining": {{REMAINING_3}}}
+        {
+          "date": "{{BURNDOWN_DATE_1}}",
+          "remaining": {
+            {REMAINING_1
+            }
+          }
+        },
+        {
+          "date": "{{BURNDOWN_DATE_2}}",
+          "remaining": {
+            {REMAINING_2
+            }
+          }
+        },
+        {
+          "date": "{{BURNDOWN_DATE_3}}",
+          "remaining": {
+            {REMAINING_3
+            }
+          }
+        }
       ]
     },
     "overall_progress": {
-      "total_tasks": {{TOTAL_TASKS}},
-      "completed_tasks": {{COMPLETED_TASKS}},
-      "in_progress_tasks": {{IN_PROGRESS_TASKS}},
-      "blocked_tasks": {{BLOCKED_TASKS}},
-      "completion_percentage": {{COMPLETION_PERCENTAGE}}
+      "total_tasks": {
+        {TOTAL_TASKS
+        }
+      },
+      "completed_tasks": {
+        {COMPLETED_TASKS
+        }
+      },
+      "in_progress_tasks": {
+        {IN_PROGRESS_TASKS
+        }
+      },
+      "blocked_tasks": {
+        {BLOCKED_TASKS
+        }
+      },
+      "completion_percentage": {
+        {COMPLETION_PERCENTAGE
+        }
+      }
     },
     "quality_metrics": {
-      "bugs_found": {{BUGS_FOUND}},
-      "bugs_fixed": {{BUGS_FIXED}},
-      "test_coverage": {{TEST_COVERAGE}},
-      "code_review_pass_rate": {{CODE_REVIEW_PASS_RATE}}
+      "bugs_found": {
+        {BUGS_FOUND
+        }
+      },
+      "bugs_fixed": {
+        {BUGS_FIXED
+        }
+      },
+      "test_coverage": {
+        {TEST_COVERAGE
+        }
+      },
+      "code_review_pass_rate": {
+        {CODE_REVIEW_PASS_RATE
+        }
+      }
     },
     "velocity": {
-      "last_sprint": {{LAST_SPRINT_VELOCITY}},
-      "average_velocity": {{AVERAGE_VELOCITY}},
+      "last_sprint": {
+        {LAST_SPRINT_VELOCITY
+        }
+      },
+      "average_velocity": {
+        {AVERAGE_VELOCITY
+        }
+      },
       "trend": "{{VELOCITY_TREND}}"
     }
   },
@@ -107,18 +190,35 @@
       {
         "name": "{{MEMBER_NAME_1}}",
         "role": "{{MEMBER_ROLE_1}}",
-        "current_capacity": {{MEMBER_CAPACITY_1}},
-        "active_tasks": ["{{ACTIVE_TASK_1}}", "{{ACTIVE_TASK_2}}"]
+        "current_capacity": {
+          {MEMBER_CAPACITY_1
+          }
+        },
+        "active_tasks": [
+          "{{ACTIVE_TASK_1}}",
+          "{{ACTIVE_TASK_2}}"
+        ]
       },
       {
         "name": "{{MEMBER_NAME_2}}",
         "role": "{{MEMBER_ROLE_2}}",
-        "current_capacity": {{MEMBER_CAPACITY_2}},
-        "active_tasks": ["{{ACTIVE_TASK_3}}"]
+        "current_capacity": {
+          {MEMBER_CAPACITY_2
+          }
+        },
+        "active_tasks": [
+          "{{ACTIVE_TASK_3}}"
+        ]
       }
     ],
-    "total_capacity": {{TOTAL_TEAM_CAPACITY}},
-    "utilization": {{TEAM_UTILIZATION}}
+    "total_capacity": {
+      {TOTAL_TEAM_CAPACITY
+      }
+    },
+    "utilization": {
+      {TEAM_UTILIZATION
+      }
+    }
   },
   "blockers": [
     {
@@ -155,12 +255,39 @@
     }
   ],
   "configuration": {
-    "task_statuses": ["Todo", "In Progress", "Code Review", "Testing", "Done", "Blocked"],
-    "priorities": ["Critical", "High", "Medium", "Low"],
-    "complexities": ["XS", "S", "M", "L", "XL"],
-    "default_sprint_length": {{DEFAULT_SPRINT_LENGTH}},
-    "working_hours_per_day": {{WORKING_HOURS_PER_DAY}},
-    "team_velocity_target": {{TEAM_VELOCITY_TARGET}}
+    "task_statuses": [
+      "Todo",
+      "In Progress",
+      "Code Review",
+      "Testing",
+      "Done",
+      "Blocked"
+    ],
+    "priorities": [
+      "Critical",
+      "High",
+      "Medium",
+      "Low"
+    ],
+    "complexities": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL"
+    ],
+    "default_sprint_length": {
+      {DEFAULT_SPRINT_LENGTH
+      }
+    },
+    "working_hours_per_day": {
+      {WORKING_HOURS_PER_DAY
+      }
+    },
+    "team_velocity_target": {
+      {TEAM_VELOCITY_TARGET
+      }
+    }
   },
   "integrations": {
     "version_control": {
@@ -175,7 +302,10 @@
     },
     "monitoring": {
       "platform": "{{MONITORING_PLATFORM}}",
-      "alerts_enabled": {{ALERTS_ENABLED}},
+      "alerts_enabled": {
+        {ALERTS_ENABLED
+        }
+      },
       "health_check_url": "{{HEALTH_CHECK_URL}}"
     }
   }

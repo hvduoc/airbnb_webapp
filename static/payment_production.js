@@ -5,7 +5,7 @@ let recipients = [];
 let teamMembers = [];
 
 // Khởi tạo ứng dụng
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeApp();
 });
 
@@ -26,11 +26,11 @@ async function loadUserInfo() {
         // Test auth trước
         const authResponse = await axios.get('/api/test-auth');
         console.log('Auth test:', authResponse.data);
-        
+
         if (authResponse.data.status !== 'authenticated') {
             throw new Error('Not authenticated');
         }
-        
+
         // Load dashboard sẽ fail nếu không authenticate
         await loadDashboard();
         await loadRecipients();
@@ -55,17 +55,17 @@ function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
-    
+
     document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-    
+
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('border-green-500', 'text-green-600');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
-    
+
     document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-green-500', 'text-green-600');
-    
+
     if (tabName === 'payments-list') {
         loadPayments();
     } else if (tabName === 'handover-list') {
@@ -80,18 +80,18 @@ async function loadDashboard() {
     try {
         const response = await axios.get('/api/dashboard');
         const data = response.data;
-        
+
         // Update user info from response if available
         if (!currentUser) {
             // Get user info from another endpoint or set default
             currentUser = { name: "User", role: "unknown" };
         }
-        
+
         document.getElementById('totalCollected').textContent = formatCurrency(data.total_collected);
         document.getElementById('collectionRate').textContent = `${data.collection_rate}%`;
         document.getElementById('cashPending').textContent = formatCurrency(data.cash_pending_handover);
         document.getElementById('totalHandovers').textContent = data.total_handovers;
-        
+
     } catch (error) {
         console.error('Không thể tải dashboard:', error);
         if (error.response?.status === 401) {
@@ -105,11 +105,11 @@ async function loadRecipients() {
     try {
         const response = await axios.get('/api/recipients');
         recipients = response.data.recipients;
-        
+
         const select = document.getElementById('recipientId');
         if (select) {
             select.innerHTML = '<option value="">Chọn người nhận</option>';
-            
+
             recipients.forEach(recipient => {
                 const option = document.createElement('option');
                 option.value = recipient.id;
@@ -117,7 +117,7 @@ async function loadRecipients() {
                 select.appendChild(option);
             });
         }
-        
+
     } catch (error) {
         console.error('Không thể tải danh sách người nhận:', error);
     }
@@ -128,9 +128,9 @@ async function loadTeamMembers() {
     try {
         const response = await axios.get('/api/users');
         teamMembers = response.data.users;
-        
+
         displayTeamMembers();
-        
+
     } catch (error) {
         console.error('Không thể tải danh sách team:', error);
         // Nếu không có quyền xem team, ẩn tab
@@ -144,23 +144,23 @@ async function loadTeamMembers() {
 function displayTeamMembers() {
     const container = document.getElementById('teamListContainer');
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     if (teamMembers.length === 0) {
         container.innerHTML = '<p class="text-gray-500 text-center py-8">Không có quyền xem danh sách team</p>';
         return;
     }
-    
+
     const grid = document.createElement('div');
     grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
-    
+
     teamMembers.forEach(member => {
         const card = document.createElement('div');
         card.className = 'bg-white border rounded-lg p-4 hover:shadow-md transition-shadow';
-        
+
         const roleClass = `role-${member.role}`;
-        
+
         card.innerHTML = `
             <div class="flex items-center space-x-3">
                 <div class="flex-shrink-0">
@@ -188,17 +188,17 @@ function displayTeamMembers() {
                 ${member.email ? `<p><i class="fas fa-envelope mr-2"></i>${member.email}</p>` : ''}
             </div>
         `;
-        
+
         grid.appendChild(card);
     });
-    
+
     container.appendChild(grid);
 }
 
 // Xử lý form ghi nhận thu
-document.getElementById('paymentForm')?.addEventListener('submit', async function(e) {
+document.getElementById('paymentForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData();
     formData.append('booking_id', document.getElementById('bookingId').value);
     formData.append('guest_name', document.getElementById('guestName').value);
@@ -207,25 +207,25 @@ document.getElementById('paymentForm')?.addEventListener('submit', async functio
     formData.append('payment_method', document.getElementById('paymentMethod').value);
     formData.append('collected_by', document.getElementById('collectedBy').value);
     formData.append('notes', document.getElementById('notes').value);
-    
+
     const receiptImage = document.getElementById('receiptImage')?.files[0];
     if (receiptImage) {
         formData.append('receipt_image', receiptImage);
     }
-    
+
     try {
         const response = await axios.post('/api/payments', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
-        
+
         if (response.data.success) {
             showToast('Đã lưu khoản thu thành công!', 'success');
             resetPaymentForm();
             await loadDashboard();
         }
-        
+
     } catch (error) {
         console.error('Payment submission error:', error);
         if (error.response?.status === 401) {
@@ -238,32 +238,32 @@ document.getElementById('paymentForm')?.addEventListener('submit', async functio
 });
 
 // Xử lý form bàn giao
-document.getElementById('handoverForm')?.addEventListener('submit', async function(e) {
+document.getElementById('handoverForm')?.addEventListener('submit', async function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData();
     formData.append('recipient_user_id', document.getElementById('recipientId').value);
     formData.append('amount', document.getElementById('handoverAmount').value);
     formData.append('notes', document.getElementById('handoverNotes').value);
-    
+
     const handoverImage = document.getElementById('handoverImage')?.files[0];
     if (handoverImage) {
         formData.append('handover_image', handoverImage);
     }
-    
+
     try {
         const response = await axios.post('/api/handovers', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
-        
+
         if (response.data.success) {
             showToast('Đã bàn giao thành công!', 'success');
             resetHandoverForm();
             await loadDashboard();
         }
-        
+
     } catch (error) {
         console.error('Handover submission error:', error);
         if (error.response?.status === 401) {
@@ -287,12 +287,12 @@ async function loadPayments() {
     try {
         const response = await axios.get('/api/payments');
         const payments = response.data.payments;
-        
+
         const tbody = document.getElementById('paymentsTableBody');
         if (!tbody) return;
-        
+
         tbody.innerHTML = '';
-        
+
         payments.forEach(payment => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -318,17 +318,17 @@ async function loadPayments() {
                     ${payment.collected_by}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${payment.receipt_image ? 
-                        `<button onclick="showImage('${payment.receipt_image}')" class="text-green-600 hover:text-green-800">
+                    ${payment.receipt_image ?
+                    `<button onclick="showImage('${payment.receipt_image}')" class="text-green-600 hover:text-green-800">
                             <i class="fas fa-image"></i> Xem ảnh
-                        </button>` : 
-                        '<span class="text-gray-400">Không có</span>'
-                    }
+                        </button>` :
+                    '<span class="text-gray-400">Không có</span>'
+                }
                 </td>
             `;
             tbody.appendChild(row);
         });
-        
+
     } catch (error) {
         console.error('Không thể tải danh sách thu:', error);
         if (error.response?.status === 401) {
@@ -341,17 +341,17 @@ async function loadHandovers() {
     try {
         const response = await axios.get('/api/handovers');
         const handovers = response.data.handovers;
-        
+
         const container = document.getElementById('handoverListContainer');
         if (!container) return;
-        
+
         container.innerHTML = '';
-        
+
         if (handovers.length === 0) {
             container.innerHTML = '<p class="text-gray-500 text-center py-8">Chưa có bàn giao nào</p>';
             return;
         }
-        
+
         handovers.forEach(handover => {
             const card = document.createElement('div');
             card.className = 'handover-card bg-white border rounded-lg p-4 mb-4';
@@ -406,7 +406,7 @@ async function loadHandovers() {
             `;
             container.appendChild(card);
         });
-        
+
     } catch (error) {
         console.error('Không thể tải danh sách bàn giao:', error);
         if (error.response?.status === 401) {
@@ -465,11 +465,11 @@ function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     const icon = document.getElementById('toastIcon');
     const messageEl = document.getElementById('toastMessage');
-    
+
     if (!toast || !icon || !messageEl) return;
-    
+
     messageEl.textContent = message;
-    
+
     if (type === 'success') {
         icon.className = 'fas fa-check-circle text-green-500 text-xl';
     } else if (type === 'error') {
@@ -477,9 +477,9 @@ function showToast(message, type = 'info') {
     } else {
         icon.className = 'fas fa-info-circle text-blue-500 text-xl';
     }
-    
+
     toast.classList.remove('hidden');
-    
+
     setTimeout(() => {
         hideToast();
     }, 5000);
@@ -493,7 +493,7 @@ function hideToast() {
 }
 
 // Đóng modal khi click bên ngoài
-document.getElementById('imageModal')?.addEventListener('click', function(e) {
+document.getElementById('imageModal')?.addEventListener('click', function (e) {
     if (e.target === this) {
         closeImageModal();
     }

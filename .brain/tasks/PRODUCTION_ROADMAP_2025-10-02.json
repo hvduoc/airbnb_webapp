@@ -18,16 +18,22 @@
           "id": "SEC-001",
           "title": "Implement bcrypt password hashing",
           "description": "Replace simple password storage với bcrypt hashing chuẩn production",
-          "files": ["auth_service.py", "models.py"],
+          "files": [
+            "auth_service.py",
+            "models.py"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "HIGH"
         },
         {
-          "id": "SEC-002", 
+          "id": "SEC-002",
           "title": "JWT token management & refresh logic",
           "description": "Implement token expiration, refresh tokens, secure session management",
-          "files": ["auth_service.py", "main.py"],
+          "files": [
+            "auth_service.py",
+            "main.py"
+          ],
           "estimated_hours": 6,
           "status": "TODO",
           "priority": "HIGH"
@@ -36,16 +42,23 @@
           "id": "SEC-003",
           "title": "API input validation & sanitization",
           "description": "Thêm Pydantic models, SQL injection prevention, XSS protection",
-          "files": ["models.py", "main.py", "services/"],
+          "files": [
+            "models.py",
+            "main.py",
+            "services/"
+          ],
           "estimated_hours": 8,
-          "status": "TODO", 
+          "status": "TODO",
           "priority": "MEDIUM"
         },
         {
           "id": "SEC-004",
           "title": "CORS và production headers",
           "description": "Configure CORS cho production, security headers",
-          "files": ["main.py", "config.py"],
+          "files": [
+            "main.py",
+            "config.py"
+          ],
           "estimated_hours": 2,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -54,7 +67,7 @@
     },
     "phase_2": {
       "name": "Database Production Migration",
-      "duration": "2-3 days", 
+      "duration": "2-3 days",
       "priority": "CRITICAL",
       "completion": "0%",
       "tasks": [
@@ -62,16 +75,23 @@
           "id": "DB-001",
           "title": "PostgreSQL production setup",
           "description": "Migrate từ SQLite sang PostgreSQL với connection pooling",
-          "files": ["db.py", "config.py", "requirements.txt"],
+          "files": [
+            "db.py",
+            "config.py",
+            "requirements.txt"
+          ],
           "estimated_hours": 6,
           "status": "TODO",
           "priority": "HIGH"
         },
         {
           "id": "DB-002",
-          "title": "Database indexing optimization", 
+          "title": "Database indexing optimization",
           "description": "Thêm indexes cho queries performance, analyze slow queries",
-          "files": ["models.py", "alembic/versions/"],
+          "files": [
+            "models.py",
+            "alembic/versions/"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -80,7 +100,10 @@
           "id": "DB-003",
           "title": "Backup & recovery procedures",
           "description": "Setup automated backup, recovery testing, data migration scripts",
-          "files": ["scripts/backup.py", "docs/"],
+          "files": [
+            "scripts/backup.py",
+            "docs/"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -89,7 +112,10 @@
           "id": "DB-004",
           "title": "Data validation & integrity",
           "description": "Database constraints, foreign keys, data validation rules",
-          "files": ["models.py", "alembic/versions/"],
+          "files": [
+            "models.py",
+            "alembic/versions/"
+          ],
           "estimated_hours": 3,
           "status": "TODO",
           "priority": "LOW"
@@ -99,14 +125,18 @@
     "phase_3": {
       "name": "Production Deployment Infrastructure",
       "duration": "3-4 days",
-      "priority": "HIGH", 
+      "priority": "HIGH",
       "completion": "0%",
       "tasks": [
         {
           "id": "DEPLOY-001",
           "title": "Railway.app production deployment",
           "description": "Setup Railway project, environment variables, PostgreSQL service",
-          "files": ["railway.toml", "Dockerfile", ".env.production"],
+          "files": [
+            "railway.toml",
+            "Dockerfile",
+            ".env.production"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "HIGH"
@@ -115,16 +145,22 @@
           "id": "DEPLOY-002",
           "title": "Custom domain & SSL setup",
           "description": "Configure custom domain, SSL certificates, DNS setup",
-          "files": ["docs/deployment.md"],
+          "files": [
+            "docs/deployment.md"
+          ],
           "estimated_hours": 3,
           "status": "TODO",
           "priority": "MEDIUM"
         },
         {
-          "id": "DEPLOY-003", 
+          "id": "DEPLOY-003",
           "title": "Environment configuration management",
           "description": "Production vs development configs, secrets management",
-          "files": ["config.py", ".env.example", "docs/"],
+          "files": [
+            "config.py",
+            ".env.example",
+            "docs/"
+          ],
           "estimated_hours": 2,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -133,7 +169,10 @@
           "id": "DEPLOY-004",
           "title": "CI/CD pipeline setup",
           "description": "GitHub Actions cho automated testing và deployment",
-          "files": [".github/workflows/", "tests/"],
+          "files": [
+            ".github/workflows/",
+            "tests/"
+          ],
           "estimated_hours": 6,
           "status": "TODO",
           "priority": "LOW"
@@ -150,16 +189,23 @@
           "id": "BIZ-001",
           "title": "CSV upload error handling enhancement",
           "description": "Robust error handling, validation messages, user feedback",
-          "files": ["services/upload_service.py", "utils.py", "templates/"],
+          "files": [
+            "services/upload_service.py",
+            "utils.py",
+            "templates/"
+          ],
           "estimated_hours": 4,
-          "status": "TODO", 
+          "status": "TODO",
           "priority": "HIGH"
         },
         {
           "id": "BIZ-002",
           "title": "Booking conflict detection",
           "description": "Prevent duplicate bookings, date conflict validation",
-          "files": ["services/booking_service.py", "models.py"],
+          "files": [
+            "services/booking_service.py",
+            "models.py"
+          ],
           "estimated_hours": 5,
           "status": "TODO",
           "priority": "HIGH"
@@ -168,7 +214,11 @@
           "id": "BIZ-003",
           "title": "Currency formatting consistency",
           "description": "VND formatting across all interfaces, number localization",
-          "files": ["utils.py", "templates/", "static/"],
+          "files": [
+            "utils.py",
+            "templates/",
+            "static/"
+          ],
           "estimated_hours": 3,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -177,7 +227,11 @@
           "id": "BIZ-004",
           "title": "Timezone handling",
           "description": "Vietnam timezone support, date/time consistency",
-          "files": ["utils.py", "models.py", "services/"],
+          "files": [
+            "utils.py",
+            "models.py",
+            "services/"
+          ],
           "estimated_hours": 3,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -194,7 +248,11 @@
           "id": "PERF-001",
           "title": "Query optimization & caching",
           "description": "Database query optimization, Redis caching layer",
-          "files": ["services/", "db.py", "requirements.txt"],
+          "files": [
+            "services/",
+            "db.py",
+            "requirements.txt"
+          ],
           "estimated_hours": 6,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -203,7 +261,11 @@
           "id": "PERF-002",
           "title": "Application monitoring setup",
           "description": "Logging, error tracking, performance monitoring",
-          "files": ["main.py", "config.py", "requirements.txt"],
+          "files": [
+            "main.py",
+            "config.py",
+            "requirements.txt"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -212,7 +274,10 @@
           "id": "PERF-003",
           "title": "Load testing & optimization",
           "description": "Performance testing, bottleneck identification",
-          "files": ["tests/load_tests.py", "docs/"],
+          "files": [
+            "tests/load_tests.py",
+            "docs/"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "LOW"
@@ -229,7 +294,10 @@
           "id": "DOC-001",
           "title": "Production deployment guide",
           "description": "Complete deployment documentation, troubleshooting guide",
-          "files": ["docs/deployment.md", "docs/troubleshooting.md"],
+          "files": [
+            "docs/deployment.md",
+            "docs/troubleshooting.md"
+          ],
           "estimated_hours": 3,
           "status": "TODO",
           "priority": "MEDIUM"
@@ -238,7 +306,10 @@
           "id": "DOC-002",
           "title": "User training materials",
           "description": "User manual, video tutorials, FAQ",
-          "files": ["docs/user_guide.md", "docs/faq.md"],
+          "files": [
+            "docs/user_guide.md",
+            "docs/faq.md"
+          ],
           "estimated_hours": 4,
           "status": "TODO",
           "priority": "LOW"
@@ -247,7 +318,10 @@
           "id": "DOC-003",
           "title": "API documentation",
           "description": "Complete API docs với OpenAPI/Swagger",
-          "files": ["main.py", "docs/api.md"],
+          "files": [
+            "main.py",
+            "docs/api.md"
+          ],
           "estimated_hours": 2,
           "status": "TODO",
           "priority": "LOW"
@@ -259,25 +333,43 @@
     {
       "name": "Security Complete",
       "date": "2025-10-05",
-      "tasks": ["SEC-001", "SEC-002", "SEC-003", "SEC-004"],
+      "tasks": [
+        "SEC-001",
+        "SEC-002",
+        "SEC-003",
+        "SEC-004"
+      ],
       "completion_required": "100%"
     },
     {
-      "name": "Database Ready", 
+      "name": "Database Ready",
       "date": "2025-10-08",
-      "tasks": ["DB-001", "DB-002", "DB-003"],
+      "tasks": [
+        "DB-001",
+        "DB-002",
+        "DB-003"
+      ],
       "completion_required": "100%"
     },
     {
       "name": "Deployment Live",
       "date": "2025-10-12",
-      "tasks": ["DEPLOY-001", "DEPLOY-002", "DEPLOY-003"],
+      "tasks": [
+        "DEPLOY-001",
+        "DEPLOY-002",
+        "DEPLOY-003"
+      ],
       "completion_required": "100%"
     },
     {
       "name": "Production Ready",
       "date": "2025-10-16",
-      "tasks": ["BIZ-001", "BIZ-002", "PERF-001", "DOC-001"],
+      "tasks": [
+        "BIZ-001",
+        "BIZ-002",
+        "PERF-001",
+        "DOC-001"
+      ],
       "completion_required": "90%"
     }
   ],
@@ -290,14 +382,14 @@
     },
     {
       "risk": "Railway deployment issues",
-      "impact": "HIGH", 
+      "impact": "HIGH",
       "probability": "LOW",
       "mitigation": "Alternative deployment options (DigitalOcean, AWS)"
     },
     {
       "risk": "Data migration errors",
       "impact": "CRITICAL",
-      "probability": "LOW", 
+      "probability": "LOW",
       "mitigation": "Comprehensive backup, staged migration, validation scripts"
     }
   ],
@@ -305,7 +397,7 @@
     "technical": [
       "100% test coverage cho core business logic",
       "Response times < 2 seconds for all pages",
-      "Zero data loss trong migration", 
+      "Zero data loss trong migration",
       "99.9% uptime target"
     ],
     "business": [

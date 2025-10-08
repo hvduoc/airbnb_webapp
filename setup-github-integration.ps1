@@ -13,7 +13,7 @@ Write-Host ""
 
 # 2. Webhook Secret Generation
 Write-Host "🔐 Generating webhook secret..."
-$WebhookSecret = -join ((1..32) | ForEach {Get-Random -Maximum 62 | ForEach {[char][int]((97,65)[[bool](Get-Random -Maximum 2)] + (Get-Random -Maximum 26))}})
+$WebhookSecret = -join ((1..32) | ForEach { Get-Random -Maximum 62 | ForEach { [char][int]((97, 65)[[bool](Get-Random -Maximum 2)] + (Get-Random -Maximum 26)) } })
 Write-Host "Generated secret: $WebhookSecret"
 Write-Host "Save this to your environment:"
 Write-Host "`$env:WEBHOOK_SECRET=`"$WebhookSecret`""

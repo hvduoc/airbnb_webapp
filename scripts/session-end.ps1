@@ -36,7 +36,8 @@ if (Test-Path $DailyLogPath) {
         Add-Content -Path $DailyLogPath -Value $SummaryNote -Encoding UTF8
         Write-Host "✅ Session summary added" -ForegroundColor Green
     }
-} else {
+}
+else {
     Write-Host "⚠️  Daily log not found - creating basic end log" -ForegroundColor Yellow
     
     $BasicLog = @"
@@ -77,9 +78,11 @@ if (-not $SkipGitCheck) {
                     $file = $line.Substring(3)
                     if ($file -like ".brain/*") {
                         $BrainFiles += $file
-                    } elseif ($file -like "*.py" -or $file -like "*.html" -or $file -like "*.js") {
+                    }
+                    elseif ($file -like "*.py" -or $file -like "*.html" -or $file -like "*.js") {
                         $CodeFiles += $file  
-                    } else {
+                    }
+                    else {
                         $OtherFiles += $file
                     }
                 }
@@ -109,7 +112,8 @@ if (-not $SkipGitCheck) {
                         
                         if ($Summary -ne "") {
                             $commitMessage = "feat: $Summary"
-                        } else {
+                        }
+                        else {
                             $defaultMessage = "feat: Session end - $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
                             $customMessage = Read-Host "💬 Commit message (Enter for default: '$defaultMessage')"
                             $commitMessage = if ($customMessage) { $customMessage } else { $defaultMessage }
@@ -120,21 +124,26 @@ if (-not $SkipGitCheck) {
                         
                         if ($LASTEXITCODE -eq 0) {
                             Write-Host "✅ Changes committed successfully" -ForegroundColor Green
-                        } else {
+                        }
+                        else {
                             Write-Host "❌ Commit failed" -ForegroundColor Red
                         }
-                    } else {
+                    }
+                    else {
                         Write-Host "ℹ️  Changes left uncommitted" -ForegroundColor Gray
                     }
                 }
                 
-            } else {
+            }
+            else {
                 Write-Host "✅ Working directory clean - no uncommitted changes" -ForegroundColor Green
             }
-        } else {
+        }
+        else {
             Write-Host "ℹ️  Not a git repository or git not available" -ForegroundColor Gray
         }
-    } catch {
+    }
+    catch {
         Write-Host "ℹ️  Git check skipped due to error: $($_.Exception.Message)" -ForegroundColor Gray
     }
 }
@@ -162,9 +171,11 @@ $HealthPercent = [math]::Round(($HealthyFiles / $RequiredFiles.Count) * 100)
 
 if ($HealthPercent -eq 100) {
     Write-Host "✅ Brain system: HEALTHY ($HealthPercent%)" -ForegroundColor Green
-} elseif ($HealthPercent -ge 80) {
+}
+elseif ($HealthPercent -ge 80) {
     Write-Host "⚠️  Brain system: MOSTLY HEALTHY ($HealthPercent%)" -ForegroundColor Yellow
-} else {
+}
+else {
     Write-Host "❌ Brain system: NEEDS ATTENTION ($HealthPercent%)" -ForegroundColor Red
     Write-Host "💡 Run session-start.ps1 to see missing files" -ForegroundColor Cyan
 }
@@ -182,10 +193,12 @@ if (Test-Path ".brain\ACTIVE_TASKS.json") {
         if ($ReadyTasks.Count -gt 0) {
             Write-Host "✅ $($ReadyTasks.Count) ready tasks available for next session" -ForegroundColor Green
             Write-Host "🎯 Highest priority: $($ReadyTasks[0].id) - $($ReadyTasks[0].title)" -ForegroundColor Cyan
-        } else {
+        }
+        else {
             Write-Host "⚠️  No ready tasks found - consider updating ACTIVE_TASKS.json" -ForegroundColor Yellow
         }
-    } catch {
+    }
+    catch {
         Write-Host "❌ Error reading ACTIVE_TASKS.json - may need validation" -ForegroundColor Red
     }
 }
@@ -203,7 +216,8 @@ if ($AppRunning) {
         Stop-Process -Id $AppRunning.Id -Force
         Write-Host "✅ App stopped" -ForegroundColor Green
     }
-} else {
+}
+else {
     Write-Host "✅ No running app processes detected" -ForegroundColor Green
 }
 

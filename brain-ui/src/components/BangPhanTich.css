@@ -128,8 +128,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .nut-thu-lai {
@@ -381,7 +386,7 @@
   .loi-bieu-do {
     grid-template-columns: 1fr;
   }
-  
+
   .container-bieu-do.pie-chart {
     height: 400px;
   }
@@ -391,71 +396,71 @@
   .bang-phan-tich {
     padding: var(--khoang-cach-vua);
   }
-  
+
   .header-phan-tich {
     flex-direction: column;
     gap: var(--khoang-cach-vua);
     align-items: stretch;
   }
-  
+
   .nhom-nut-header {
     justify-content: center;
   }
-  
+
   .thong-tin-header h1 {
     font-size: 2rem;
     text-align: center;
   }
-  
+
   .thong-tin-header p {
     text-align: center;
   }
-  
+
   .tong-quan-du-an {
     grid-template-columns: 1fr;
   }
-  
+
   .nhom-loc {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .nut-loc {
     flex: 1;
     text-align: center;
     padding: 0.5rem;
     font-size: 0.9rem;
   }
-  
+
   .header-bieu-do {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--khoang-cach-nho);
   }
-  
+
   .tong-ket-nho {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--khoang-cach-nho);
   }
-  
+
   .container-bieu-do {
     height: 300px;
   }
-  
+
   .container-bieu-do.pie-chart {
     height: 350px;
   }
-  
+
   .bang-tom-tat {
     grid-template-columns: 1fr;
   }
-  
+
   .nhom-xuat-file {
     flex-direction: column;
     width: 100%;
   }
-  
+
   .nut-xuat-pdf,
   .nut-xuat-png {
     justify-content: center;
@@ -466,26 +471,26 @@
   .thong-tin-header h1 {
     font-size: 1.5rem;
   }
-  
+
   .card-thong-ke {
     flex-direction: column;
     text-align: center;
     gap: var(--khoang-cach-nho);
   }
-  
+
   .icon-thong-ke {
     width: 50px;
     height: 50px;
   }
-  
+
   .gia-tri-thong-ke {
     font-size: 2rem;
   }
-  
+
   .container-bieu-do {
     height: 250px;
   }
-  
+
   .container-bieu-do.pie-chart {
     height: 300px;
   }
@@ -498,7 +503,7 @@
     color: black;
     padding: 0;
   }
-  
+
   .header-phan-tich,
   .card-bieu-do,
   .card-tom-tat {
@@ -506,7 +511,7 @@
     border: 1px solid #ddd;
     box-shadow: none;
   }
-  
+
   .nhom-nut-header {
     display: none;
   }
@@ -533,9 +538,17 @@
   animation: slideInUp 0.6s ease forwards;
 }
 
-.card-bieu-do:nth-child(1) { animation-delay: 0.1s; }
-.card-bieu-do:nth-child(2) { animation-delay: 0.2s; }
-.card-bieu-do:nth-child(3) { animation-delay: 0.3s; }
+.card-bieu-do:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.card-bieu-do:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.card-bieu-do:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 @keyframes slideInUp {
   to {

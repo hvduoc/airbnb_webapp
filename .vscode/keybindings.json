@@ -7,7 +7,7 @@
     },
     {
         "key": "ctrl+shift+e",
-        "command": "workbench.action.tasks.runTask", 
+        "command": "workbench.action.tasks.runTask",
         "args": "AI: End Session",
         "when": "!inDebugMode"
     },
@@ -20,7 +20,7 @@
     {
         "key": "ctrl+shift+h",
         "command": "workbench.action.tasks.runTask",
-        "args": "AI: Health Check", 
+        "args": "AI: Health Check",
         "when": "!inDebugMode"
     },
     {

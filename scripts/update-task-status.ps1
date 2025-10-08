@@ -2,10 +2,10 @@
 # update-task-status.ps1
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$TaskId,
     
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [ValidateSet("pending", "in_progress", "completed", "blocked", "cancelled")]
     [string]$NewStatus,
     
@@ -38,10 +38,10 @@ function Show-TaskList {
         foreach ($phase in $tasks.phases) {
             foreach ($task in $phase.tasks) {
                 $allTasks += [PSCustomObject]@{
-                    Phase = $phase.phase_name
-                    Id = $task.id
-                    Title = $task.title
-                    Status = $task.status
+                    Phase    = $phase.phase_name
+                    Id       = $task.id
+                    Title    = $task.title
+                    Status   = $task.status
                     Priority = $task.priority
                     Assignee = $task.assignee
                     Progress = "$($task.progress)%"
@@ -65,7 +65,8 @@ function Show-TaskList {
             Write-Host "   $($_.Name): $($_.Count)" -ForegroundColor $color
         }
         
-    } catch {
+    }
+    catch {
         Write-Host "❌ Error reading tasks: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
@@ -90,10 +91,10 @@ function Find-Task {
         foreach ($task in $phase.tasks) {
             if ($task.id -eq $Id) {
                 return @{
-                    Phase = $phase
-                    Task = $task
+                    Phase      = $phase
+                    Task       = $task
                     PhaseIndex = [array]::IndexOf($TasksData.phases, $phase)
-                    TaskIndex = [array]::IndexOf($phase.tasks, $task)
+                    TaskIndex  = [array]::IndexOf($phase.tasks, $task)
                 }
             }
         }
@@ -171,8 +172,8 @@ function Update-TaskStatus {
             }
             
             $newComment = [PSCustomObject]@{
-                timestamp = Get-Date -Format "yyyy-MM-ddTHH:mm:ss"
-                comment = $Comment
+                timestamp     = Get-Date -Format "yyyy-MM-ddTHH:mm:ss"
+                comment       = $Comment
                 status_change = "$oldStatus → $NewStatus"
             }
             
@@ -216,7 +217,8 @@ function Update-TaskStatus {
         
         return $true
         
-    } catch {
+    }
+    catch {
         Write-Host "❌ Error updating task: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
@@ -307,11 +309,13 @@ try {
     if (Update-TaskStatus) {
         Write-Host ""
         Write-Host "🎉 Task status updated successfully!" -ForegroundColor Green
-    } else {
+    }
+    else {
         exit 1
     }
     
-} catch {
+}
+catch {
     Write-Host "❌ Error: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }

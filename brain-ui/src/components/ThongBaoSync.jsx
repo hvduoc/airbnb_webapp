@@ -15,15 +15,15 @@ function ThongBaoSync() {
       setDangKiemTra(true)
       const response = await fetch(`${WEBHOOK_API}/api/sync/status`)
       const data = await response.json()
-      
+
       if (data.latest_sync) {
         setTrangThaiSync(data.latest_sync)
-        
+
         // Hiển thị notification nếu có sync mới trong 1 phút gần đây
         const syncTime = new Date(data.latest_sync.timestamp)
         const now = new Date()
         const diffMinutes = (now - syncTime) / (1000 * 60)
-        
+
         if (diffMinutes < 1 && data.latest_sync.status === 'success') {
           setHienThongBao(true)
           setTimeout(() => setHienThongBao(false), 5000)
@@ -50,13 +50,13 @@ function ThongBaoSync() {
     try {
       setDangKiemTra(true)
       await fetch(`${WEBHOOK_API}/api/sync/manual`, { method: 'POST' })
-      
+
       // Đợi 2 giây rồi kiểm tra status
       setTimeout(() => {
         kiemTraTrangThaiSync()
         layLichSuSync()
       }, 2000)
-      
+
     } catch (error) {
       console.error('Error triggering manual sync:', error)
     }
@@ -69,7 +69,7 @@ function ThongBaoSync() {
 
     // Kiểm tra định kỳ mỗi 30 giây
     const interval = setInterval(kiemTraTrangThaiSync, 30000)
-    
+
     return () => clearInterval(interval)
   }, [])
 
@@ -101,7 +101,7 @@ function ThongBaoSync() {
               <div className="toast-message">Dữ liệu mới nhất đã được đồng bộ từ GitHub</div>
             </div>
           </div>
-          <button 
+          <button
             className="toast-close"
             onClick={() => setHienThongBao(false)}
           >
@@ -114,7 +114,7 @@ function ThongBaoSync() {
       <div className="sync-status-widget">
         <div className="sync-header">
           <h4>🔄 Trạng Thái Đồng Bộ</h4>
-          <button 
+          <button
             className={`btn-refresh ${dangKiemTra ? 'spinning' : ''}`}
             onClick={thucHienSyncThuCong}
             disabled={dangKiemTra}
@@ -129,14 +129,14 @@ function ThongBaoSync() {
             <div className="status-row">
               {getStatusIcon(trangThaiSync.status)}
               <span className={`status-text ${trangThaiSync.status}`}>
-                {trangThaiSync.status === 'success' ? 'Thành công' : 
-                 trangThaiSync.status === 'error' ? 'Lỗi' : 'Đang xử lý'}
+                {trangThaiSync.status === 'success' ? 'Thành công' :
+                  trangThaiSync.status === 'error' ? 'Lỗi' : 'Đang xử lý'}
               </span>
               <span className="sync-time">
                 {formatThoiGian(trangThaiSync.timestamp)}
               </span>
             </div>
-            
+
             <div className="sync-details">
               <div className="commit-info">
                 <strong>Commit:</strong> {trangThaiSync.commit_sha?.substring(0, 8)}
@@ -147,13 +147,13 @@ function ThongBaoSync() {
               <div className="author">
                 <strong>Author:</strong> {trangThaiSync.author}
               </div>
-              
+
               {trangThaiSync.files_changed?.length > 0 && (
                 <div className="files-changed">
                   <strong>Files:</strong> {trangThaiSync.files_changed.join(', ')}
                 </div>
               )}
-              
+
               {trangThaiSync.error && (
                 <div className="error-message">
                   <strong>Lỗi:</strong> {trangThaiSync.error}

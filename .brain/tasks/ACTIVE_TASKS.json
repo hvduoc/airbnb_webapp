@@ -12,7 +12,7 @@
       "id": "PROD-001",
       "title": "Production Readiness - Week 1",
       "description": "Core functionality: CSV upload enhancement, expense management, basic auth, reports & UI polish",
-      "status": "In Progress", 
+      "status": "In Progress",
       "priority": "Critical",
       "assigned_to": "Development Team",
       "due_date": "2025-10-05",
@@ -20,7 +20,7 @@
       "subtasks": [
         "✅ CSV upload error handling - Completed",
         "✅ Complete expense categories - Completed",
-        "✅ Charts.js analytics dashboard - Completed", 
+        "✅ Charts.js analytics dashboard - Completed",
         "🔄 Home server deployment setup - In Progress",
         "📅 Router configuration (tomorrow) - Pending"
       ],
@@ -39,14 +39,18 @@
         "next_session": [
           "🔧 Fix remaining Netlify deployment issues (MIME type errors)",
           "Windows Firewall configuration (step2-firewall.ps1)",
-          "Nginx proxy installation (step3-nginx.ps1)", 
+          "Nginx proxy installation (step3-nginx.ps1)",
           "Local services testing",
           "Router port forwarding setup (pending hardware access)",
           "External access testing from mobile"
         ],
         "deployment_attempts": {
           "netlify_brain_ui": "attempted - troubleshooting MIME type issues",
-          "fixes_applied": ["Path configuration", "SPA routing", "_redirects file"],
+          "fixes_applied": [
+            "Path configuration",
+            "SPA routing",
+            "_redirects file"
+          ],
           "status": "pending_resolution"
         }
       }
@@ -56,7 +60,7 @@
       "title": "Selective Upgrades - Week 2-4",
       "description": "Targeted improvements: simplified auth, performance optimization, basic testing",
       "status": "Todo",
-      "priority": "High", 
+      "priority": "High",
       "assigned_to": "Development Team",
       "due_date": "2025-10-26",
       "progress": "0%",
@@ -72,7 +76,7 @@
       "title": "Scale When Needed - Month 2-3",
       "description": "Scale only when business demands: database upgrade, comprehensive testing, automation",
       "status": "Backlog",
-      "priority": "Medium", 
+      "priority": "Medium",
       "assigned_to": "Development Team",
       "due_date": "2025-12-28",
       "progress": "0%",
@@ -87,7 +91,7 @@
       "title": "Template & Scale - Month 4+",
       "description": "Template-ize project for future PMS/OTA projects",
       "status": "Future",
-      "priority": "Low", 
+      "priority": "Low",
       "assigned_to": "Development Team",
       "due_date": "2026-01-31",
       "progress": "0%",
@@ -102,7 +106,7 @@
       "id": "MAINT-001",
       "title": "Database Migration Schema Updates",
       "description": "Maintain and update database schema cho expense categories và extra charges",
-      "status": "Completed", 
+      "status": "Completed",
       "priority": "Medium",
       "assigned_to": "Development Team",
       "due_date": "2025-10-15",
@@ -252,7 +256,7 @@
       "main_system": {
         "strategy": "Home Server (Self-hosted)",
         "public_ip": "27.69.244.249",
-        "local_ip": "192.168.1.122", 
+        "local_ip": "192.168.1.122",
         "dns_ready": true,
         "router_config": "pending_tomorrow",
         "services_ready": false,

@@ -310,16 +310,17 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+
   .table-header,
   .task-row {
     grid-template-columns: 80px 1fr 100px 80px 100px 100px;
     gap: 12px;
   }
-  
+
   .tasks-viewer {
     padding: 16px;
   }
-  
+
   .header-info h1 {
     font-size: 2rem;
   }
@@ -331,29 +332,29 @@
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .project-metrics {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .filters {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .search-box {
     min-width: auto;
   }
-  
+
   .filter-group {
     justify-content: flex-start;
   }
-  
+
   /* Stack table on mobile */
   .table-header {
     display: none;
   }
-  
+
   .task-row {
     display: block;
     padding: 20px;
@@ -361,31 +362,31 @@
     margin-bottom: 12px;
     border: 1px solid var(--border);
   }
-  
+
   .task-row:hover {
     border-color: var(--primary);
   }
-  
+
   .col-id .task-id {
     float: right;
     margin-bottom: 8px;
   }
-  
+
   .col-title {
     margin-bottom: 12px;
   }
-  
+
   .col-status,
   .col-priority {
     display: inline-block;
     margin-right: 12px;
     margin-bottom: 8px;
   }
-  
+
   .col-progress {
     margin-bottom: 8px;
   }
-  
+
   .col-due {
     font-size: 0.8rem;
   }
@@ -395,11 +396,11 @@
   .project-metrics {
     grid-template-columns: 1fr;
   }
-  
+
   .metric-value {
     font-size: 2rem;
   }
-  
+
   .header-info h1 {
     font-size: 1.8rem;
   }

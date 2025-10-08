@@ -21,7 +21,8 @@ if (-not (Test-Path $brainPublic)) {
 if (Test-Path ".brain") {
     Copy-Item -Recurse ".brain\*" $brainPublic -Force
     Write-Host "✅ Brain data copied to public folder" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "⚠️ .brain folder not found, using existing public data" -ForegroundColor Yellow
 }
 
@@ -34,7 +35,8 @@ try {
     $nodeVersion = node --version
     $npmVersion = npm --version
     Write-Host "✅ Node.js: $nodeVersion, npm: $npmVersion" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "❌ Node.js or npm not found. Please install Node.js first." -ForegroundColor Red
     exit 1
 }
