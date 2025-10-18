@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.envrc
+
+# Env & secrets
+.env
+!.env.example
+
+# Test & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+
+# Logs & runtime artefacts
+logs/
+*.log
+*.pid
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+tmp/
+storage/
+
+# Node / Frontend
+node_modules/
+dist/
+.build/
+.cache/
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Backups / large artefacts
+backup_cleanup/
+*.bak
+
+# Docker
+*.local.yml
