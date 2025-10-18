@@ -1,419 +1,278 @@
-# 🧠 Brain System - Airbnb WebApp# 🧠 HỆ THỐNG BỘ NÃO AI - AIRBNB WEBAPP# 🧠 .brain - BỘ NÃO DỰ ÁN AIRBNB WEBAPP
+---
+owner: hvduoc
+last_updated: 2025-10-18
+purpose: Bộ não AI cho dự án Airbnb WebApp và template tái sử dụng đa dự án
+version: 2.0 - Multi-Project Template
+---
 
+# 🧠 HỆ THỐNG BỘ NÃO AI - AIRBNB WEBAPP
 
+> **Mục tiêu**: Ngăn chặn AI "quên ngữ cảnh" và "lạc scope" — đảm bảo mọi phiên làm việc đều có context đầy đủ và focus đúng mục tiêu.
 
-## Overview
+**Bộ não AI** là hệ thống quản lý ngữ cảnh nội bộ chuyên nghiệp, có thể tái sử dụng cho nhiều dự án (Airbnb, PMS, OTA, SaaS...).  
+Hệ thống giúp AI duy trì trí nhớ dài hạn, quản lý tasks, metrics, logs và đảm bảo tuân thủ quy trình, bảo mật, cũng như hiệu quả vận hành.
 
-This directory contains context and configuration files for AI agent collaboration.
+---
 
-## 🎯 **TỔNG QUAN HỆ THỐNG**> **Mục tiêu**: Ngăn chặn AI "quên ngữ cảnh" và "lạc scope" - đảm bảo mọi phiên làm việc đều có context đầy đủ và focus đúng mục tiêu.
+## 🎯 KIẾN TRÚC DUAL-LAYER
 
-## Key Files
+👥 CLIENT LAYER (WebApp):
+├── Giao diện sạch sẽ, chuyên nghiệp
+├── Tính năng nghiệp vụ cốt lõi
+├── Hỗ trợ hoàn toàn Tiếng Việt
+└── Hoàn hảo cho presentation với khách hàng
 
-- `CONTEXT_INDEX.md` - Project overview and navigation
+🧠 DEVELOPER LAYER (Brain):
+├── Giám sát hệ thống toàn diện
+├── Chẩn đoán và điều khiển nâng cao
+├── Quản lý task và theo dõi tiến độ
+└── Công cụ nội bộ tối đa hiệu quả
 
-- `ACTIVE_TASKS.json` - Current task tracking and status
+yaml
+Copy code
 
-- `SCOPE.md` - Project boundaries and objectives**Bộ não AI** là hệ thống quản lý nội bộ chuyên nghiệp để giám sát, điều khiển và tối ưu hóa quá trình phát triển dự án Airbnb Revenue Management System.---
+---
 
+## 📁 CẤU TRÚC THƯ MỤC CHUẨN
 
+/.brain/
+├── README.md # File này - hướng dẫn sử dụng chính
+├── SCOPE.md # Phạm vi dự án & những gì KHÔNG làm
+├── GLOSSARY.md # Thuật ngữ chuyên môn
+├── WORKFLOW_SIMPLE.md # Quy trình làm việc đơn giản
+├── context/
+│ ├── CONTEXT_INDEX.md # Danh mục tất cả context files
+│ ├── VIETNAMESE_AI_INSTRUCTIONS.md # Hướng dẫn AI tiếng Việt
+│ └── DOMAIN_MAP.md # Sơ đồ domain business
+├── tasks/
+│ ├── ACTIVE_TASKS.json # Công việc đang làm với scope cụ thể
+│ └── PROJECT_TASKS.json # Lịch sử task và completed items
+├── logs/daily/ # Nhật ký làm việc hàng ngày
+├── metrics/ # KPIs & tiêu chí thành công
+├── plans/ # Kế hoạch chiến lược
+├── PLAYBOOKS/ # Hướng dẫn AI & quy tắc
+│ ├── COPILOT_GUARDRAILS.md # Nguyên tắc bắt buộc cho AI
+│ └── PROMPTING.md # Template prompt cho AI
+└── PROJECT_TEMPLATE/ # Template cho dự án mới
+├── SETUP_GUIDE.md
+├── TEMPLATE_SCOPE.md
+├── SAMPLE_ACTIVE_TASKS.json
+└── QUICK_START.md
 
-## Purpose
+yaml
+Copy code
 
-Provides structured context for AI agents to maintain focus and avoid scope drift during development sessions.
+---
 
-### **🏗️ Kiến Trúc Dual-Layer**## 📋 **CẤU TRÚC THƯ MỤC**
+## 🚀 WORKFLOW CHO AI COPILOT
 
-## Usage
-
-1. Start session by reviewing CONTEXT_INDEX.md```
-
-2. Check ACTIVE_TASKS.json for current priorities
-
-3. Follow established patterns and guardrails👥 CLIENT LAYER (WebApp):```
-
-4. Update progress as work completes
-
-├── Giao diện sạch sẽ, chuyên nghiệp/.brain/
-
-## Integration
-
-The brain system integrates with CI/CD pipelines to ensure essential context files are present before code changes are merged.├── Tính năng nghiệp vụ cốt lõi├── README.md              # File này - hướng dẫn sử dụng
-
-├── Hỗ trợ hoàn toàn Tiếng Việt├── CONTEXT_INDEX.md       # Danh mục tất cả context files
-
-└── Hoàn hảo cho presentation với khách hàng├── SCOPE.md               # Phạm vi dự án & những gì KHÔNG làm
-
-├── DOMAIN_MAP.md          # Kiến thức business domain
-
-🧠 DEVELOPER LAYER (Brain):├── GLOSSARY.md            # Thuật ngữ chuyên môn
-
-├── Giám sát hệ thống toàn diện├── RISKS.md               # Rủi ro kỹ thuật & kinh doanh
-
-├── Chẩn đoán và điều khiển nâng cao  ├── METRICS.md             # KPIs & tiêu chí thành công
-
-├── Quản lý task và theo dõi tiến độ├── ACTIVE_TASKS.json      # Công việc đang làm với scope cụ thể
-
-└── Công cụ nội bộ tối đa hiệu quả├── DECISIONS/             # Ghi chép quyết định kiến trúc
-
-```├── LOG/daily/             # Nhật ký làm việc hàng ngày
-
-└── PLAYBOOKS/             # Hướng dẫn AI & quy tắc
-
----    ├── COPILOT_GUARDRAILS.md
-
-    └── PROMPTING.md
-
-## 📁 **CẤU TRÚC THƯ MỤC**```
-
-
-
-### **📋 `/context/` - Ngữ Cảnh Dự Án**---
-
-```
-
-CONTEXT_INDEX.md → Tổng quan toàn diện dự án## 🎯 **WORKFLOW CHO AI COPILOT**
-
-VIETNAMESE_AI_INSTRUCTIONS.md → Hướng dẫn Việt hóa AI (QUAN TRỌNG!)
-
-```### **Bước 1: Session Start**
+### **Bước 1: Session Start**
 
 ```bash
+# AI PHẢI ĐỌC THEO THỨ TỰ:
+1. /.brain/context/VIETNAMESE_AI_INSTRUCTIONS.md  # BẮT BUỘC!
+2. /.brain/SCOPE.md                               # Phạm vi & non-goals  
+3. /.brain/tasks/ACTIVE_TASKS.json                # Tasks hiện tại
+4. /.brain/PLAYBOOKS/COPILOT_GUARDRAILS.md        # Nguyên tắc bắt buộc
+5. /.brain/context/DOMAIN_MAP.md                  # Business entities
+Bước 2: Work Execution
+AI PHẢI FOLLOW format trả lời:
 
-### **📅 `/logs/daily/` - Nhật Ký Phát Triển**# Chạy script khởi tạo
+Problem • Minimal change • Files • Test plan • Risks • Out-of-scope
 
-```/scripts/session-start
-
-YYYY-MM-DD.md → Daily logs với session objectives```
-
-SESSION_SUMMARY_*.md → Tóm tắt session chi tiết- Tạo daily log: `/.brain/LOG/daily/YYYY-MM-DD.md`
-
-```- Mở `CONTEXT_INDEX.md` để review context
-
-
-
-### **🎯 `/tasks/` - Quản Lý Nhiệm Vụ**### **Bước 2: AI Onboarding** 
-
-```AI **PHẢI ĐỌC THEO THỨ TỰ**:
-
-ACTIVE_TASKS.json → Danh sách nhiệm vụ đang hoạt động1. `/.brain/CONTEXT_INDEX.md` - Overview toàn bộ context
-
-PROJECT_TASKS.json → Lịch sử task và completed items2. `/.brain/SCOPE.md` - Phạm vi & non-goals  
-
-```3. `/.brain/ACTIVE_TASKS.json` - Tasks hiện tại
-
-4. `/.brain/PLAYBOOKS/COPILOT_GUARDRAILS.md` - Nguyên tắc bắt buộc
-
-### **📊 `/metrics/` - Số Liệu Dự Án**5. `/.brain/DOMAIN_MAP.md` - Business entities
-
-```
-
-PROJECT_METRICS.md → KPIs, progress tracking, business value### **Bước 3: Work Execution**
-
-```AI **PHẢI FOLLOW** format trả lời:
-
-- **Problem** • **Minimal change** • **Files** • **Test plan** • **Risks** • **Out-of-scope**
-
-### **📖 `/plans/` - Kế Hoạch Chiến Lược**
-
-```### **Bước 4: Session End**
-
-Strategic roadmaps, future development plans```bash
-
-```# Chạy script kết thúc
-
-/scripts/session-end
-
-### **🎮 `/PLAYBOOKS/` - Hướng Dẫn Vận Hành**```
-
-```- Cập nhật daily log với summary
-
-COPILOT_GUARDRAILS.md → Quy tắc và best practices cho AI- Update `ACTIVE_TASKS.json` nếu cần
-
-```
-
----
-
----
-
-## 🚨 **GUARDRAILS BẮNG BUỘC**
-
-## 🚀 **CÁCH SỬ DỤNG**
-
-### **Security & Safety**
-
-### **🌐 Truy Cập Brain Dashboard**- ❌ Không commit secrets/API keys
-
-```- ❌ Không expose PII data  
-
-URL: http://127.0.0.1:8000/brain- ❌ Không chạy lệnh nguy hiểm production
-
+Bước 3: Session End
+bash
+Copy code
+- Cập nhật daily log với summary
+- Update ACTIVE_TASKS.json nếu cần
+- Sync metrics với deliverables
+🌐 TRUY CẬP BRAIN DASHBOARD
+pgsql
+Copy code
+URL: http://127.0.0.1:8000/brain
 Yêu cầu: Server phải đang chạy
+Đối tượng: Developer only (internal tool)
+🎯 Tính Năng Dashboard
+Tình trạng hệ thống real-time
 
-Đối tượng: Developer only (internal tool)### **Scope Control**
+Nhiệm vụ đang hoạt động
 
-```- ✅ CHỈ làm việc trong files được chỉ định
+Nhật ký hàng ngày monitoring
 
-- ✅ Tuân thủ goals/non-goals trong `ACTIVE_TASKS.json`
+Thao tác nhanh đến brain files
 
-### **📋 Quản Lý Task**- ✅ Nếu request ngoài scope → ghi vào "Out-of-scope Suggestions"
+AI Session Starter với clipboard integration
 
-```
+🔒 GUARDRAILS & SECURITY
+🇻🇳 Nguyên Tắc Tiếng Việt
+✅ 100% giao tiếp bằng Tiếng Việt
 
-1. Xem ACTIVE_TASKS.json cho current priorities### **No Business Speculation**
+✅ User-facing text và comment hoàn toàn Việt hóa
 
-2. Update progress sau mỗi session- ❌ Không ước tính revenue/market trừ khi có data trong repo
+✅ Error messages thân thiện người dùng
 
-3. Document achievements trong daily logs- ❌ Không vẽ business plan hoang tưởng  
+🔒 Scope Control
+✅ Chỉ làm việc trong files được chỉ định
 
-4. Sync metrics với actual deliverables- ✅ Chỉ technical estimation based on code
+✅ Tuân thủ goals/non-goals trong ACTIVE_TASKS.json
 
-```
+✅ Nếu request ngoài scope → ghi vào “Out-of-scope Suggestions”
 
----
+🛡️ Security & Safety
+❌ Không commit secrets/API keys
 
-### **🇻🇳 Việt Hóa AI**
+❌ Không expose PII data
 
-```## 📊 **METRICS & TRACKING**
+❌ Không chạy lệnh nguy hiểm production
 
-1. LUÔN đọc VIETNAMESE_AI_INSTRUCTIONS.md trước session
+📊 METRICS & TRACKING
+KPIs theo dõi hàng tuần
+Mục tiêu	Chỉ số	Ngưỡng
+Setup time	< 10 phút	✅
+AI onboard context	< 5 phút	✅
+Repeat questions	< 2/session	✅
+Defect leakage	< 1/tuần	✅
+PR first-pass rate	> 80%	✅
 
-2. Maintain 100% Tiếng Việt communication### **KPIs theo dõi hàng tuần**:
+Daily Logging
+What changed
 
-3. Update instructions khi cần thiết- **Setup time**: Thời gian AI onboard context (mục tiêu: <5 phút)
+Blockers encountered
 
-4. Đảm bảo AI không "quên" Việt hóa- **Repeat questions**: Số lần AI hỏi lại context đã có (mục tiêu: <2/session)  
+Out-of-scope suggestions
 
-```- **Defect leakage**: Bugs production từ AI suggestions (mục tiêu: <1/tuần)
+Context gaps discovered
 
-- **PR first-pass rate**: PRs pass review ngay lần đầu (mục tiêu: >80%)
+🔧 SCRIPTS & AUTOMATION
+Script	Mục đích
+scripts/session-start	Khởi tạo daily log
+scripts/session-end	Tổng kết session
+.github/workflows/context-check.yml	Kiểm tra tồn tại file context bắt buộc
+scripts/cleanup_backups.sh	Dọn backup, đảm bảo repo sạch
 
----
-
-### **Daily logging**:
-
-## 🎯 **CÁC TÍNH NĂNG CHÍNH**- What changed
-
-- Blockers encountered  
-
-### **📊 Dashboard Metrics**- Out-of-scope suggestions
-
-- Tình trạng hệ thống real-time- Context gaps discovered
-
-- Nhiệm vụ đang hoạt động
-
-- Tập tin kiến thức tracking  ---
-
-- Nhật ký hàng ngày monitoring
-
-## 🔧 **SCRIPTS & AUTOMATION**
-
-### **🛠️ Thao Tác Nhanh**
-
-- Chi tiết ngữ cảnh access### **Session Management**
-
-- Hướng dẫn workflow- `scripts/session-start` - Initialize daily log
-
-- Từ điển thuật ngữ- `scripts/session-end` - Finalize session summary
-
-- Quy tắc AI guardrails
-
-### **CI/CD Integration**  
-
-### **🤖 AI Session Starter**- `.github/workflows/context-check.yml` - Verify essential brain files exist
-
-- Context loading tự động- PR template - Mandatory context checklist
-
-- Instructions generator
-
-- Task selection interface---
-
-- Clipboard integration
-
-## 💡 **BEST PRACTICES**
-
----
-
-1. **Keep files short**: Mỗi file ≤ 200 lines để AI đọc nhanh
-
-## 🔧 **TECHNICAL IMPLEMENTATION**2. **Single source of truth**: Một thông tin chỉ ở một chỗ
-
-3. **Version control**: All brain files được git tracked
-
-### **🖥️ Backend Integration**4. **Regular updates**: Weekly review & update metrics
-
-```python5. **Context hygiene**: Remove outdated info weekly
-
+🖥️ TECHNICAL INTEGRATION (AIRBNB WEBAPP)
+Backend
+python
+Copy code
 # routes_brain.py
-
-- load_brain_metrics()---
-
-- load_active_tasks() 
-
-- load_recent_daily_logs()## 🎊 **BENEFITS**
-
+- load_brain_metrics()
+- load_active_tasks()
+- load_recent_daily_logs()
 - check_brain_health()
-
-```### **For Developers**:
-
-- ✅ AI luôn có context đầy đủ mỗi session
-
-### **🎨 Frontend Template**- ✅ Không repeat questions về scope/requirements
-
-```html- ✅ Focused suggestions, không lạc scope
-
-# templates/brain_dashboard.html- ✅ Trackable progress với daily logs
-
+Frontend
+html
+Copy code
+# templates/brain_dashboard.html
 - Responsive Bootstrap design
+- Vietnamese-optimized interface
+- Interactive dashboard components
+Static File Serving
+python
+Copy code
+# main.py
+import os
+from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 
-- Vietnamese-optimized interface### **For AI**:
-
-- Interactive components- ✅ Clear boundaries & constraints  
-
-- Professional styling- ✅ Consistent response format
-
-```- ✅ Business context without speculation
-
-- ✅ Safety guardrails built-in
-
-### **📁 Static File Serving**
-
-```python### **For Project**:
-
-# main.py  - ✅ Reduced defect rate từ AI suggestions
-
-app.mount("/.brain", StaticFiles(directory=".brain"))- ✅ Better PR quality & faster review
-
-```- ✅ Documented decision history
-
-- ✅ Measurable AI effectiveness
-
----
-
----
-
-## 🏆 **BUSINESS VALUE**
-
-*Created: September 25, 2025*  
-
-### **💎 Development Efficiency***Last Updated: September 25, 2025*
-```
-⚡ Context switching: Reduced by 70%
-🎯 Task clarity: 100% clear objectives
-📈 Progress tracking: Real-time visibility
-🧠 Knowledge retention: Centralized documentation
-```
-
-### **💎 Code Quality**
-```
-🇻🇳 Consistent Vietnamese: No mixed language issues
-📝 Clear documentation: Self-documenting system
-🔄 Standardized workflow: Repeatable processes
-🎯 Quality assurance: Built-in best practices
-```
-
-### **💎 Professional Presentation**
-```
-👥 Clean client interface: No development clutter
-🎨 Vietnamese-optimized UX: Native user experience
-📊 Executive dashboards: Business-ready reports
-🚀 Scalable architecture: Ready for enterprise
-```
-
----
-
-## 🔄 **WORKFLOW INTEGRATION**
-
-### **🎬 Session Start**
-```
-1. Khởi động server: uvicorn main:app --reload
+app = FastAPI()
+ENV = os.getenv("APP_ENV", "production").lower()
+if ENV == "development" or os.getenv("BRAIN_MOUNT", "false").lower() == "true":
+    app.mount("/_brain", StaticFiles(directory=".brain"), name="brain")
+🎯 WORKFLOW TÍCH HỢP TRONG DỰ ÁN
+Session Start
+less
+Copy code
+1. Chạy server: uvicorn main:app --reload
 2. Truy cập brain: http://127.0.0.1:8000/brain  
-3. Review context: VIETNAMESE_AI_INSTRUCTIONS.md
-4. Load active tasks: ACTIVE_TASKS.json
-5. Begin focused work session
-```
+3. Review context & tasks
+4. Bắt đầu session tập trung
+Trong Quá Trình Phát Triển
+css
+Copy code
+1. Code có comment Tiếng Việt
+2. Cập nhật tiến độ task
+3. Document decisions & findings
+4. Test với thông báo lỗi thân thiện
+Session End
+pgsql
+Copy code
+1. Update ACTIVE_TASKS.json
+2. Ghi daily log
+3. Cập nhật metrics
+4. Lên kế hoạch cho session tiếp theo
+📈 SUCCESS METRICS & BUSINESS VALUE
+Hiệu quả kỹ thuật
+less
+Copy code
+⚡ Context switching: giảm 70%
+🎯 Task clarity: 100% rõ mục tiêu
+📈 Progress tracking: real-time
+🧠 Knowledge retention: tập trung hóa tài liệu
+Chất lượng code
+css
+Copy code
+🇻🇳 100% Tiếng Việt, không lẫn ngôn ngữ
+📝 Document rõ ràng, self-explaining
+🔄 Workflow chuẩn hóa, dễ review
+Giá trị doanh nghiệp
+css
+Copy code
+👥 Giao diện sạch, thân thiện khách hàng
+📊 Dashboard chuyên nghiệp
+🚀 Sẵn sàng mở rộng đa dự án
+🔁 TEMPLATE ÁP DỤNG CHO DỰ ÁN MỚI
+⚡ Quick Start (< 10 phút)
+cp -r existing_project/.brain new_project/
 
-### **🔄 During Development**
-```
-1. Code với Vietnamese comments
-2. Update task progress real-time
-3. Document decisions và findings
-4. Test với user-friendly error messages
-5. Maintain brain system health
-```
+Cập nhật TEMPLATE_SCOPE.md, ACTIVE_TASKS.json, DOMAIN_MAP.md
 
-### **📋 Session End**
-```
-1. Update ACTIVE_TASKS.json progress
-2. Create daily log entry
-3. Sync project metrics
-4. Plan next session priorities
-5. Commit changes với Vietnamese messages
-```
+Test Brain Dashboard accessibility
+
+📋 Checklist
+ Scope.md được cập nhật
+
+ Có ít nhất 1 task hoạt động
+
+ DOMAIN_MAP.md phù hợp domain
+
+ Dashboard hoạt động
+
+ AI session đầu tiên thành công
+
+🛠️ MAINTENANCE & UPDATES
+Weekly Tasks
+ Review ACTIVE_TASKS.json
+
+ Clean daily logs cũ
+
+ Update metrics thực tế
+
+Monthly Tasks
+ Review SCOPE.md
+
+ Update DOMAIN_MAP.md
+
+ Refresh AI instructions
+
+ Cải tiến templates
+
+🏆 KẾT LUẬN
+Brain System là nền tảng giúp bạn và AI cộng tác hiệu quả, an toàn, có kiểm soát và 100% Việt hóa.
+Nó vừa phục vụ dự án Airbnb WebApp hiện tại, vừa là khuôn mẫu chuẩn hóa cho mọi dự án tương lai.
+
+Tạo bởi: AI Development Team
+Cập nhật cuối: 2025-10-18
+Version: 2.0 - Multi-Project Template
+
+yaml
+Copy code
 
 ---
 
-## 🌟 **SUCCESS METRICS**
+## ✅ Gợi ý commit (để Copilot hoặc bạn chạy)
 
-### **📈 Quantified Results**
-```
-🏗️ Project Foundation: 100% Complete
-📊 CSV System: 100% Functional với Vietnamese stats
-🧠 Brain System: Professional organization complete
-🎯 Development Velocity: 1.2 tasks/day sustained
-💼 Business Value: 2+ hours saved weekly on CSV processing
-```
+```bash
+mv .brain/test_automation/README_NEW.md .brain/archive/README_OLD_2025_09_26.md
+git add .brain/test_automation/README.md .brain/archive/
+git commit -m "docs(brain): merge README_NEW into README.md (v2.0 multi-project template)"
 
-### **🎖️ Quality Achievements**
-```
-✅ Zero rollbacks: 100% completion rate
-✅ Professional grade: Client-ready architecture
-✅ Vietnamese optimization: Complete localization
-✅ Scalable foundation: Ready for 10+ building management
-✅ Template ready: Reusable for future projects
-```
-
----
-
-## 🚀 **FUTURE ROADMAP**
-
-### **🔮 Next Development Phase**
-```
-PROJ-008: User-Aware Services Architecture
-PROJ-009: Advanced Expense Management  
-PROJ-010: Multi-Building Coordination
-```
-
-### **💡 System Evolution**
-```
-🤖 Enhanced AI integration
-📊 Advanced analytics dashboards
-🔄 Automated workflow optimization
-🌐 Multi-tenant architecture
-```
-
----
-
-## 📞 **SUPPORT & CONTACT**
-
-### **🛠️ Technical Issues**
-- Check routes_brain.py cho backend problems
-- Verify .brain directory structure
-- Test static file serving configuration
-- Review server logs cho diagnostics
-
-### **📚 Documentation Updates**
-- Update CONTEXT_INDEX.md với project changes
-- Maintain VIETNAMESE_AI_INSTRUCTIONS.md relevance
-- Keep ACTIVE_TASKS.json current
-- Sync PROJECT_METRICS.md với reality
-
----
-
-**🎯 KẾT LUẬN: Brain system là nền tảng cho phát triển chuyên nghiệp, hiệu quả và hoàn toàn Việt hóa!**
-
----
-
-*Tạo bởi: AI Development Team*  
-*Cập nhật cuối: September 26, 2025*  
-*Version: 1.0 - Professional Grade*
